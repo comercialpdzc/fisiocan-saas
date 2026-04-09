@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, PawPrint, Dumbbell, FileText, MessageSquare, LogOut, CalendarDays, Menu, X } from 'lucide-react';
 import { clearPortalAuth, getPortalUser } from '../../lib/portalAuth';
+const logoUrl = '/logo.png';
 
 const navItems = [
   { to: '/portal/dashboard',    label: 'Inicio',       icon: LayoutDashboard },
@@ -25,9 +26,7 @@ export default function PortalLayout() {
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-navy-700 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-teal-400 rounded-lg flex items-center justify-center">
-            <PawPrint size={15} className="text-white" />
-          </div>
+          <img src={logoUrl} alt="FISIOCAN" className="h-8 w-8 rounded-lg object-contain bg-white p-0.5" />
           <span className="text-white font-bold text-base">FISIOCAN</span>
         </div>
         <button onClick={() => setOpen(true)} className="text-white p-1 min-h-[44px] min-w-[44px] flex items-center justify-center">
@@ -48,9 +47,7 @@ export default function PortalLayout() {
       `}>
         <div className="p-6 border-b border-navy-600 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-teal-400 rounded-xl flex items-center justify-center">
-              <PawPrint size={22} className="text-white" />
-            </div>
+            <img src={logoUrl} alt="FISIOCAN" className="h-10 w-10 rounded-xl object-contain bg-white p-0.5 flex-shrink-0" />
             <div>
               <div className="text-white font-bold text-lg leading-tight">FISIOCAN</div>
               <div className="text-teal-300 text-xs">Portal del propietario</div>

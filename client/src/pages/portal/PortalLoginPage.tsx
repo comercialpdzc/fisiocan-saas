@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PawPrint } from 'lucide-react';
 import { portalApi } from '../../lib/api';
 import { savePortalAuth, PortalUser } from '../../lib/portalAuth';
+const logoUrl = '/logo.png';
 
 declare global {
   interface Window {
@@ -88,10 +88,7 @@ export default function PortalLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-navy-700 to-navy-800 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-teal-400 rounded-2xl mb-4 shadow-lg">
-            <PawPrint size={32} className="text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-white">FISIOCAN</h1>
+          <img src={logoUrl} alt="FISIOCAN" className="w-24 h-24 rounded-2xl object-contain bg-white p-2 shadow-lg mx-auto mb-4" />
           <p className="text-navy-200 text-sm mt-1">Portal para propietarios</p>
         </div>
 
