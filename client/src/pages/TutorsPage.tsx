@@ -31,13 +31,13 @@ export default function TutorsPage() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy-700">Tutores</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-navy-700">Tutores</h1>
           <p className="text-navy-400 text-sm mt-0.5">{tutors.length} registrados</p>
         </div>
-        <button onClick={() => setShowNew(true)} className="btn-primary"><Plus size={16} /> Nuevo tutor</button>
+        <button onClick={() => setShowNew(true)} className="btn-primary"><Plus size={16} /><span className="hidden sm:inline"> Nuevo tutor</span></button>
       </div>
 
       <div className="relative mb-6">

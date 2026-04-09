@@ -40,18 +40,17 @@ export default function PatientsPage() {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy-700">Pacientes</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-navy-700">Pacientes</h1>
           <p className="text-navy-400 text-sm mt-0.5">{patients.filter(p => p.active).length} activos</p>
         </div>
         <button onClick={() => setShowNew(true)} className="btn-primary">
-          <Plus size={16} /> Nuevo paciente
+          <Plus size={16} /><span className="hidden sm:inline"> Nuevo paciente</span>
         </button>
       </div>
 
-      {/* Search */}
       <div className="relative mb-6">
         <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-300" />
         <input
@@ -62,7 +61,6 @@ export default function PatientsPage() {
         />
       </div>
 
-      {/* List */}
       <div className="card p-0 overflow-hidden">
         {filtered.length === 0 ? (
           <div className="p-12 text-center text-navy-300">
@@ -70,42 +68,64 @@ export default function PatientsPage() {
             <p>No hay pacientes{search ? ' con ese filtro' : ''}</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-navy-50 border-b border-navy-100">
-              <tr>
-                {['Paciente', 'Especie / Raza', 'Tutor', 'Citas', 'Estado', ''].map(h => (
-                  <th key={h} className="text-left text-xs font-semibold text-navy-500 px-4 py-3">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-navy-50">
+          <>
+            {/* Mobile: card list */}
+            <div className="md:hidden divide-y divide-navy-50">
               {filtered.map(p => (
-                <tr key={p.id} className="hover:bg-navy-50 transition-colors group">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
-                        <PawPrint size={14} className="text-teal-600" />
-                      </div>
-                      <span className="font-medium text-navy-700">{p.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-navy-500">{p.species}{p.breed ? ` · ${p.breed}` : ''}</td>
-                  <td className="px-4 py-3 text-sm text-navy-500">{p.tutor.name}</td>
-                  <td className="px-4 py-3 text-sm text-navy-400">{p._count.appointments}</td>
-                  <td className="px-4 py-3">
-                    <span className={p.active ? 'badge-green' : 'badge-gray'}>
-                      {p.active ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <Link to={`/patients/${p.id}`} className="text-navy-300 group-hover:text-teal-500 transition-colors">
-                      <ChevronRight size={18} />
-                    </Link>
-                  </td>
-                </tr>
+                <Link key={p.id} to={`/patients/${p.id}`} className="flex items-center gap-3 p-4 hover:bg-navy-50 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
+                    <PawPrint size={16} className="text-teal-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-navy-700">{p.name}</div>
+                    <div className="text-xs text-navy-400 truncate">{p.species}{p.breed ? ` · ${p.breed}` : ''} · {p.tutor.name}</div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={p.active ? 'badge-green' : 'badge-gray'}>{p.active ? 'Activo' : 'Inactivo'}</span>
+                    <ChevronRight size={16} className="text-navy-300" />
+                  </div>
+                </Link>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Desktop: table */}
+            <table className="hidden md:table w-full">
+              <thead className="bg-navy-50 border-b border-navy-100">
+                <tr>
+                  {['Paciente', 'Especie / Raza', 'Tutor', 'Citas', 'Estado', ''].map(h => (
+                    <th key={h} className="text-left text-xs font-semibold text-navy-500 px-4 py-3">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-navy-50">
+                {filtered.map(p => (
+                  <tr key={p.id} className="hover:bg-navy-50 transition-colors group">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                          <PawPrint size={14} className="text-teal-600" />
+                        </div>
+                        <span className="font-medium text-navy-700">{p.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-navy-500">{p.species}{p.breed ? ` · ${p.breed}` : ''}</td>
+                    <td className="px-4 py-3 text-sm text-navy-500">{p.tutor.name}</td>
+                    <td className="px-4 py-3 text-sm text-navy-400">{p._count.appointments}</td>
+                    <td className="px-4 py-3">
+                      <span className={p.active ? 'badge-green' : 'badge-gray'}>
+                        {p.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Link to={`/patients/${p.id}`} className="text-navy-300 group-hover:text-teal-500 transition-colors">
+                        <ChevronRight size={18} />
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
 

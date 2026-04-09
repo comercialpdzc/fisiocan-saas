@@ -15,7 +15,7 @@ interface Patient { id: number; name: string; tutor: { name: string } }
 
 const STATUS_LABEL: Record<string, string> = { SCHEDULED: 'Programada', COMPLETED: 'Completada', CANCELLED: 'Cancelada', NO_SHOW: 'No asistió' };
 const STATUS_CLASS: Record<string, string> = { SCHEDULED: 'badge-blue', COMPLETED: 'badge-green', CANCELLED: 'badge-red', NO_SHOW: 'badge-yellow' };
-const HOURS = Array.from({ length: 11 }, (_, i) => i + 9); // 9-19
+const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
 
 export default function AppointmentsPage() {
   const qc = useQueryClient();
@@ -44,26 +44,59 @@ export default function AppointmentsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-navy-700">Agenda</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-navy-700">Agenda</h1>
           <p className="text-navy-400 text-sm mt-0.5">
             {format(weekStart, "d MMM", { locale: es })} – {format(weekEnd, "d MMM yyyy", { locale: es })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setWeekStart(w => subWeeks(w, 1))} className="btn-ghost p-2"><ChevronLeft size={18} /></button>
-          <button onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="btn-ghost text-sm px-3">Hoy</button>
-          <button onClick={() => setWeekStart(w => addWeeks(w, 1))} className="btn-ghost p-2"><ChevronRight size={18} /></button>
-          <button onClick={() => setShowNew(true)} className="btn-primary ml-2"><Plus size={16} /> Nueva cita</button>
+        <div className="flex items-center gap-1 md:gap-2 flex-wrap justify-end">
+          <button onClick={() => setWeekStart(w => subWeeks(w, 1))} className="btn-ghost p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"><ChevronLeft size={18} /></button>
+          <button onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))} className="btn-ghost text-sm px-3 min-h-[44px]">Hoy</button>
+          <button onClick={() => setWeekStart(w => addWeeks(w, 1))} className="btn-ghost p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"><ChevronRight size={18} /></button>
+          <button onClick={() => setShowNew(true)} className="btn-primary min-h-[44px]"><Plus size={16} /><span className="hidden sm:inline"> Nueva cita</span></button>
         </div>
       </div>
 
-      {/* Week grid */}
-      <div className="card p-0 overflow-auto">
+      {/* Mobile: list view */}
+      <div className="md:hidden space-y-3">
+        {appointments.length === 0 ? (
+          <div className="card text-center py-10">
+            <CalendarDays size={36} className="mx-auto mb-3 text-navy-200" />
+            <p className="text-navy-300 text-sm">Sin citas esta semana</p>
+          </div>
+        ) : (
+          appointments
+            .slice()
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .map(a => (
+              <div key={a.id} className="card flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-navy-100 flex items-center justify-center flex-shrink-0">
+                  <Clock size={18} className="text-navy-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-navy-700 truncate">{a.patient.name}</div>
+                  <div className="text-xs text-navy-400">{a.patient.tutor.name} · {a.duration} min</div>
+                  <div className="text-xs text-navy-500 mt-0.5 font-medium">
+                    {format(new Date(a.date), "EEE d MMM · HH:mm", { locale: es })}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span className={STATUS_CLASS[a.status]}>{STATUS_LABEL[a.status]}</span>
+                  <button onClick={() => deleteAppt.mutate(a.id)} className="p-1 text-navy-300 hover:text-red-400 transition-colors">
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+            ))
+        )}
+      </div>
+
+      {/* Desktop: calendar grid */}
+      <div className="hidden md:block card p-0 overflow-auto">
         <div className="grid" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
-          {/* Header */}
           <div className="border-b border-navy-100 p-2" />
           {days.map(day => (
             <div key={day.toISOString()} className={`border-b border-l border-navy-100 p-2 text-center ${isSameDay(day, new Date()) ? 'bg-teal-50' : ''}`}>
@@ -73,7 +106,6 @@ export default function AppointmentsPage() {
               </div>
             </div>
           ))}
-          {/* Hour rows */}
           {HOURS.map(hour => (
             <>
               <div key={`h-${hour}`} className="border-b border-navy-50 px-2 py-1 text-xs text-navy-300 text-right">{hour}:00</div>

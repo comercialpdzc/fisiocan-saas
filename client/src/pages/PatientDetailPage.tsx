@@ -23,9 +23,9 @@ const STATUS_CLASS: Record<string, string> = { SCHEDULED: 'badge-blue', COMPLETE
 
 type TabKey = 'intake' | 'appointments' | 'routines';
 const TABS: { key: TabKey; label: string; Icon: React.ElementType }[] = [
-  { key: 'intake',        label: 'Ficha inicial', Icon: FileText },
-  { key: 'appointments',  label: 'Citas',         Icon: CalendarDays },
-  { key: 'routines',      label: 'Rutinas',        Icon: Dumbbell },
+  { key: 'intake',       label: 'Ficha',  Icon: FileText },
+  { key: 'appointments', label: 'Citas',  Icon: CalendarDays },
+  { key: 'routines',     label: 'Rutinas', Icon: Dumbbell },
 ];
 
 export default function PatientDetailPage() {
@@ -55,43 +55,43 @@ export default function PatientDetailPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['patient', id] }); setShowAddRoutine(false); },
   });
 
-  if (isLoading) return <div className="p-8 text-navy-400">Cargando…</div>;
-  if (!patient) return <div className="p-8 text-red-500">Paciente no encontrado</div>;
+  if (isLoading) return <div className="p-4 md:p-8 text-navy-400">Cargando…</div>;
+  if (!patient) return <div className="p-4 md:p-8 text-red-500">Paciente no encontrado</div>;
 
   const assignedIds = new Set(patient.rehabRoutines.map(pr => pr.routine.id));
 
   return (
-    <div className="p-8 max-w-4xl">
-      {/* Header */}
+    <div className="p-4 md:p-8 max-w-4xl">
       <Link to="/patients" className="inline-flex items-center gap-1 text-sm text-navy-400 hover:text-navy-600 mb-6">
         <ArrowLeft size={14} /> Volver a pacientes
       </Link>
 
-      <div className="flex items-start gap-5 mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-teal-100 flex items-center justify-center flex-shrink-0">
-          <PawPrint size={28} className="text-teal-600" />
+      {/* Header */}
+      <div className="flex items-start gap-4 mb-8">
+        <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-teal-100 flex items-center justify-center flex-shrink-0">
+          <PawPrint size={22} className="md:text-[28px] text-teal-600" />
         </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-navy-700">{patient.name}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl md:text-2xl font-bold text-navy-700">{patient.name}</h1>
             <span className={patient.active ? 'badge-green' : 'badge-gray'}>{patient.active ? 'Activo' : 'Inactivo'}</span>
           </div>
-          <p className="text-navy-400 mt-0.5">{patient.species}{patient.breed ? ` · ${patient.breed}` : ''}{patient.weight ? ` · ${patient.weight}` : ''}{patient.sex ? ` · ${patient.sex}` : ''}{patient.neutered ? ` · ${patient.neutered === 'Sí' ? 'Esterilizado/a' : 'Sin esterilizar'}` : ''}</p>
-          <div className="flex items-center gap-4 mt-2 text-sm">
+          <p className="text-navy-400 text-sm mt-0.5 truncate">{patient.species}{patient.breed ? ` · ${patient.breed}` : ''}{patient.weight ? ` · ${patient.weight}` : ''}{patient.sex ? ` · ${patient.sex}` : ''}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm">
             <span className="flex items-center gap-1 text-navy-500"><Phone size={13} /> {patient.tutor.name} · {patient.tutor.phone}</span>
             {patient.tutor.email && <span className="flex items-center gap-1 text-navy-400"><Mail size={13} /> {patient.tutor.email}</span>}
           </div>
         </div>
-        <Link to={`/chat/${patient.tutor.id}`} className="btn-secondary text-sm">Contactar tutor</Link>
+        <Link to={`/chat/${patient.tutor.id}`} className="btn-secondary text-sm flex-shrink-0">Contactar</Link>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-navy-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-navy-100 rounded-xl p-1 w-full sm:w-fit overflow-x-auto">
         {TABS.map(({ key, label, Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === key ? 'bg-white text-navy-700 shadow-sm' : 'text-navy-500 hover:text-navy-700'}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-1 sm:flex-none justify-center sm:justify-start ${tab === key ? 'bg-white text-navy-700 shadow-sm' : 'text-navy-500 hover:text-navy-700'}`}
           >
             <Icon size={14} />{label}
           </button>
@@ -100,7 +100,7 @@ export default function PatientDetailPage() {
 
       {/* Intake */}
       {tab === 'intake' && (
-        <div className="card space-y-5">
+        <div className="card space-y-4">
           {!patient.intakeData ? (
             <p className="text-navy-300">Sin ficha de anamnesis registrada.</p>
           ) : (
@@ -128,9 +128,9 @@ export default function PatientDetailPage() {
               'Observaciones': patient.intakeData.observaciones,
               'Objetivos': patient.intakeData.objetivos,
             }).filter(([, v]) => v).map(([k, v]) => (
-              <div key={k} className="grid grid-cols-3 gap-2 text-sm border-b border-navy-50 pb-3 last:border-0 last:pb-0">
-                <span className="font-medium text-navy-500">{k}</span>
-                <span className="col-span-2 text-navy-700">{v}</span>
+              <div key={k} className="text-sm border-b border-navy-50 pb-3 last:border-0 last:pb-0 sm:grid sm:grid-cols-3 sm:gap-2">
+                <span className="font-medium text-navy-500 block mb-0.5 sm:mb-0">{k}</span>
+                <span className="sm:col-span-2 text-navy-700">{v}</span>
               </div>
             ))
           )}
@@ -143,25 +143,40 @@ export default function PatientDetailPage() {
           {patient.appointments.length === 0 ? (
             <p className="p-6 text-navy-300">Sin citas registradas.</p>
           ) : (
-            <table className="w-full">
-              <thead className="bg-navy-50 border-b border-navy-100">
-                <tr>
-                  {['Fecha', 'Duración', 'Estado', 'Notas'].map(h => (
-                    <th key={h} className="text-left text-xs font-semibold text-navy-500 px-4 py-3">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-navy-50">
+            <>
+              {/* Mobile */}
+              <div className="md:hidden divide-y divide-navy-50">
                 {patient.appointments.map(a => (
-                  <tr key={a.id}>
-                    <td className="px-4 py-3 text-sm text-navy-700">{format(new Date(a.date), "d MMM yyyy · HH:mm", { locale: es })}</td>
-                    <td className="px-4 py-3 text-sm text-navy-500">{a.duration} min</td>
-                    <td className="px-4 py-3"><span className={STATUS_CLASS[a.status]}>{STATUS_LABEL[a.status]}</span></td>
-                    <td className="px-4 py-3 text-sm text-navy-400">{a.notes || '—'}</td>
-                  </tr>
+                  <div key={a.id} className="p-4">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-navy-700">{format(new Date(a.date), "d MMM yyyy · HH:mm", { locale: es })}</span>
+                      <span className={STATUS_CLASS[a.status]}>{STATUS_LABEL[a.status]}</span>
+                    </div>
+                    <div className="text-xs text-navy-400">{a.duration} min{a.notes ? ` · ${a.notes}` : ''}</div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              {/* Desktop */}
+              <table className="hidden md:table w-full">
+                <thead className="bg-navy-50 border-b border-navy-100">
+                  <tr>
+                    {['Fecha', 'Duración', 'Estado', 'Notas'].map(h => (
+                      <th key={h} className="text-left text-xs font-semibold text-navy-500 px-4 py-3">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-navy-50">
+                  {patient.appointments.map(a => (
+                    <tr key={a.id}>
+                      <td className="px-4 py-3 text-sm text-navy-700">{format(new Date(a.date), "d MMM yyyy · HH:mm", { locale: es })}</td>
+                      <td className="px-4 py-3 text-sm text-navy-500">{a.duration} min</td>
+                      <td className="px-4 py-3"><span className={STATUS_CLASS[a.status]}>{STATUS_LABEL[a.status]}</span></td>
+                      <td className="px-4 py-3 text-sm text-navy-400">{a.notes || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       )}
@@ -175,8 +190,8 @@ export default function PatientDetailPage() {
           {patient.rehabRoutines.length === 0 && <div className="card text-navy-300">Sin rutinas asignadas.</div>}
           {patient.rehabRoutines.map(pr => (
             <div key={pr.id} className="card flex items-center gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium text-navy-700">{pr.routine.name}</span>
                   {pr.routine.category && <span className="badge-blue">{pr.routine.category}</span>}
                   {pr.routine.duration && <span className="text-xs text-navy-400">{pr.routine.duration} min</span>}
@@ -186,7 +201,7 @@ export default function PatientDetailPage() {
                   <a href={pr.routine.videoUrl} target="_blank" rel="noreferrer" className="text-xs text-teal-500 hover:underline mt-1 inline-block">Ver video →</a>
                 )}
               </div>
-              <button onClick={() => removeRoutine.mutate(pr.id)} className="p-1.5 text-navy-300 hover:text-red-500 transition-colors rounded-lg">
+              <button onClick={() => removeRoutine.mutate(pr.id)} className="p-2 text-navy-300 hover:text-red-500 transition-colors rounded-lg min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <X size={16} />
               </button>
             </div>
@@ -199,7 +214,7 @@ export default function PatientDetailPage() {
                 <div className="space-y-2 max-h-80 overflow-y-auto">
                   {allRoutines.filter(r => !assignedIds.has(r.id)).map(r => (
                     <button key={r.id} onClick={() => addRoutine.mutate(r.id)}
-                      className="w-full text-left p-3 rounded-xl hover:bg-navy-50 transition-colors border border-navy-100">
+                      className="w-full text-left p-3 rounded-xl hover:bg-navy-50 transition-colors border border-navy-100 min-h-[44px]">
                       <div className="font-medium text-navy-700 text-sm">{r.name}</div>
                       <div className="text-xs text-navy-400">{r.category}{r.duration ? ` · ${r.duration} min` : ''}</div>
                     </button>

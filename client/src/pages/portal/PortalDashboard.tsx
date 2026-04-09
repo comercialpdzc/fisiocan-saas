@@ -26,10 +26,10 @@ export default function PortalDashboard() {
   if (isLoading) return <div className="p-8 text-navy-400">Cargando…</div>;
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-navy-700">Bienvenido/a, {user?.name} 👋</h1>
-        <p className="text-navy-400 mt-1">{format(new Date(), "EEEE d 'de' MMMM yyyy", { locale: es })}</p>
+    <div className="p-4 md:p-8">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold text-navy-700">Bienvenido/a, {user?.name} 👋</h1>
+        <p className="text-navy-400 mt-1 text-sm">{format(new Date(), "EEEE d 'de' MMMM yyyy", { locale: es })}</p>
       </div>
 
       {/* Quick links */}

@@ -1,30 +1,52 @@
+import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, PawPrint, Dumbbell, FileText, MessageSquare, LogOut, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, PawPrint, Dumbbell, FileText, MessageSquare, LogOut, CalendarDays, Menu, X } from 'lucide-react';
 import { clearPortalAuth, getPortalUser } from '../../lib/portalAuth';
 
 const navItems = [
-  { to: '/portal/dashboard',    label: 'Inicio',     icon: LayoutDashboard },
+  { to: '/portal/dashboard',    label: 'Inicio',       icon: LayoutDashboard },
   { to: '/portal/patients',     label: 'Mis mascotas', icon: PawPrint },
-  { to: '/portal/appointments', label: 'Citas',       icon: CalendarDays },
-  { to: '/portal/routines',     label: 'Ejercicios', icon: Dumbbell },
-  { to: '/portal/plans',        label: 'Planes',     icon: FileText },
-  { to: '/portal/chat',         label: 'Mensajes',   icon: MessageSquare },
+  { to: '/portal/appointments', label: 'Citas',        icon: CalendarDays },
+  { to: '/portal/routines',     label: 'Ejercicios',   icon: Dumbbell },
+  { to: '/portal/plans',        label: 'Planes',       icon: FileText },
+  { to: '/portal/chat',         label: 'Mensajes',     icon: MessageSquare },
 ];
 
 export default function PortalLayout() {
   const navigate = useNavigate();
   const user = getPortalUser();
+  const [open, setOpen] = useState(false);
 
-  function logout() {
-    clearPortalAuth();
-    navigate('/portal');
-  }
+  function logout() { clearPortalAuth(); navigate('/portal'); }
+  function close() { setOpen(false); }
 
   return (
     <div className="flex h-screen bg-cream">
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-navy-700 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-teal-400 rounded-lg flex items-center justify-center">
+            <PawPrint size={15} className="text-white" />
+          </div>
+          <span className="text-white font-bold text-base">FISIOCAN</span>
+        </div>
+        <button onClick={() => setOpen(true)} className="text-white p-1 min-h-[44px] min-w-[44px] flex items-center justify-center">
+          <Menu size={22} />
+        </button>
+      </div>
+
+      {/* Overlay */}
+      {open && (
+        <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={close} />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-navy-700 flex flex-col">
-        <div className="p-6 border-b border-navy-600">
+      <aside className={`
+        fixed md:relative inset-y-0 left-0 z-50 w-64 bg-navy-700 flex flex-col
+        transform transition-transform duration-200 md:translate-x-0
+        ${open ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-6 border-b border-navy-600 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-teal-400 rounded-xl flex items-center justify-center">
               <PawPrint size={22} className="text-white" />
@@ -34,13 +56,17 @@ export default function PortalLayout() {
               <div className="text-teal-300 text-xs">Portal del propietario</div>
             </div>
           </div>
+          <button onClick={close} className="md:hidden text-navy-300 hover:text-white p-1">
+            <X size={18} />
+          </button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
+              onClick={close}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
                   isActive ? 'bg-teal-400 text-white' : 'text-navy-200 hover:bg-navy-600 hover:text-white'
@@ -58,14 +84,14 @@ export default function PortalLayout() {
               <div className="text-white text-sm font-medium truncate">{user?.name}</div>
               <div className="text-navy-300 text-xs truncate">{user?.email}</div>
             </div>
-            <button onClick={logout} className="p-2 text-navy-300 hover:text-white transition-colors rounded-lg hover:bg-navy-600">
+            <button onClick={logout} className="p-2 text-navy-300 hover:text-white transition-colors rounded-lg hover:bg-navy-600 min-h-[44px] min-w-[44px] flex items-center justify-center">
               <LogOut size={16} />
             </button>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pt-14 md:pt-0">
         <Outlet />
       </main>
     </div>

@@ -32,20 +32,22 @@ export default function RoutinesPage() {
   const uncategorized = routines.filter(r => !r.category || !CATEGORIES.includes(r.category));
 
   return (
-    <div className="p-8">
+    <div className="p-4 md:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-navy-700">Rutinas de rehabilitación</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-navy-700">Rutinas</h1>
           <p className="text-navy-400 text-sm mt-0.5">{routines.length} en biblioteca</p>
         </div>
-        <button onClick={() => setShowNew(true)} className="btn-primary"><Plus size={16} /> Nueva rutina</button>
+        <button onClick={() => setShowNew(true)} className="btn-primary">
+          <Plus size={16} /><span className="hidden sm:inline"> Nueva rutina</span>
+        </button>
       </div>
 
       <div className="space-y-6">
         {[...CATEGORIES.filter(c => byCategory[c].length > 0), ...(uncategorized.length ? ['Sin categoría'] : [])].map(cat => (
           <div key={cat}>
             <h2 className="text-xs font-semibold text-navy-400 uppercase tracking-wider mb-3">{cat}</h2>
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
               {(cat === 'Sin categoría' ? uncategorized : byCategory[cat]).map(r => (
                 <div key={r.id} className="card hover:shadow-md transition-shadow">
                   <div className="flex items-start justify-between gap-2">
@@ -63,11 +65,11 @@ export default function RoutinesPage() {
                       )}
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
-                      <button onClick={() => setEditing(r)} className="p-1.5 text-navy-300 hover:text-navy-600 transition-colors rounded-lg hover:bg-navy-50">
+                      <button onClick={() => setEditing(r)} className="p-2 text-navy-300 hover:text-navy-600 transition-colors rounded-lg hover:bg-navy-50 min-h-[44px] min-w-[44px] flex items-center justify-center">
                         <Pencil size={14} />
                       </button>
                       <button onClick={() => { if (confirm('¿Eliminar esta rutina?')) deleteRoutine.mutate(r.id); }}
-                        className="p-1.5 text-navy-300 hover:text-red-500 transition-colors rounded-lg hover:bg-navy-50">
+                        className="p-2 text-navy-300 hover:text-red-500 transition-colors rounded-lg hover:bg-navy-50 min-h-[44px] min-w-[44px] flex items-center justify-center">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -111,11 +113,8 @@ function RoutineModal({ initial, onClose, onSaved }: { initial?: Routine; onClos
     setLoading(true);
     try {
       const payload = { ...form, duration: form.duration ? Number(form.duration) : undefined };
-      if (initial) {
-        await api.patch(`/routines/${initial.id}`, payload);
-      } else {
-        await api.post('/routines', payload);
-      }
+      if (initial) { await api.patch(`/routines/${initial.id}`, payload); }
+      else { await api.post('/routines', payload); }
       onSaved();
     } finally { setLoading(false); }
   }
@@ -124,8 +123,8 @@ function RoutineModal({ initial, onClose, onSaved }: { initial?: Routine; onClos
     setForm(p => ({ ...p, [k]: e.target.value }));
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={onClose}>
+      <div className="bg-white rounded-t-2xl sm:rounded-2xl p-6 w-full sm:max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
         <h2 className="text-lg font-bold text-navy-700 mb-4">{initial ? 'Editar rutina' : 'Nueva rutina'}</h2>
         <form onSubmit={submit} className="space-y-3">
           <div><label className="label">Nombre *</label><input className="input" value={form.name} onChange={f('name')} required /></div>
