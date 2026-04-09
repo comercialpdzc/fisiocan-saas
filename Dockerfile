@@ -5,6 +5,5 @@ COPY server/package*.json ./
 RUN npm install
 COPY server/ .
 RUN npx prisma generate --schema=prisma/schema.prisma
-RUN npm run build
 EXPOSE 8080
-CMD ["node", "dist/index.js"]
+CMD ["npx", "tsx", "src/index.ts"]
