@@ -22,6 +22,7 @@ router.post('/', async (req, res) => {
           phone: d.telefono || '',
           email: d.email || '',
           howFoundUs: d.comoNosConocio || '',
+          portalEmail: d.email || null,
         },
       });
     }

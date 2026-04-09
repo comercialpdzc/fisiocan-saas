@@ -47,6 +47,36 @@ router.post('/auth/setup', requireAuth, async (req: AuthRequest, res) => {
   res.json({ ok: true, tutorId: tutor.id, portalEmail: tutor.portalEmail });
 });
 
+// ── Google login ───────────────────────────────────────────────────────────
+router.post('/auth/google', async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) { res.status(400).json({ error: 'Token requerido' }); return; }
+
+  // Verify with Google tokeninfo
+  const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+  if (!googleRes.ok) { res.status(401).json({ error: 'Token de Google inválido' }); return; }
+
+  const payload = await googleRes.json() as { aud?: string; email?: string; email_verified?: string };
+
+  if (payload.aud !== process.env.GOOGLE_CLIENT_ID) {
+    res.status(401).json({ error: 'Token no válido para esta aplicación' }); return;
+  }
+  if (!payload.email || payload.email_verified !== 'true') {
+    res.status(401).json({ error: 'Email de Google no verificado' }); return;
+  }
+
+  const tutor = await prisma.tutor.findFirst({
+    where: { OR: [{ portalEmail: payload.email }, { email: payload.email }] },
+  });
+
+  if (!tutor) {
+    res.status(401).json({ error: 'No encontramos una cuenta asociada a ese Gmail. Contacta con tu fisioterapeuta.' }); return;
+  }
+
+  const token = jwt.sign({ tutorId: tutor.id, type: 'portal' }, process.env.JWT_SECRET!, { expiresIn: '30d' });
+  res.json({ token, tutor: { id: tutor.id, name: tutor.name, email: tutor.portalEmail ?? tutor.email } });
+});
+
 // ── Tutor login ────────────────────────────────────────────────────────────
 router.post('/auth/login', async (req, res) => {
   const parse = z.object({ email: z.string().email(), password: z.string() }).safeParse(req.body);
