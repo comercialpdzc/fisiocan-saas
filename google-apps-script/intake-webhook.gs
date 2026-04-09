@@ -85,10 +85,65 @@ function onFormSubmit(e) {
       Logger.log('ERROR al enviar a FISIOCAN: ' + code + ' — ' + response.getContentText());
     } else {
       Logger.log('OK — Paciente creado: ' + response.getContentText());
+      // Enviar email de bienvenida si hay email
+      var email = payload.email;
+      var nombre = payload.nombreTutor;
+      var animal = payload.nombreAnimal;
+      if (email) {
+        enviarEmailBienvenida(email, nombre, animal);
+      }
     }
 
   } catch (err) {
     Logger.log('EXCEPCION en onFormSubmit: ' + err.toString());
+  }
+}
+
+/**
+ * Envía un email de bienvenida al tutor con el enlace al portal.
+ */
+function enviarEmailBienvenida(email, nombreTutor, nombreAnimal) {
+  var asunto = 'Bienvenido/a a FISIOCAN — Accede al portal de ' + nombreAnimal;
+
+  var cuerpo = 'Hola ' + nombreTutor + ',\n\n'
+    + 'Hemos recibido correctamente la ficha de ' + nombreAnimal + '. '
+    + 'Nos pondremos en contacto contigo pronto para confirmar vuestra primera cita.\n\n'
+    + 'Mientras tanto, ya puedes acceder a tu portal de cliente donde podrás ver '
+    + 'las citas, los ejercicios de rehabilitación, los planes de tratamiento '
+    + 'y contactar directamente con tu fisioterapeuta:\n\n'
+    + '👉 https://fisiocan.vercel.app/portal\n\n'
+    + 'Inicia sesión con el mismo Gmail que usaste al rellenar este formulario (' + email + ').\n\n'
+    + 'Un saludo,\n'
+    + 'El equipo de FISIOCAN\n'
+    + '────────────────────\n'
+    + 'Fisioterapia veterinaria\n'
+    + 'https://fisiocan.vercel.app';
+
+  var cuerpoHtml = '<p>Hola <strong>' + nombreTutor + '</strong>,</p>'
+    + '<p>Hemos recibido correctamente la ficha de <strong>' + nombreAnimal + '</strong>. '
+    + 'Nos pondremos en contacto contigo pronto para confirmar vuestra primera cita.</p>'
+    + '<p>Mientras tanto, ya puedes acceder a tu <strong>portal de cliente</strong> donde podrás ver '
+    + 'las citas, los ejercicios de rehabilitación, los planes de tratamiento '
+    + 'y contactar directamente con tu fisioterapeuta:</p>'
+    + '<p style="text-align:center;margin:24px 0;">'
+    + '<a href="https://fisiocan.vercel.app/portal" '
+    + 'style="background:#0f766e;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">'
+    + 'Acceder al portal →'
+    + '</a></p>'
+    + '<p style="color:#64748b;font-size:14px;">Inicia sesión con el Gmail que usaste al rellenar este formulario: <strong>' + email + '</strong></p>'
+    + '<hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">'
+    + '<p style="color:#94a3b8;font-size:12px;">FISIOCAN · Fisioterapia veterinaria</p>';
+
+  try {
+    MailApp.sendEmail({
+      to: email,
+      subject: asunto,
+      body: cuerpo,
+      htmlBody: cuerpoHtml,
+    });
+    Logger.log('Email de bienvenida enviado a ' + email);
+  } catch (err) {
+    Logger.log('ERROR al enviar email: ' + err.toString());
   }
 }
 
