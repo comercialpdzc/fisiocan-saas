@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Users, Plus, Search, MessageSquare, PawPrint } from 'lucide-react';
+import { Users, Plus, Search, MessageSquare, PawPrint, KeyRound } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface Tutor {
@@ -17,6 +17,7 @@ export default function TutorsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [showNew, setShowNew] = useState(false);
+  const [setupPortal, setSetupPortal] = useState<Tutor | null>(null);
 
   const { data: tutors = [] } = useQuery<Tutor[]>({
     queryKey: ['tutors'],
@@ -57,9 +58,14 @@ export default function TutorsPage() {
               <div className="w-10 h-10 rounded-xl bg-navy-100 flex items-center justify-center">
                 <Users size={18} className="text-navy-500" />
               </div>
-              <Link to={`/chat/${t.id}`} className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors rounded-lg hover:bg-navy-50">
-                <MessageSquare size={16} />
-              </Link>
+              <div className="flex gap-1">
+                <button onClick={() => setSetupPortal(t)} className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors rounded-lg hover:bg-navy-50" title="Activar portal cliente">
+                  <KeyRound size={16} />
+                </button>
+                <Link to={`/chat/${t.id}`} className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors rounded-lg hover:bg-navy-50">
+                  <MessageSquare size={16} />
+                </Link>
+              </div>
             </div>
             <h3 className="font-semibold text-navy-700">{t.name}</h3>
             <p className="text-sm text-navy-400 mt-0.5">{t.phone}</p>
@@ -77,6 +83,12 @@ export default function TutorsPage() {
         <NewTutorModal
           onClose={() => setShowNew(false)}
           onCreated={() => { qc.invalidateQueries({ queryKey: ['tutors'] }); setShowNew(false); }}
+        />
+      )}
+      {setupPortal && (
+        <PortalSetupModal
+          tutor={setupPortal}
+          onClose={() => setSetupPortal(null)}
         />
       )}
     </div>
@@ -117,6 +129,61 @@ function NewTutorModal({ onClose, onCreated }: { onClose: () => void; onCreated:
             <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">{loading ? 'Guardando…' : 'Crear tutor'}</button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+function PortalSetupModal({ tutor, onClose }: { tutor: Tutor; onClose: () => void }) {
+  const [form, setForm] = useState({ email: tutor.email ?? '', password: '' });
+  const [done, setDone] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      await api.post('/portal/auth/setup', { tutorId: tutor.id, email: form.email, password: form.password });
+      setDone(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error');
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+        {done ? (
+          <div className="text-center py-4">
+            <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <KeyRound size={22} className="text-teal-600" />
+            </div>
+            <h2 className="font-bold text-navy-700 mb-1">¡Portal activado!</h2>
+            <p className="text-sm text-navy-400 mb-1"><span className="font-medium">{tutor.name}</span> ya puede acceder en:</p>
+            <p className="text-xs bg-navy-50 rounded-lg px-3 py-2 font-mono text-navy-600 mb-3">/portal</p>
+            <p className="text-xs text-navy-400">Email: <span className="font-medium">{form.email}</span></p>
+            <button onClick={onClose} className="btn-primary mt-4 w-full justify-center">Cerrar</button>
+          </div>
+        ) : (
+          <>
+            <h2 className="text-lg font-bold text-navy-700 mb-1">Activar portal para {tutor.name}</h2>
+            <p className="text-xs text-navy-400 mb-4">El tutor podrá ver sus mascotas, rutinas, planes y chatear contigo.</p>
+            <form onSubmit={submit} className="space-y-3">
+              <div><label className="label">Email de acceso *</label>
+                <input className="input" type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
+              </div>
+              <div><label className="label">Contraseña *</label>
+                <input className="input" type="password" placeholder="Mínimo 6 caracteres" value={form.password} onChange={e => setForm(p => ({ ...p, password: e.target.value }))} required minLength={6} />
+              </div>
+              {error && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+              <div className="flex gap-2 pt-2">
+                <button type="button" onClick={onClose} className="btn-ghost flex-1 justify-center">Cancelar</button>
+                <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">{loading ? '...' : 'Activar portal'}</button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

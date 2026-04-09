@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../db';
 
 const router = Router();
-const prisma = new PrismaClient();
+
 
 // Public endpoint — called from the intake form (no auth required)
 // Accepts same field names as the Google Apps Script

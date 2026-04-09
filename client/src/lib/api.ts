@@ -1,11 +1,13 @@
-const BASE = '/api';
+// En desarrollo: Vite proxy → localhost:3001
+// En producción: VITE_API_URL apunta al servidor Railway
+const BASE = (import.meta.env.VITE_API_URL ?? '') + '/api';
 
-function getToken() {
-  return localStorage.getItem('token');
+function getToken(portal = false) {
+  return localStorage.getItem(portal ? 'portal_token' : 'token');
 }
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = getToken();
+async function request<T>(path: string, options?: RequestInit, portal = false): Promise<T> {
+  const token = getToken(portal);
   const res = await fetch(`${BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -22,8 +24,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body: unknown) => request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
-  patch: <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+  get:    <T>(path: string)              => request<T>(path),
+  post:   <T>(path: string, body: unknown) => request<T>(path, { method: 'POST',  body: JSON.stringify(body) }),
+  patch:  <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete: <T>(path: string)              => request<T>(path, { method: 'DELETE' }),
+};
+
+// Portal API (uses different token)
+export const portalApi = {
+  get:    <T>(path: string)              => request<T>(path, undefined, true),
+  post:   <T>(path: string, body: unknown) => request<T>(path, { method: 'POST',  body: JSON.stringify(body) }, true),
+  patch:  <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }, true),
 };

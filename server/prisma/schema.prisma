@@ -1,8 +1,6 @@
-// This is your Prisma schema file.
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -21,6 +19,7 @@ model User {
 
   messages     Message[]
   appointments Appointment[] @relation("FisioAppointments")
+  plans        Plan[]
 }
 
 model Tutor {
@@ -29,6 +28,9 @@ model Tutor {
   phone        String
   email        String?
   howFoundUs   String?
+  // Portal de cliente
+  portalEmail    String?  @unique
+  portalPassword String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -55,65 +57,52 @@ model Patient {
   intakeData       IntakeData?
   appointments     Appointment[]
   rehabRoutines    PatientRoutine[]
+  plans            Plan[]
 }
 
 model IntakeData {
   id                  Int      @id @default(autoincrement())
   patientId           Int      @unique
   patient             Patient  @relation(fields: [patientId], references: [id])
-
-  // Motivo consulta
   motivoConsulta      String?
   desdeCuando         String?
   inicioSintomas      String?
   momentosPeorMejor   String?
-
-  // Síntomas
   sintomasObservados  String?
   dolorAlComer        String?
-
-  // Antecedentes
   lesionesPrevias     String?
   cirugiaPrevia       String?
   cirugiaDetalle      String?
   diagnosticoPrevio   String?
-
-  // Tratamientos
   medicacion          String?
   medicacionDetalle   String?
   fisioterapiaPrevia  String?
   fisioterapiaDetalle String?
   mejoriaCon          String?
   veterinarioRef      String?
-
-  // Estilo de vida
   nivelActividad      String?
   tipoPaseos          String?
   dondeDuerme         String?
   escaleras           String?
-
-  // Observaciones
   observaciones       String?
   objetivos           String?
-
   createdAt           DateTime @default(now())
 }
 
 model Appointment {
-  id        Int               @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   date      DateTime
-  duration  Int               @default(60)
+  duration  Int      @default(60)
   notes     String?
-  status    String            @default("SCHEDULED")
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
+  status    String   @default("SCHEDULED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   patientId Int
   patient   Patient @relation(fields: [patientId], references: [id])
   fisioId   Int
   fisio     User    @relation("FisioAppointments", fields: [fisioId], references: [id])
 }
-
 
 model RehabRoutine {
   id          Int      @id @default(autoincrement())
@@ -129,15 +118,30 @@ model RehabRoutine {
 }
 
 model PatientRoutine {
-  id         Int      @id @default(autoincrement())
+  id         Int          @id @default(autoincrement())
   patientId  Int
-  patient    Patient  @relation(fields: [patientId], references: [id])
+  patient    Patient      @relation(fields: [patientId], references: [id])
   routineId  Int
   routine    RehabRoutine @relation(fields: [routineId], references: [id])
-  assignedAt DateTime @default(now())
+  assignedAt DateTime     @default(now())
   notes      String?
 
   @@unique([patientId, routineId])
+}
+
+// Planes enviados por María al paciente (ejercicios, nutrición, general)
+model Plan {
+  id          Int      @id @default(autoincrement())
+  title       String
+  type        String   @default("GENERAL")  // EXERCISE | NUTRITION | GENERAL
+  content     String   // texto enriquecido / markdown
+  patientId   Int
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  createdById Int
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  pinned      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Message {

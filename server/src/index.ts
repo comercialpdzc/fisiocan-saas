@@ -10,22 +10,27 @@ import appointmentsRouter from './routes/appointments';
 import routinesRouter from './routes/routines';
 import messagesRouter from './routes/messages';
 import intakeRouter from './routes/intake';
+import plansRouter from './routes/plans';
+import portalRouter from './routes/portal';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
+const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173').split(',');
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/auth', authRouter);
-app.use('/api/dashboard', dashboardRouter);
-app.use('/api/patients', patientsRouter);
-app.use('/api/tutors', tutorsRouter);
+app.use('/api/auth',         authRouter);
+app.use('/api/dashboard',    dashboardRouter);
+app.use('/api/patients',     patientsRouter);
+app.use('/api/tutors',       tutorsRouter);
 app.use('/api/appointments', appointmentsRouter);
-app.use('/api/routines', routinesRouter);
-app.use('/api/messages', messagesRouter);
-app.use('/api/intake', intakeRouter);
+app.use('/api/routines',     routinesRouter);
+app.use('/api/messages',     messagesRouter);
+app.use('/api/intake',       intakeRouter);
+app.use('/api/plans',        plansRouter);
+app.use('/api/portal',       portalRouter);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'FISIOCAN SaaS' }));
 
