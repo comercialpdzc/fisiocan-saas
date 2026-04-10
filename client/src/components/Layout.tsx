@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, PawPrint, Users, CalendarDays, Dumbbell, MessageSquare, LogOut, FileText, Menu, X } from 'lucide-react';
+import { LayoutDashboard, PawPrint, Users, CalendarDays, Dumbbell, MessageSquare, LogOut, FileText, Menu, X, Hospital } from 'lucide-react';
 import { clearAuth, getStoredUser } from '../lib/auth';
 const logoUrl = '/logo.png';
 
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/plans',        label: 'Planes',     icon: FileText },
   { to: '/routines',     label: 'Ejercicios', icon: Dumbbell },
   { to: '/chat',         label: 'Chat',       icon: MessageSquare },
+  { to: '/clinic',       label: 'Clínica',    icon: Hospital },
 ];
 
 export default function Layout() {

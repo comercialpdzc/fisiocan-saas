@@ -42,3 +42,11 @@
   .badge-yellow { @apply badge bg-yellow-100 text-yellow-700; }
   .badge-gray   { @apply badge bg-gray-100 text-gray-600; }
 }
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-slide-in {
+  animation: slide-in 0.22s ease-out forwards;
+}

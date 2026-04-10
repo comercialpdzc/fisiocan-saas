@@ -13,6 +13,7 @@ import AppointmentsPage from './pages/AppointmentsPage';
 import RoutinesPage from './pages/RoutinesPage';
 import ChatPage from './pages/ChatPage';
 import PlansPage from './pages/PlansPage';
+import VirtualClinicPage from './pages/VirtualClinicPage';
 
 // Portal del cliente
 import PortalLoginPage from './pages/portal/PortalLoginPage';
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="plans"        element={<PlansPage />} />
           <Route path="chat"         element={<ChatPage />} />
           <Route path="chat/:tutorId" element={<ChatPage />} />
+          <Route path="clinic"       element={<VirtualClinicPage />} />
         </Route>
 
         {/* ── Portal cliente ── */}
