@@ -401,10 +401,14 @@ class ClinicScene extends Phaser.Scene {
 
 // ── React component ───────────────────────────────────────────────────
 export default function VirtualClinicPage() {
-  const navigate  = useNavigate();
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const gameRef   = useRef<Phaser.Game | null>(null);
+  const navigate   = useNavigate();
+  const canvasRef  = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const gameRef    = useRef<Phaser.Game | null>(null);
   const [selected, setSelected] = useState<Patient | null>(null);
+  const [transform, setTransform] = useState({ scale: 1, x: 0, y: 0 });
+  const gestureRef  = useRef({ scale: 1, x: 0, y: 0, lastDist: 0, lastMidX: 0, lastMidY: 0 });
+  const lastTapRef  = useRef(0);
 
   const { data: patients = [] } = useQuery<Patient[]>({
     queryKey: ['patients'],
@@ -438,6 +442,57 @@ export default function VirtualClinicPage() {
     trySet();
   }, [patients, handleClick]);
 
+  // ── Pinch-to-zoom + two-finger pan + double-tap reset ────────────────
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const g = gestureRef.current;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        g.lastDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY,
+        );
+        g.lastMidX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        g.lastMidY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      } else if (e.touches.length === 1) {
+        const now = Date.now();
+        if (now - lastTapRef.current < 300) {
+          g.scale = 1; g.x = 0; g.y = 0;
+          setTransform({ scale: 1, x: 0, y: 0 });
+        }
+        lastTapRef.current = now;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return;
+      e.preventDefault();
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY,
+      );
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      g.scale = Math.min(3, Math.max(0.5, g.scale * (dist / g.lastDist)));
+      g.x += midX - g.lastMidX;
+      g.y += midY - g.lastMidY;
+      g.lastDist = dist;
+      g.lastMidX = midX;
+      g.lastMidY = midY;
+      setTransform({ scale: g.scale, x: g.x, y: g.y });
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove',  onTouchMove);
+    };
+  }, []);
+
   // Determines which slide animation to use based on current viewport
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
@@ -451,14 +506,29 @@ export default function VirtualClinicPage() {
             {patients.length} paciente{patients.length !== 1 ? 's' : ''} · haz clic en un perro para asignarlo a camilla
           </p>
         </div>
-        <div className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-0">
+        <div
+          ref={wrapperRef}
+          className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-0 overflow-hidden"
+        >
           {/* Container: 100% width up to 640px, height derived from aspect ratio */}
           <div
             ref={canvasRef}
             className="rounded-2xl overflow-hidden shadow-xl border border-navy-100 w-full"
-            style={{ maxWidth: W, aspectRatio: `${W} / ${H}` }}
+            style={{
+              maxWidth: W,
+              aspectRatio: `${W} / ${H}`,
+              transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+              transformOrigin: 'center center',
+              touchAction: 'none',
+            }}
           />
         </div>
+        {/* Zoom hint — mobile only, shown when zoomed */}
+        {transform.scale !== 1 && (
+          <p className="md:hidden text-center text-xs text-navy-300 pb-1">
+            Doble toque para resetear zoom
+          </p>
+        )}
       </div>
 
       {/* ── Mobile backdrop ── */}
@@ -472,8 +542,8 @@ export default function VirtualClinicPage() {
       {/* ── Info panel: bottom sheet on mobile, side panel on md+ ── */}
       {selected && (
         <aside className={[
-          // Mobile: fixed bottom sheet
-          'fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-2xl',
+          // Mobile: fixed bottom sheet — half height so clinic stays visible
+          'fixed bottom-0 left-0 right-0 z-50 max-h-[48vh] rounded-t-2xl',
           // Desktop: static side panel
           'md:static md:bottom-auto md:left-auto md:right-auto md:z-auto',
           'md:w-80 md:max-h-none md:rounded-none',
