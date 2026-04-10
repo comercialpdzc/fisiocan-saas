@@ -15,71 +15,11 @@ interface Patient {
 
 let _onClick: ((p: Patient) => void) | null = null;
 
-// ── Pixel-art dog constants ───────────────────────────────────────────
-const S  = 3;   // game-pixels per art-pixel
-const DW = 14;  // dog art width  (columns)
-const DH = 11;  // dog art height (rows)
+// ── Dog sprite display size ───────────────────────────────────────────
+const DOG_W = 48;
+const DOG_H = 48;
 
-// Pixel maps — each char is a color key, '.' = transparent
-const WALK_ART = [
-  '..DDD.........', // ears + head top
-  '.DDDDD........', // head
-  'DDDDDDDDDDD...',  // head full width
-  'DEECDDDDDDDD..',  // E=eye, C=cream
-  '.ECCNDDDDD....',  // muzzle+nose
-  '.BBBBBBBBBBB..',  // body
-  '.BBBBBBBBBBB..',  // body
-  '.BBBBBBBBBBB..',  // body
-  '..TTTTTTTT..T.',  // chest lighter + tail
-  '..D.D...D.D...',  // legs
-  '..D.D...D.D...',  // lower legs / paws
-];
-
-const SIT_ART = [
-  '..DDD.........', // same head
-  '.DDDDD........',
-  'DDDDDDDDDDD...',
-  'DEECDDDDDDDD..',
-  '.ECCNDDDDD....',
-  '.BBBBBBB......',  // body (shorter when sitting)
-  '.BBBBBBB......',
-  '..DDDDDDD.....',  // haunches visible
-  '..DDD..DDD....',  // bent legs
-  '..DDD.........', // front paws only
-  '..............',
-];
-
-const DOG_PAL: Record<string, number | null> = {
-  'D': 0x7a3810,  // dark brown  (head, legs, ears)
-  'B': 0xd08030,  // orange-brown (body)
-  'C': 0xf0d880,  // cream (muzzle)
-  'N': 0x180808,  // nose
-  'E': 0x180808,  // eye (same as nose)
-  'T': 0xe0c070,  // chest / lighter fur
-  '.': null,
-};
-
-// Draws the dog pixel art into a Phaser Graphics object.
-// face = 1 (right) or -1 (left)
-function paintDog(
-  g: Phaser.GameObjects.Graphics,
-  art: string[],
-  face: 1 | -1 = 1,
-) {
-  g.clear();
-  art.forEach((row, gy) => {
-    for (let gx = 0; gx < row.length; gx++) {
-      const color = DOG_PAL[row[gx]];
-      if (!color) continue;
-      // when facing left: mirror horizontally
-      const rx = face === 1 ? gx : (DW - 1 - gx);
-      g.fillStyle(color);
-      g.fillRect(rx * S, gy * S, S, S);
-    }
-  });
-}
-
-// ── Layout ────────────────────────────────────────────────────────────
+// ── Layout constants ──────────────────────────────────────────────────
 const W = 640, H = 520;
 const WALL_W = 22, TOP_W = 30, HDR_H = 44;
 const MID_Y = 318, MID_H = 28;
@@ -90,7 +30,7 @@ const STATIONS = [
   { x: 130, y: 272 }, { x: 308, y: 272 }, { x: 486, y: 272 },
 ];
 
-const WB = {  // waiting bounds
+const WB = {  // waiting area bounds
   x1: WALL_W + 10, y1: MID_Y + MID_H + 18,
   x2: 400,         y2: H - TOP_W - 20,
 };
@@ -101,12 +41,12 @@ type DogState = 'patrol' | 'heading' | 'on_table';
 interface DogEntry {
   patient: Patient;
   outer: Phaser.GameObjects.Container;
-  gfx:   Phaser.GameObjects.Graphics;  // the dog graphics
-  face:  1 | -1;
+  dogImg: Phaser.GameObjects.Image;
+  face: 1 | -1;
   state: DogState;
   tableSlot: number;
   moveTween?: Phaser.Tweens.Tween;
-  bobTween?:  Phaser.Tweens.Tween;
+  bobTween?: Phaser.Tweens.Tween;
 }
 
 class ClinicScene extends Phaser.Scene {
@@ -114,6 +54,10 @@ class ClinicScene extends Phaser.Scene {
   private tableOccupied = new Array(6).fill(false);
 
   constructor() { super({ key: 'ClinicScene' }); }
+
+  preload() {
+    this.load.image('dog', '/dog.png');
+  }
 
   create() {
     this.buildTextures();
@@ -157,7 +101,7 @@ class ClinicScene extends Phaser.Scene {
     this.drawWall(W - WALL_W, HDR_H, WALL_W, H - HDR_H);
     this.drawWall(0, HDR_H, W, TOP_W);
     this.drawWall(0, H - TOP_W, W, TOP_W);
-    // Middle wall with door
+    // Middle wall with door gap
     this.drawWall(0, MID_Y, DOOR_X, MID_H);
     this.drawWall(DOOR_X + DOOR_W, MID_Y, W - DOOR_X - DOOR_W, MID_H);
     // Doorway
@@ -191,7 +135,7 @@ class ClinicScene extends Phaser.Scene {
     this.drawPlant(WALL_W + 14,     H - TOP_W - 20);
     [80, 185, 340, 445, 560].forEach(px => this.drawPoster(px, HDR_H + TOP_W / 2));
 
-    // Floor shadows under walls
+    // Floor shadows
     const sh = this.add.graphics();
     sh.fillStyle(0x000000, 0.04);
     sh.fillRect(WALL_W, treatY, W - WALL_W * 2, 7);
@@ -288,25 +232,25 @@ class ClinicScene extends Phaser.Scene {
   }
 
   private spawnDog(patient: Patient, startX: number, startY: number) {
-    // Outer container: position + hit area
     const outer = this.add.container(startX, startY);
 
-    // The pixel art graphics
-    const gfx = this.add.graphics();
-    paintDog(gfx, WALK_ART, 1);
-    outer.add(gfx);
-
-    // Drop shadow
+    // Drop shadow (added first so it sits behind the dog)
     const shad = this.add.graphics();
     shad.fillStyle(0x000000, 0.18);
-    shad.fillEllipse(DW * S / 2, DH * S + 2, DW * S * 0.8, 8);
-    outer.addAt(shad, 0); // behind dog
+    shad.fillEllipse(DOG_W / 2, DOG_H + 2, DOG_W * 0.8, 8);
+    outer.addAt(shad, 0);
+
+    // Dog image sprite
+    const dogImg = this.add.image(0, 0, 'dog')
+      .setOrigin(0, 0)
+      .setDisplaySize(DOG_W, DOG_H);
+    outer.add(dogImg);
 
     // Name badge
     const label = patient.name.length > 9 ? patient.name.substring(0, 8) + '…' : patient.name;
     const bw = Math.max(46, label.length * 7 + 12);
-    const badgeX = DW * S / 2;
-    const badgeY = DH * S + 4;
+    const badgeX = DOG_W / 2;
+    const badgeY = DOG_H + 4;
     const badge = this.add.graphics();
     badge.fillStyle(0x0f1e3d, 0.88);
     badge.fillRoundedRect(badgeX - bw / 2, badgeY, bw, 16, 5);
@@ -315,23 +259,22 @@ class ClinicScene extends Phaser.Scene {
       fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#e2e8f0',
     }).setOrigin(0.5));
 
-    // Hover highlight
+    // Hover highlight ring
     const highlight = this.add.graphics();
     highlight.lineStyle(2, 0xffd700, 0.85);
-    highlight.strokeRect(-2, -2, DW * S + 4, DH * S + 4);
+    highlight.strokeRect(-2, -2, DOG_W + 4, DOG_H + 4);
     highlight.setVisible(false);
     outer.add(highlight);
 
-    // Interactive
-    outer.setSize(DW * S, DH * S).setInteractive({ useHandCursor: true });
+    // Interactive hit area
+    outer.setSize(DOG_W, DOG_H).setInteractive({ useHandCursor: true });
     outer.on('pointerover', () => { highlight.setVisible(true); });
     outer.on('pointerout',  () => { highlight.setVisible(false); });
     outer.on('pointerdown', () => this.handleDogClick(patient.id));
 
-    const entry: DogEntry = { patient, outer, gfx, face: 1, state: 'patrol', tableSlot: -1 };
+    const entry: DogEntry = { patient, outer, dogImg, face: 1, state: 'patrol', tableSlot: -1 };
     this.dogs.set(patient.id, entry);
 
-    // Start patrolling
     this.patrol(entry);
   }
 
@@ -339,12 +282,12 @@ class ClinicScene extends Phaser.Scene {
     const dog = this.dogs.get(id);
     if (!dog) return;
 
-    // Show info panel
+    // Always fire the info panel
     _onClick?.(dog.patient);
 
-    if (dog.state !== 'patrol') return; // already going to / on table
+    if (dog.state !== 'patrol') return; // already heading to / on a table
 
-    // Find nearest free table
+    // Find nearest free table slot
     let bestSlot = -1, bestDist = Infinity;
     STATIONS.forEach((s, i) => {
       if (this.tableOccupied[i]) return;
@@ -355,17 +298,16 @@ class ClinicScene extends Phaser.Scene {
     if (bestSlot === -1) return; // all tables full
 
     this.tableOccupied[bestSlot] = true;
-    dog.state    = 'heading';
+    dog.state     = 'heading';
     dog.tableSlot = bestSlot;
-
-    // Stop patrol
     dog.moveTween?.stop();
     dog.bobTween?.stop();
 
     this.walkTo(dog, STATIONS[bestSlot].x, STATIONS[bestSlot].y, () => {
       dog.state = 'on_table';
       dog.bobTween?.stop();
-      paintDog(dog.gfx, SIT_ART, dog.face);
+      // Sitting pose: tilt the dog slightly on the table
+      dog.dogImg.setAngle(-18).setDisplaySize(DOG_W * 0.9, DOG_H * 0.9);
     });
   }
 
@@ -375,15 +317,15 @@ class ClinicScene extends Phaser.Scene {
     tx: number, ty: number,
     onArrive?: () => void,
   ) {
-    const { outer, gfx } = dog;
+    const { outer, dogImg } = dog;
     const dist = Phaser.Math.Distance.Between(outer.x, outer.y, tx, ty);
     const dur  = Math.max(600, (dist / 60) * 1000);
 
-    // Face direction of travel
+    // Flip sprite to face direction of travel
     const newFace: 1 | -1 = tx >= outer.x ? 1 : -1;
     if (newFace !== dog.face) {
       dog.face = newFace;
-      paintDog(gfx, dog.state === 'on_table' ? SIT_ART : WALK_ART, dog.face);
+      dogImg.setFlipX(newFace === -1);
     }
 
     // Walk bob
@@ -463,33 +405,60 @@ export default function VirtualClinicPage() {
     trySet();
   }, [patients, handleClick]);
 
+  // Determines which slide animation to use based on current viewport
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="flex-1 flex flex-col min-h-0">
-        <div className="px-4 pt-4 pb-1 md:px-6 md:pt-6">
+    <div className="flex flex-col md:flex-row h-full overflow-hidden">
+      {/* ── Canvas column ── */}
+      <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        <div className="px-4 pt-4 pb-1 md:px-6 md:pt-6 flex-shrink-0">
           <h1 className="text-xl font-bold text-navy-700">Consulta Virtual</h1>
           <p className="text-navy-400 text-sm">
             {patients.length} paciente{patients.length !== 1 ? 's' : ''} · haz clic en un perro para asignarlo a camilla
           </p>
         </div>
         <div className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-0">
+          {/* Container: 100% width up to 640px, height derived from aspect ratio */}
           <div
             ref={canvasRef}
-            className="rounded-2xl overflow-hidden shadow-xl border border-navy-100"
-            style={{ width: W, height: H, maxWidth: '100%' }}
+            className="rounded-2xl overflow-hidden shadow-xl border border-navy-100 w-full"
+            style={{ maxWidth: W, aspectRatio: `${W} / ${H}` }}
           />
         </div>
       </div>
 
+      {/* ── Mobile backdrop ── */}
       {selected && (
-        <aside className="w-80 bg-white border-l border-navy-100 flex flex-col shadow-xl animate-slide-in overflow-y-auto">
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setSelected(null)}
+        />
+      )}
+
+      {/* ── Info panel: bottom sheet on mobile, side panel on md+ ── */}
+      {selected && (
+        <aside className={[
+          // Mobile: fixed bottom sheet
+          'fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-2xl',
+          // Desktop: static side panel
+          'md:static md:bottom-auto md:left-auto md:right-auto md:z-auto',
+          'md:w-80 md:max-h-none md:rounded-none',
+          // Shared
+          'bg-white border-t border-navy-100 md:border-t-0 md:border-l',
+          'flex flex-col shadow-xl overflow-y-auto',
+          isMobile ? 'animate-slide-up' : 'animate-slide-in',
+        ].join(' ')}>
           <div className="flex items-center justify-between p-4 border-b border-navy-50">
             <h2 className="font-bold text-navy-700">Ficha del paciente</h2>
-            <button onClick={() => setSelected(null)}
-              className="p-1 text-navy-300 hover:text-navy-700 rounded-lg hover:bg-navy-50 transition-colors">
+            <button
+              onClick={() => setSelected(null)}
+              className="p-1 text-navy-300 hover:text-navy-700 rounded-lg hover:bg-navy-50 transition-colors"
+            >
               <X size={18} />
             </button>
           </div>
+
           <div className="p-4 space-y-4 flex-1">
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
@@ -505,6 +474,7 @@ export default function VirtualClinicPage() {
                 </span>
               </div>
             </div>
+
             <div className="card !p-3 !rounded-xl space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-semibold text-navy-400 uppercase tracking-wide">
                 <Users size={12} /> Propietario
@@ -513,6 +483,7 @@ export default function VirtualClinicPage() {
               <p className="text-sm text-navy-400">{selected.tutor.phone}</p>
               {selected.tutor.email && <p className="text-xs text-navy-300">{selected.tutor.email}</p>}
             </div>
+
             {selected._count && (
               <div className="card !p-3 !rounded-xl">
                 <div className="flex items-center gap-2 text-sm text-navy-500">
@@ -522,11 +493,18 @@ export default function VirtualClinicPage() {
               </div>
             )}
           </div>
+
           <div className="p-4 border-t border-navy-50 space-y-2">
-            <button onClick={() => navigate(`/chat/${selected.tutor.id}`)} className="btn-secondary w-full justify-center">
+            <button
+              onClick={() => navigate(`/chat/${selected.tutor.id}`)}
+              className="btn-secondary w-full justify-center"
+            >
               <MessageSquare size={16} /> Chatear con {selected.tutor.name.split(' ')[0]}
             </button>
-            <button onClick={() => navigate(`/patients/${selected.id}`)} className="btn-ghost w-full justify-center">
+            <button
+              onClick={() => navigate(`/patients/${selected.id}`)}
+              className="btn-ghost w-full justify-center"
+            >
               <Activity size={16} /> Ver historial completo
             </button>
           </div>

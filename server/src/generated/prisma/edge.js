@@ -84,6 +84,9 @@ Prisma.NullTypes = {
  * Enums
  */
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -209,6 +212,11 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
@@ -255,8 +263,7 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../../.env",
-    "schemaEnvPath": "../../../.env"
+    "rootEnvPath": null
   },
   "relativePath": "../../../prisma",
   "clientVersion": "5.22.0",
@@ -264,7 +271,7 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "sqlite",
+  "activeProvider": "postgresql",
   "postinstall": false,
   "inlineDatasources": {
     "db": {
@@ -274,8 +281,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        Int      @id @default(autoincrement())\n  email     String   @unique\n  password  String\n  name      String\n  role      String   @default(\"FISIO\")\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  messages     Message[]\n  appointments Appointment[] @relation(\"FisioAppointments\")\n  plans        Plan[]\n}\n\nmodel Tutor {\n  id             Int      @id @default(autoincrement())\n  name           String\n  phone          String\n  email          String?\n  howFoundUs     String?\n  // Portal de cliente\n  portalEmail    String?  @unique\n  portalPassword String?\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  patients Patient[]\n  messages Message[]\n}\n\nmodel Patient {\n  id        Int      @id @default(autoincrement())\n  name      String\n  species   String\n  breed     String?\n  birthDate String?\n  weight    String?\n  sex       String?\n  neutered  String?\n  active    Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  tutorId Int\n  tutor   Tutor @relation(fields: [tutorId], references: [id])\n\n  intakeData    IntakeData?\n  appointments  Appointment[]\n  rehabRoutines PatientRoutine[]\n  plans         Plan[]\n}\n\nmodel IntakeData {\n  id                  Int      @id @default(autoincrement())\n  patientId           Int      @unique\n  patient             Patient  @relation(fields: [patientId], references: [id])\n  motivoConsulta      String?\n  desdeCuando         String?\n  inicioSintomas      String?\n  momentosPeorMejor   String?\n  sintomasObservados  String?\n  dolorAlComer        String?\n  lesionesPrevias     String?\n  cirugiaPrevia       String?\n  cirugiaDetalle      String?\n  diagnosticoPrevio   String?\n  medicacion          String?\n  medicacionDetalle   String?\n  fisioterapiaPrevia  String?\n  fisioterapiaDetalle String?\n  mejoriaCon          String?\n  veterinarioRef      String?\n  nivelActividad      String?\n  tipoPaseos          String?\n  dondeDuerme         String?\n  escaleras           String?\n  observaciones       String?\n  objetivos           String?\n  createdAt           DateTime @default(now())\n}\n\nmodel Appointment {\n  id        Int      @id @default(autoincrement())\n  date      DateTime\n  duration  Int      @default(60)\n  notes     String?\n  status    String   @default(\"SCHEDULED\")\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  patientId Int\n  patient   Patient @relation(fields: [patientId], references: [id])\n  fisioId   Int\n  fisio     User    @relation(\"FisioAppointments\", fields: [fisioId], references: [id])\n}\n\nmodel RehabRoutine {\n  id          Int      @id @default(autoincrement())\n  name        String\n  description String?\n  videoUrl    String?\n  duration    Int?\n  category    String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  patientRoutines PatientRoutine[]\n}\n\nmodel PatientRoutine {\n  id         Int          @id @default(autoincrement())\n  patientId  Int\n  patient    Patient      @relation(fields: [patientId], references: [id])\n  routineId  Int\n  routine    RehabRoutine @relation(fields: [routineId], references: [id])\n  assignedAt DateTime     @default(now())\n  notes      String?\n\n  @@unique([patientId, routineId])\n}\n\n// Planes enviados por María al paciente (ejercicios, nutrición, general)\nmodel Plan {\n  id          Int      @id @default(autoincrement())\n  title       String\n  type        String   @default(\"GENERAL\") // EXERCISE | NUTRITION | GENERAL\n  content     String // texto enriquecido / markdown\n  patientId   Int\n  patient     Patient  @relation(fields: [patientId], references: [id])\n  createdById Int\n  createdBy   User     @relation(fields: [createdById], references: [id])\n  pinned      Boolean  @default(false)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nmodel Message {\n  id        Int      @id @default(autoincrement())\n  body      String\n  createdAt DateTime @default(now())\n\n  fisioId   Int?\n  fisio     User?   @relation(fields: [fisioId], references: [id])\n  tutorId   Int?\n  tutor     Tutor?  @relation(fields: [tutorId], references: [id])\n  fromTutor Boolean @default(false)\n}\n",
-  "inlineSchemaHash": "389a6ddd5cab347b2992f842a31dbbb5e3811e8215933077c41a0847b9d7db06",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id        Int      @id @default(autoincrement())\n  email     String   @unique\n  password  String\n  name      String\n  role      String   @default(\"FISIO\")\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  messages     Message[]\n  appointments Appointment[] @relation(\"FisioAppointments\")\n  plans        Plan[]\n}\n\nmodel Tutor {\n  id             Int      @id @default(autoincrement())\n  name           String\n  phone          String\n  email          String?\n  howFoundUs     String?\n  // Portal de cliente\n  portalEmail    String?  @unique\n  portalPassword String?\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n\n  patients Patient[]\n  messages Message[]\n}\n\nmodel Patient {\n  id        Int      @id @default(autoincrement())\n  name      String\n  species   String\n  breed     String?\n  birthDate String?\n  weight    String?\n  sex       String?\n  neutered  String?\n  active    Boolean  @default(true)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  tutorId Int\n  tutor   Tutor @relation(fields: [tutorId], references: [id])\n\n  intakeData    IntakeData?\n  appointments  Appointment[]\n  rehabRoutines PatientRoutine[]\n  plans         Plan[]\n}\n\nmodel IntakeData {\n  id                  Int      @id @default(autoincrement())\n  patientId           Int      @unique\n  patient             Patient  @relation(fields: [patientId], references: [id])\n  motivoConsulta      String?\n  desdeCuando         String?\n  inicioSintomas      String?\n  momentosPeorMejor   String?\n  sintomasObservados  String?\n  dolorAlComer        String?\n  lesionesPrevias     String?\n  cirugiaPrevia       String?\n  cirugiaDetalle      String?\n  diagnosticoPrevio   String?\n  medicacion          String?\n  medicacionDetalle   String?\n  fisioterapiaPrevia  String?\n  fisioterapiaDetalle String?\n  mejoriaCon          String?\n  veterinarioRef      String?\n  nivelActividad      String?\n  tipoPaseos          String?\n  dondeDuerme         String?\n  escaleras           String?\n  observaciones       String?\n  objetivos           String?\n  createdAt           DateTime @default(now())\n}\n\nmodel Appointment {\n  id        Int      @id @default(autoincrement())\n  date      DateTime\n  duration  Int      @default(60)\n  notes     String?\n  status    String   @default(\"SCHEDULED\")\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  patientId Int\n  patient   Patient @relation(fields: [patientId], references: [id])\n  fisioId   Int\n  fisio     User    @relation(\"FisioAppointments\", fields: [fisioId], references: [id])\n}\n\nmodel RehabRoutine {\n  id          Int      @id @default(autoincrement())\n  name        String\n  description String?\n  videoUrl    String?\n  duration    Int?\n  category    String?\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  patientRoutines PatientRoutine[]\n}\n\nmodel PatientRoutine {\n  id         Int          @id @default(autoincrement())\n  patientId  Int\n  patient    Patient      @relation(fields: [patientId], references: [id])\n  routineId  Int\n  routine    RehabRoutine @relation(fields: [routineId], references: [id])\n  assignedAt DateTime     @default(now())\n  notes      String?\n\n  @@unique([patientId, routineId])\n}\n\n// Planes enviados por María al paciente (ejercicios, nutrición, general)\nmodel Plan {\n  id          Int      @id @default(autoincrement())\n  title       String\n  type        String   @default(\"GENERAL\") // EXERCISE | NUTRITION | GENERAL\n  content     String // texto enriquecido / markdown\n  patientId   Int\n  patient     Patient  @relation(fields: [patientId], references: [id])\n  createdById Int\n  createdBy   User     @relation(fields: [createdById], references: [id])\n  pinned      Boolean  @default(false)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n}\n\nmodel Message {\n  id        Int      @id @default(autoincrement())\n  body      String\n  createdAt DateTime @default(now())\n\n  fisioId   Int?\n  fisio     User?   @relation(fields: [fisioId], references: [id])\n  tutorId   Int?\n  tutor     Tutor?  @relation(fields: [tutorId], references: [id])\n  fromTutor Boolean @default(false)\n}\n",
+  "inlineSchemaHash": "24b15b4abcb35cbe22d1b1314de4ab1e480c39a6edc1536d0526fdf0ee494121",
   "copyEngine": true
 }
 config.dirname = '/'
