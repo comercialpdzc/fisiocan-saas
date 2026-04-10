@@ -19,6 +19,18 @@ let _onClick: ((p: Patient) => void) | null = null;
 const DOG_W = 48;
 const DOG_H = 48;
 
+// Tint palette — each dog gets a unique colour overlay
+const DOG_TINTS = [
+  0xffffff, // original orange
+  0xaaddff, // cool blue
+  0xffaacc, // pink
+  0xaaffaa, // mint green
+  0xffddaa, // warm yellow
+  0xddaaff, // lavender
+  0xaaffdd, // teal-mint
+  0xffaaaa, // salmon
+];
+
 // ── Layout constants ──────────────────────────────────────────────────
 const W = 640, H = 520;
 const WALL_W = 22, TOP_W = 30, HDR_H = 44;
@@ -227,11 +239,11 @@ class ClinicScene extends Phaser.Scene {
       const col = i % 4, row = Math.floor(i / 4);
       const sx = WB.x1 + 55 + col * 90;
       const sy = WB.y1 + 15 + row * 52;
-      this.spawnDog(p, sx, sy);
+      this.spawnDog(p, sx, sy, i);
     });
   }
 
-  private spawnDog(patient: Patient, startX: number, startY: number) {
+  private spawnDog(patient: Patient, startX: number, startY: number, tintIndex = 0) {
     const outer = this.add.container(startX, startY);
 
     // Drop shadow (added first so it sits behind the dog)
@@ -240,10 +252,12 @@ class ClinicScene extends Phaser.Scene {
     shad.fillEllipse(DOG_W / 2, DOG_H + 2, DOG_W * 0.8, 8);
     outer.addAt(shad, 0);
 
-    // Dog image sprite
+    // Dog image sprite — unique tint per dog
+    const tint = DOG_TINTS[tintIndex % DOG_TINTS.length];
     const dogImg = this.add.image(0, 0, 'dog')
       .setOrigin(0, 0)
-      .setDisplaySize(DOG_W, DOG_H);
+      .setDisplaySize(DOG_W, DOG_H)
+      .setTint(tint);
     outer.add(dogImg);
 
     // Name badge
@@ -285,9 +299,29 @@ class ClinicScene extends Phaser.Scene {
     // Always fire the info panel
     _onClick?.(dog.patient);
 
-    if (dog.state !== 'patrol') return; // already heading to / on a table
+    if (dog.state === 'heading') return; // mid-walk, ignore
 
-    // Find nearest free table slot
+    // ── Second click: send dog back to waiting area ────────────────
+    if (dog.state === 'on_table') {
+      if (dog.tableSlot >= 0) this.tableOccupied[dog.tableSlot] = false;
+      dog.tableSlot = -1;
+      dog.state     = 'patrol';
+      dog.moveTween?.stop();
+      dog.bobTween?.stop();
+      // Reset upright pose
+      dog.dogImg.setAngle(0).setDisplaySize(DOG_W, DOG_H);
+      // Walk to a random spot in the waiting area then resume patrol
+      const tx = Phaser.Math.Between(WB.x1 + 10, WB.x2);
+      const ty = Phaser.Math.Between(WB.y1 + 5,  WB.y2);
+      this.walkTo(dog, tx, ty, () => {
+        if (dog.state === 'patrol') {
+          this.time.delayedCall(Phaser.Math.Between(600, 2800), () => this.patrol(dog));
+        }
+      });
+      return;
+    }
+
+    // ── First click: send dog to an exam table ─────────────────────
     let bestSlot = -1, bestDist = Infinity;
     STATIONS.forEach((s, i) => {
       if (this.tableOccupied[i]) return;
@@ -306,7 +340,6 @@ class ClinicScene extends Phaser.Scene {
     this.walkTo(dog, STATIONS[bestSlot].x, STATIONS[bestSlot].y, () => {
       dog.state = 'on_table';
       dog.bobTween?.stop();
-      // Sitting pose: tilt the dog slightly on the table
       dog.dogImg.setAngle(-18).setDisplaySize(DOG_W * 0.9, DOG_H * 0.9);
     });
   }

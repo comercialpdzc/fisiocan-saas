@@ -5,7 +5,6 @@ import { requireAuth, AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-
 router.use(requireAuth);
 
 router.get('/', async (req: AuthRequest, res) => {
@@ -25,12 +24,13 @@ router.get('/', async (req: AuthRequest, res) => {
   res.json(appointments);
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: AuthRequest, res) => {
   const appt = await prisma.appointment.findUnique({
     where: { id: Number(req.params.id) },
     include: { patient: { include: { tutor: true } }, fisio: { select: { id: true, name: true } } },
   });
   if (!appt) { res.status(404).json({ error: 'Cita no encontrada' }); return; }
+  if (appt.fisioId !== req.userId) { res.status(403).json({ error: 'Sin permiso' }); return; }
   res.json(appt);
 });
 
@@ -53,7 +53,11 @@ router.post('/', async (req: AuthRequest, res) => {
   res.status(201).json(appt);
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', async (req: AuthRequest, res) => {
+  const existing = await prisma.appointment.findUnique({ where: { id: Number(req.params.id) } });
+  if (!existing) { res.status(404).json({ error: 'Cita no encontrada' }); return; }
+  if (existing.fisioId !== req.userId) { res.status(403).json({ error: 'Sin permiso' }); return; }
+
   const parse = apptSchema.partial().safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const data: Record<string, unknown> = { ...parse.data };
@@ -66,7 +70,10 @@ router.patch('/:id', async (req, res) => {
   res.json(appt);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: AuthRequest, res) => {
+  const existing = await prisma.appointment.findUnique({ where: { id: Number(req.params.id) } });
+  if (!existing) { res.status(404).json({ error: 'Cita no encontrada' }); return; }
+  if (existing.fisioId !== req.userId) { res.status(403).json({ error: 'Sin permiso' }); return; }
   await prisma.appointment.delete({ where: { id: Number(req.params.id) } });
   res.status(204).send();
 });

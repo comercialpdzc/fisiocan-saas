@@ -24,12 +24,13 @@ router.get('/', async (req, res) => {
   res.json(plans);
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', async (req: AuthRequest, res) => {
   const plan = await prisma.plan.findUnique({
     where: { id: Number(req.params.id) },
     include: { patient: true, createdBy: { select: { id: true, name: true } } },
   });
   if (!plan) { res.status(404).json({ error: 'Plan no encontrado' }); return; }
+  if (plan.createdById !== req.userId) { res.status(403).json({ error: 'Sin permiso' }); return; }
   res.json(plan);
 });
 
@@ -43,14 +44,21 @@ router.post('/', async (req: AuthRequest, res) => {
   res.status(201).json(plan);
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', async (req: AuthRequest, res) => {
+  const existing = await prisma.plan.findUnique({ where: { id: Number(req.params.id) } });
+  if (!existing) { res.status(404).json({ error: 'Plan no encontrado' }); return; }
+  if (existing.createdById !== req.userId) { res.status(403).json({ error: 'Sin permiso' }); return; }
+
   const parse = planSchema.partial().safeParse(req.body);
   if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
   const plan = await prisma.plan.update({ where: { id: Number(req.params.id) }, data: parse.data });
   res.json(plan);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', async (req: AuthRequest, res) => {
+  const existing = await prisma.plan.findUnique({ where: { id: Number(req.params.id) } });
+  if (!existing) { res.status(404).json({ error: 'Plan no encontrado' }); return; }
+  if (existing.createdById !== req.userId) { res.status(403).json({ error: 'Sin permiso' }); return; }
   await prisma.plan.delete({ where: { id: Number(req.params.id) } });
   res.status(204).send();
 });

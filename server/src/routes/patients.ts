@@ -65,9 +65,11 @@ router.patch('/:id', async (req, res) => {
 
 // PATCH /patients/:id/active
 router.patch('/:id/active', async (req, res) => {
+  const parse = z.object({ active: z.boolean() }).safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: 'active debe ser booleano' }); return; }
   const patient = await prisma.patient.update({
     where: { id: Number(req.params.id) },
-    data: { active: req.body.active },
+    data: { active: parse.data.active },
   });
   res.json(patient);
 });

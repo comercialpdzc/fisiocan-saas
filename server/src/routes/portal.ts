@@ -105,7 +105,13 @@ router.get('/me', requirePortalAuth, async (req: PortalRequest, res) => {
       },
     },
   });
-  res.json(tutor);
+  if (tutor) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { portalPassword: _omit, ...safeTutor } = tutor;
+    res.json(safeTutor);
+  } else {
+    res.json(tutor);
+  }
 });
 
 router.get('/plans', requirePortalAuth, async (req: PortalRequest, res) => {
