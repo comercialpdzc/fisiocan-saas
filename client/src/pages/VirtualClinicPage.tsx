@@ -15,470 +15,412 @@ interface Patient {
 
 let _onClick: ((p: Patient) => void) | null = null;
 
-// ── Layout constants ──────────────────────────────────────────────────
-const W = 640, H = 520;
-const WALL_W = 22;   // side wall thickness
-const TOP_W  = 30;   // top/bottom wall thickness
-const HDR_H  = 44;   // header bar height
-const MID_Y  = 322;  // middle wall top
-const MID_H  = 28;   // middle wall height
-const DOOR_X = 190, DOOR_W = 56; // doorway in middle wall
+// ── Pixel-art dog constants ───────────────────────────────────────────
+const S  = 3;   // game-pixels per art-pixel
+const DW = 14;  // dog art width  (columns)
+const DH = 11;  // dog art height (rows)
 
-const COLORS = [0x26c6da, 0xff7043, 0xab47bc, 0x26a69a, 0xef5350, 0x42a5f5];
+// Pixel maps — each char is a color key, '.' = transparent
+const WALK_ART = [
+  '..DDD.........', // ears + head top
+  '.DDDDD........', // head
+  'DDDDDDDDDDD...',  // head full width
+  'DEECDDDDDDDD..',  // E=eye, C=cream
+  '.ECCNDDDDD....',  // muzzle+nose
+  '.BBBBBBBBBBB..',  // body
+  '.BBBBBBBBBBB..',  // body
+  '.BBBBBBBBBBB..',  // body
+  '..TTTTTTTT..T.',  // chest lighter + tail
+  '..D.D...D.D...',  // legs
+  '..D.D...D.D...',  // lower legs / paws
+];
+
+const SIT_ART = [
+  '..DDD.........', // same head
+  '.DDDDD........',
+  'DDDDDDDDDDD...',
+  'DEECDDDDDDDD..',
+  '.ECCNDDDDD....',
+  '.BBBBBBB......',  // body (shorter when sitting)
+  '.BBBBBBB......',
+  '..DDDDDDD.....',  // haunches visible
+  '..DDD..DDD....',  // bent legs
+  '..DDD.........', // front paws only
+  '..............',
+];
+
+const DOG_PAL: Record<string, number | null> = {
+  'D': 0x7a3810,  // dark brown  (head, legs, ears)
+  'B': 0xd08030,  // orange-brown (body)
+  'C': 0xf0d880,  // cream (muzzle)
+  'N': 0x180808,  // nose
+  'E': 0x180808,  // eye (same as nose)
+  'T': 0xe0c070,  // chest / lighter fur
+  '.': null,
+};
+
+// Draws the dog pixel art into a Phaser Graphics object.
+// face = 1 (right) or -1 (left)
+function paintDog(
+  g: Phaser.GameObjects.Graphics,
+  art: string[],
+  face: 1 | -1 = 1,
+) {
+  g.clear();
+  art.forEach((row, gy) => {
+    for (let gx = 0; gx < row.length; gx++) {
+      const color = DOG_PAL[row[gx]];
+      if (!color) continue;
+      // when facing left: mirror horizontally
+      const rx = face === 1 ? gx : (DW - 1 - gx);
+      g.fillStyle(color);
+      g.fillRect(rx * S, gy * S, S, S);
+    }
+  });
+}
+
+// ── Layout ────────────────────────────────────────────────────────────
+const W = 640, H = 520;
+const WALL_W = 22, TOP_W = 30, HDR_H = 44;
+const MID_Y = 318, MID_H = 28;
+const DOOR_X = 192, DOOR_W = 52;
 
 const STATIONS = [
   { x: 130, y: 162 }, { x: 308, y: 162 }, { x: 486, y: 162 },
   { x: 130, y: 272 }, { x: 308, y: 272 }, { x: 486, y: 272 },
 ];
 
-const WAIT_BOUNDS = {
-  x1: WALL_W + 10, y1: MID_Y + MID_H + 10,
-  x2: 395, y2: H - TOP_W - 10,
+const WB = {  // waiting bounds
+  x1: WALL_W + 10, y1: MID_Y + MID_H + 18,
+  x2: 400,         y2: H - TOP_W - 20,
 };
 
-// ── Phaser scene ──────────────────────────────────────────────────────
+// ── Scene ─────────────────────────────────────────────────────────────
+type DogState = 'patrol' | 'heading' | 'on_table';
+
+interface DogEntry {
+  patient: Patient;
+  outer: Phaser.GameObjects.Container;
+  gfx:   Phaser.GameObjects.Graphics;  // the dog graphics
+  face:  1 | -1;
+  state: DogState;
+  tableSlot: number;
+  moveTween?: Phaser.Tweens.Tween;
+  bobTween?:  Phaser.Tweens.Tween;
+}
+
 class ClinicScene extends Phaser.Scene {
-  private sprites = new Map<number, Phaser.GameObjects.Container>();
+  private dogs = new Map<number, DogEntry>();
+  private tableOccupied = new Array(6).fill(false);
 
   constructor() { super({ key: 'ClinicScene' }); }
 
   create() {
-    this.makeTextures();
+    this.buildTextures();
     this.buildRoom();
   }
 
-  // ── Procedural tile textures ────────────────────────────────────
-  private makeTextures() {
+  // ── Procedural floor textures ─────────────────────────────────
+  private buildTextures() {
     const make = (key: string, fill: number, grout: number) => {
       const g = this.make.graphics({ x: 0, y: 0 } as Phaser.Types.GameObjects.Graphics.Options);
-      g.fillStyle(fill);
-      g.fillRect(0, 0, 32, 32);
-      g.fillStyle(grout);
-      g.fillRect(0, 31, 32, 1);
-      g.fillRect(31, 0, 1, 32);
+      g.fillStyle(fill);   g.fillRect(0, 0, 32, 32);
+      g.fillStyle(grout);  g.fillRect(0, 31, 32, 1); g.fillRect(31, 0, 1, 32);
       g.generateTexture(key, 32, 32);
       g.destroy();
     };
-    make('tile-treat', 0xcdcdc4, 0xb8b8b0);
-    make('tile-wait',  0xd4d0c4, 0xc4c0b4);
+    make('t-treat', 0xcecec6, 0xb8b8b0);
+    make('t-wait',  0xd6d2c4, 0xc4c0b4);
   }
 
-  // ── Room ────────────────────────────────────────────────────────
+  // ── Room layout ───────────────────────────────────────────────
   private buildRoom() {
-    // ── Floors (tiled sprites) ──
-    const treatY = HDR_H + TOP_W;
-    const treatH = MID_Y - treatY;
-    const waitY  = MID_Y + MID_H;
-    const waitH  = H - TOP_W - waitY;
+    const treatY = HDR_H + TOP_W, treatH = MID_Y - treatY;
+    const waitY  = MID_Y + MID_H, waitH  = H - TOP_W - waitY;
 
-    this.add.tileSprite(WALL_W, treatY, W - WALL_W * 2, treatH, 'tile-treat').setOrigin(0, 0);
-    this.add.tileSprite(WALL_W, waitY,  W - WALL_W * 2, waitH,  'tile-wait').setOrigin(0, 0);
+    this.add.tileSprite(WALL_W, treatY, W - WALL_W * 2, treatH, 't-treat').setOrigin(0, 0);
+    this.add.tileSprite(WALL_W, waitY,  W - WALL_W * 2, waitH,  't-wait' ).setOrigin(0, 0);
 
-    // ── Header bar ──
+    // Header
     const hdr = this.add.graphics();
-    hdr.fillStyle(0x0f1e3d);
-    hdr.fillRect(0, 0, W, HDR_H);
-    hdr.fillStyle(0x3ecad8);
-    hdr.fillRect(0, HDR_H - 4, W, 4);
-    hdr.fillStyle(0x3ecad8);
-    hdr.fillRoundedRect(10, 7, 30, 30, 6);
-    hdr.fillStyle(0xffffff);
-    hdr.fillCircle(25, 22, 7);
-    hdr.fillStyle(0x0f1e3d);
-    hdr.fillCircle(25, 22, 4);
-    this.add.text(48, 22, 'FISIOCAN — Consulta Virtual', {
-      fontFamily: 'Arial, sans-serif', fontSize: '14px',
-      color: '#ffffff', fontStyle: 'bold',
+    hdr.fillStyle(0x0f1e3d); hdr.fillRect(0, 0, W, HDR_H);
+    hdr.fillStyle(0x3ecad8); hdr.fillRect(0, HDR_H - 4, W, 4);
+    hdr.fillStyle(0x3ecad8); hdr.fillRoundedRect(10, 8, 28, 28, 6);
+    hdr.fillStyle(0xffffff); hdr.fillCircle(24, 22, 7);
+    hdr.fillStyle(0x0f1e3d); hdr.fillCircle(24, 22, 4);
+    this.add.text(46, 22, 'FISIOCAN — Consulta Virtual', {
+      fontFamily: 'Arial, sans-serif', fontSize: '14px', color: '#fff', fontStyle: 'bold',
     }).setOrigin(0, 0.5);
 
-    // ── Outer walls ──
-    this.wall(0, HDR_H, WALL_W, H - HDR_H);                // left
-    this.wall(W - WALL_W, HDR_H, WALL_W, H - HDR_H);       // right
-    this.wall(0, HDR_H, W, TOP_W);                          // top (treatment)
-    this.wall(0, H - TOP_W, W, TOP_W);                      // bottom
+    // Walls
+    this.drawWall(0, HDR_H, WALL_W, H - HDR_H);
+    this.drawWall(W - WALL_W, HDR_H, WALL_W, H - HDR_H);
+    this.drawWall(0, HDR_H, W, TOP_W);
+    this.drawWall(0, H - TOP_W, W, TOP_W);
+    // Middle wall with door
+    this.drawWall(0, MID_Y, DOOR_X, MID_H);
+    this.drawWall(DOOR_X + DOOR_W, MID_Y, W - DOOR_X - DOOR_W, MID_H);
+    // Doorway
+    const dg = this.add.graphics();
+    dg.fillStyle(0xc8a870); dg.fillRect(DOOR_X, MID_Y, DOOR_W, MID_H);
+    dg.lineStyle(2, 0xa08050); dg.strokeRect(DOOR_X, MID_Y, DOOR_W, MID_H);
 
-    // ── Middle wall ──
-    this.wall(0, MID_Y, DOOR_X, MID_H);                              // left of door
-    this.wall(DOOR_X + DOOR_W, MID_Y, W - DOOR_X - DOOR_W, MID_H);  // right of door
-
-    // ── Doorway ──
-    const door = this.add.graphics();
-    door.fillStyle(0xc8a87a);
-    door.fillRect(DOOR_X, MID_Y, DOOR_W, MID_H);
-    door.lineStyle(2, 0xa8885a);
-    door.strokeRect(DOOR_X, MID_Y, DOOR_W, MID_H);
-
-    // ── Zone labels ──
-    this.add.text(WALL_W + 6, HDR_H + TOP_W + 4, 'ZONA DE TRATAMIENTO', {
+    // Labels
+    this.add.text(WALL_W + 6, treatY + 4, 'ZONA DE TRATAMIENTO', {
       fontFamily: 'Arial, sans-serif', fontSize: '8px', color: '#888',
     });
-    this.add.text(WALL_W + 6, MID_Y + MID_H + 4, 'SALA DE ESPERA', {
+    this.add.text(WALL_W + 6, waitY + 4, 'SALA DE ESPERA', {
       fontFamily: 'Arial, sans-serif', fontSize: '8px', color: '#888',
     });
     this.add.text(DOOR_X + DOOR_W / 2, MID_Y + MID_H / 2, 'ENTRADA', {
       fontFamily: 'Arial, sans-serif', fontSize: '7px', color: '#a07040',
-    }).setOrigin(0.5, 0.5);
+    }).setOrigin(0.5);
 
-    // ── Exam tables ──
-    STATIONS.forEach((s, i) => this.examTable(s.x, s.y, i + 1));
+    // Exam tables
+    STATIONS.forEach((s, i) => this.drawTable(s.x, s.y, i + 1));
 
-    // ── Wall art on top wall ──
-    [80, 180, 340, 440, 560].forEach(px => this.poster(px, HDR_H + TOP_W / 2));
+    // Waiting furniture
+    this.drawBench(WALL_W + 6, waitY + 12, 190);
+    this.drawBench(WALL_W + 6, waitY + 60, 150);
+    this.drawReception(415, waitY + 4);
 
-    // ── Waiting furniture ──
-    this.bench(WALL_W + 6, MID_Y + MID_H + 16, 180);
-    this.bench(WALL_W + 6, MID_Y + MID_H + 60, 140);
+    // Plants & wall art
+    this.drawPlant(W - WALL_W - 14, treatY + 18);
+    this.drawPlant(WALL_W + 14,     treatY + 18);
+    this.drawPlant(W - WALL_W - 14, H - TOP_W - 20);
+    this.drawPlant(WALL_W + 14,     H - TOP_W - 20);
+    [80, 185, 340, 445, 560].forEach(px => this.drawPoster(px, HDR_H + TOP_W / 2));
 
-    // ── Reception desk ──
-    this.reception(410, MID_Y + MID_H + 6);
-
-    // ── Plants ──
-    [
-      { x: W - WALL_W - 14, y: HDR_H + TOP_W + 20 },
-      { x: WALL_W + 14,     y: HDR_H + TOP_W + 20 },
-      { x: W - WALL_W - 14, y: H - TOP_W - 22 },
-      { x: WALL_W + 14,     y: H - TOP_W - 22 },
-    ].forEach(p => this.plant(p.x, p.y));
-
-    // ── Intra-floor shadows ──
+    // Floor shadows under walls
     const sh = this.add.graphics();
-    sh.fillStyle(0x000000, 0.045);
-    sh.fillRect(WALL_W, HDR_H + TOP_W, W - WALL_W * 2, 8);
-    sh.fillRect(WALL_W, MID_Y + MID_H, W - WALL_W * 2, 7);
-    sh.fillRect(WALL_W, treatY, 8, treatH);
-    sh.fillRect(W - WALL_W - 8, treatY, 8, treatH);
+    sh.fillStyle(0x000000, 0.04);
+    sh.fillRect(WALL_W, treatY, W - WALL_W * 2, 7);
+    sh.fillRect(WALL_W, waitY, W - WALL_W * 2, 7);
   }
 
-  // ── Wall drawing (RPG-Maker style) ──────────────────────────────
-  private wall(x: number, y: number, w: number, h: number) {
+  private drawWall(x: number, y: number, w: number, h: number) {
     const g = this.add.graphics();
-    g.fillStyle(0x3a3a3a);
-    g.fillRect(x, y, w, 3);           // top dark cap
-    g.fillStyle(0x787878);
-    g.fillRect(x, y + 3, w, 12);      // wall cap surface
-    g.fillStyle(0x909090);
-    g.fillRect(x, y + 15, w, h - 15); // wall face
-    g.fillStyle(0x000000, 0.18);
-    g.fillRect(x, y + h - 4, w, 4);   // bottom shadow
+    g.fillStyle(0x383838); g.fillRect(x, y, w, 3);
+    g.fillStyle(0x767676); g.fillRect(x, y + 3, w, 12);
+    g.fillStyle(0x8e8e8e); g.fillRect(x, y + 15, w, h - 15);
+    g.fillStyle(0x000000, 0.16); g.fillRect(x, y + h - 4, w, 4);
   }
 
-  // ── Furniture ──────────────────────────────────────────────────
-  private examTable(cx: number, cy: number, n: number) {
+  private drawTable(cx: number, cy: number, n: number) {
     const g = this.add.graphics();
-    // Side depth (RPG top-down 3D)
-    g.fillStyle(0x50a8b8);
-    g.fillRect(cx - 46, cy + 12, 92, 10);
-    g.fillRect(cx - 46, cy + 20, 8, 4);    // leg
-    g.fillRect(cx + 38, cy + 20, 8, 4);    // leg
-    // Table top
-    g.fillStyle(0x98dce8);
-    g.fillRect(cx - 46, cy - 8, 92, 20);
-    g.lineStyle(1.5, 0x2bb8d0);
-    g.strokeRect(cx - 46, cy - 8, 92, 20);
-    // Pillow/mat
-    g.fillStyle(0xeafafd);
-    g.fillRoundedRect(cx - 38, cy - 4, 76, 12, 4);
-    g.lineStyle(1, 0x6acedd, 0.5);
-    g.strokeRoundedRect(cx - 38, cy - 4, 76, 12, 4);
+    g.fillStyle(0x50a8b8); g.fillRect(cx - 46, cy + 12, 92, 10);
+    g.fillStyle(0x96dce8); g.fillRect(cx - 46, cy - 8, 92, 20);
+    g.lineStyle(1.5, 0x28b0c8); g.strokeRect(cx - 46, cy - 8, 92, 20);
+    g.fillStyle(0xe8fafd); g.fillRoundedRect(cx - 38, cy - 4, 76, 12, 4);
+    g.lineStyle(0.8, 0x68c8d8, 0.5); g.strokeRoundedRect(cx - 38, cy - 4, 76, 12, 4);
     this.add.text(cx, cy - 16, `M${n}`, {
-      fontFamily: 'Arial, sans-serif', fontSize: '9px',
-      color: '#0891b2', fontStyle: 'bold',
+      fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#0891b2', fontStyle: 'bold',
     }).setOrigin(0.5);
   }
 
-  private bench(x: number, y: number, w: number) {
+  private drawBench(x: number, y: number, w: number) {
     const g = this.add.graphics();
-    g.fillStyle(0x6a4828);
-    g.fillRect(x, y + 16, w, 8);        // depth/side
-    g.fillStyle(0xb07840);
-    g.fillRect(x, y, w, 16);            // seat top
-    g.fillStyle(0xc09050);
-    g.fillRect(x + 2, y + 2, w - 4, 8); // highlight
-    g.lineStyle(0.5, 0x886030, 0.6);
+    g.fillStyle(0x6a4828); g.fillRect(x, y + 16, w, 8);
+    g.fillStyle(0xb07840); g.fillRect(x, y, w, 16);
+    g.fillStyle(0xc09050); g.fillRect(x + 2, y + 2, w - 4, 8);
+    g.lineStyle(0.5, 0x886030, 0.5);
     for (let i = 16; i < w; i += 16) g.lineBetween(x + i, y, x + i, y + 16);
-    // Legs
-    g.fillStyle(0x000000, 0.3);
+    g.fillStyle(0x000000, 0.25);
     [x + 8, x + w - 14].forEach(lx => g.fillRect(lx, y + 22, 6, 8));
   }
 
-  private reception(x: number, y: number) {
-    const rw = 200, rh = 148;
+  private drawReception(x: number, y: number) {
+    const rw = 195, rh = 145;
     const g = this.add.graphics();
-    // Depth shadow
-    g.fillStyle(0x0a1628);
-    g.fillRect(x + 4, y + 4, rw, rh);
-    // Desk body
-    g.fillStyle(0x1e3a5f);
-    g.fillRect(x, y, rw, rh);
-    // Counter top
-    g.fillStyle(0x2d4a72);
-    g.fillRect(x + 3, y + 3, rw - 6, 66);
-    // Monitor bezel
-    g.fillStyle(0x090f1a);
-    g.fillRect(x + 14, y + 8, 72, 50);
-    // Monitor screen
-    g.fillStyle(0x0ea5e9, 0.3);
-    g.fillRect(x + 16, y + 10, 68, 46);
-    g.lineStyle(1, 0x3ecad8, 0.5);
-    g.strokeRect(x + 16, y + 10, 68, 46);
-    // Keyboard
-    g.fillStyle(0x0a1628);
-    g.fillRoundedRect(x + 92, y + 32, 94, 24, 3);
-    for (let row = 0; row < 3; row++)
-      for (let col = 0; col < 8; col++) {
+    g.fillStyle(0x0a1628); g.fillRect(x + 4, y + 4, rw, rh);
+    g.fillStyle(0x1e3a5f); g.fillRect(x, y, rw, rh);
+    g.fillStyle(0x2d4a72); g.fillRect(x + 3, y + 3, rw - 6, 64);
+    g.fillStyle(0x090f1a); g.fillRect(x + 14, y + 8, 70, 48);
+    g.fillStyle(0x0ea5e9, 0.3); g.fillRect(x + 16, y + 10, 66, 44);
+    g.lineStyle(1, 0x3ecad8, 0.4); g.strokeRect(x + 16, y + 10, 66, 44);
+    g.fillStyle(0x0a1628); g.fillRoundedRect(x + 92, y + 30, 94, 24, 3);
+    for (let r = 0; r < 3; r++)
+      for (let c = 0; c < 8; c++) {
         g.fillStyle(0x1e3050);
-        g.fillRect(x + 96 + col * 10, y + 35 + row * 7, 8, 5);
+        g.fillRect(x + 96 + c * 10, y + 33 + r * 7, 8, 5);
       }
-    this.add.text(x + rw / 2, y + 116, '📋 Recepción', {
+    this.add.text(x + rw / 2, y + 112, '📋 Recepción', {
       fontFamily: 'Arial, sans-serif', fontSize: '10px', color: '#7dd3fc',
     }).setOrigin(0.5);
   }
 
-  private poster(cx: number, cy: number) {
+  private drawPoster(cx: number, cy: number) {
     const g = this.add.graphics();
-    const palette = [0x3ecad8, 0x42a5f5, 0xef5350, 0x66bb6a, 0xffb300, 0xab47bc];
-    const c1 = palette[Math.floor(Phaser.Math.Between(0, palette.length - 1))];
-    const c2 = palette[Math.floor(Phaser.Math.Between(0, palette.length - 1))];
-    g.fillStyle(0xffffff, 0.9);
-    g.fillRect(cx - 18, cy - 13, 36, 26);
-    g.lineStyle(1, 0x888888, 0.5);
-    g.strokeRect(cx - 18, cy - 13, 36, 26);
-    g.fillStyle(c1); g.fillRect(cx - 14, cy - 9, 14, 18);
-    g.fillStyle(c2); g.fillRect(cx + 0,  cy - 9, 14, 18);
+    const pal = [0x3ecad8, 0x42a5f5, 0xef5350, 0x66bb6a, 0xffb300];
+    const c1 = pal[Phaser.Math.Between(0, pal.length - 1)];
+    const c2 = pal[Phaser.Math.Between(0, pal.length - 1)];
+    g.fillStyle(0xffffff, 0.9); g.fillRect(cx - 18, cy - 13, 36, 26);
+    g.lineStyle(1, 0x888888, 0.4); g.strokeRect(cx - 18, cy - 13, 36, 26);
+    g.fillStyle(c1); g.fillRect(cx - 14, cy - 9, 13, 18);
+    g.fillStyle(c2); g.fillRect(cx + 1,  cy - 9, 13, 18);
   }
 
-  private plant(x: number, y: number) {
+  private drawPlant(x: number, y: number) {
     const g = this.add.graphics();
-    g.fillStyle(0x6d3a1a);
-    g.fillRoundedRect(x - 7, y + 10, 14, 13, 3);
-    g.fillStyle(0x256028);
-    g.fillCircle(x, y, 13);
-    g.fillStyle(0x348038);
-    g.fillCircle(x - 5, y - 4, 8); g.fillCircle(x + 5, y - 4, 8);
-    g.fillStyle(0x4caf50);
-    g.fillCircle(x, y - 6, 6);
-    g.fillStyle(0x7dc87e);
-    g.fillCircle(x, y - 9, 4);
+    g.fillStyle(0x6d3a1a); g.fillRoundedRect(x - 7, y + 10, 14, 13, 3);
+    g.fillStyle(0x256028); g.fillCircle(x, y, 13);
+    g.fillStyle(0x388e3c); g.fillCircle(x - 5, y - 4, 8); g.fillCircle(x + 5, y - 4, 8);
+    g.fillStyle(0x4caf50); g.fillCircle(x, y - 6, 6);
+    g.fillStyle(0x81c784); g.fillCircle(x, y - 9, 4);
   }
 
-  // ── Patient sprites ──────────────────────────────────────────────
+  // ── Dogs ──────────────────────────────────────────────────────
   setPatients(patients: Patient[], onClick: (p: Patient) => void) {
     _onClick = onClick;
-    this.sprites.forEach(c => { this.tweens.killTweensOf(c); c.destroy(); });
-    this.sprites.clear();
-
-    const active   = patients.filter(p => p.active);
-    const inactive = patients.filter(p => !p.active);
-
-    active.slice(0, STATIONS.length).forEach((p, i) => {
-      const s = STATIONS[i];
-      this.buildSprite(p, s.x, s.y, COLORS[i % COLORS.length], 'table');
+    this.dogs.forEach(d => {
+      d.moveTween?.stop(); d.bobTween?.stop();
+      d.outer.destroy();
     });
+    this.dogs.clear();
+    this.tableOccupied.fill(false);
 
-    const waiting = [...active.slice(STATIONS.length), ...inactive];
-    waiting.slice(0, 6).forEach((p, i) => {
-      const col = i % 3, row = Math.floor(i / 3);
-      this.buildSprite(p,
-        WALL_W + 55 + col * 100,
-        MID_Y + MID_H + 32 + row * 60,
-        0x7a90a8, 'wait'
-      );
+    patients.forEach((p, i) => {
+      const col = i % 4, row = Math.floor(i / 4);
+      const sx = WB.x1 + 55 + col * 90;
+      const sy = WB.y1 + 15 + row * 52;
+      this.spawnDog(p, sx, sy);
     });
   }
 
-  private buildSprite(patient: Patient, x: number, y: number, color: number, mode: 'table' | 'wait') {
-    const outer = this.add.container(x, y);
-    const inner = this.add.container(0, 0);
-    outer.add(inner);
+  private spawnDog(patient: Patient, startX: number, startY: number) {
+    // Outer container: position + hit area
+    const outer = this.add.container(startX, startY);
 
-    const isDog = !['gato', 'cat', 'felino'].some(k =>
-      (patient.species || '').toLowerCase().includes(k)
-    );
-    const rgb  = Phaser.Display.Color.IntegerToRGB(color);
-    const dark = Phaser.Display.Color.GetColor(
-      Math.max(0, rgb.r - 55), Math.max(0, rgb.g - 55), Math.max(0, rgb.b - 55)
-    );
+    // The pixel art graphics
+    const gfx = this.add.graphics();
+    paintDog(gfx, WALK_ART, 1);
+    outer.add(gfx);
 
-    const g = this.add.graphics();
+    // Drop shadow
+    const shad = this.add.graphics();
+    shad.fillStyle(0x000000, 0.18);
+    shad.fillEllipse(DW * S / 2, DH * S + 2, DW * S * 0.8, 8);
+    outer.addAt(shad, 0); // behind dog
 
-    if (mode === 'table') {
-      /* ── Lying down on table (top-down oval) ── */
-      g.fillStyle(0x000000, 0.14);
-      g.fillEllipse(2, 5, 50, 22);
-      // Body
-      g.fillStyle(color);
-      g.fillEllipse(0, 0, 52, 20);
-      // Head at left end
-      g.fillStyle(dark);
-      if (isDog) {
-        g.fillEllipse(-28, -4, 10, 18); // floppy ear left
-        g.fillEllipse(-28, 4,  10, 18);
-      } else {
-        g.fillTriangle(-30, -3, -24, -3, -28, -15);
-        g.fillTriangle(-30,  3, -24,  3, -28,  15);
-      }
-      g.fillStyle(color);
-      g.fillCircle(-22, 0, 14);
-      g.fillStyle(0x1a2e5a);
-      g.fillCircle(-25, -2, 2); g.fillCircle(-19, -2, 2);
-      g.fillStyle(0xffffff);
-      g.fillCircle(-24, -3, 1); g.fillCircle(-18, -3, 1);
-      g.fillStyle(0x1a2e5a);
-      if (isDog) g.fillRoundedRect(-25, 4, 6, 4, 2);
-      else       g.fillTriangle(-22, 7, -25, 3, -19, 3);
-      // Tail at right end
-      g.fillStyle(dark);
-      g.fillEllipse(28, 0, 10, 16);
-      // Body highlight
-      g.fillStyle(0xffffff, 0.12);
-      g.fillEllipse(-5, -5, 22, 8);
-
-      inner.add(g);
-
-      // Pulse ring
-      const pulse = this.add.graphics();
-      pulse.lineStyle(2, color, 0.45);
-      pulse.strokeEllipse(0, 0, 60, 28);
-      inner.add(pulse);
-      this.tweens.add({
-        targets: pulse, alpha: 0, scaleX: 1.55, scaleY: 1.55,
-        duration: 1900, repeat: -1, ease: 'Sine.easeOut',
-      });
-
-      // Status dot
-      const dot = this.add.graphics();
-      dot.fillStyle(0x22c55e); dot.fillCircle(28, -12, 5);
-      dot.lineStyle(1.5, 0xffffff); dot.strokeCircle(28, -12, 5);
-      inner.add(dot);
-
-      // Breathing tween
-      this.tweens.add({
-        targets: inner, scaleX: 1.05, scaleY: 0.96,
-        duration: 1800 + Math.random() * 500,
-        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-        delay: Math.random() * 900,
-      });
-
-    } else {
-      /* ── Standing / walking (RPG top-down character) ── */
-      // Shadow
-      g.fillStyle(0x000000, 0.15);
-      g.fillEllipse(1, 26, 28, 10);
-
-      // Body
-      g.fillStyle(color);
-      g.fillRoundedRect(-11, 4, 22, 16, 4);
-      g.fillStyle(dark);
-      g.fillRoundedRect(-11, 16, 22, 4, { bl: 4, br: 4, tl: 0, tr: 0 });
-
-      // Legs
-      g.fillStyle(dark);
-      g.fillRoundedRect(-10, 19, 8, 9, 2);
-      g.fillRoundedRect(2,   19, 8, 9, 2);
-      g.fillStyle(Phaser.Display.Color.GetColor(
-        Math.min(255, rgb.r + 30), Math.min(255, rgb.g + 30), Math.min(255, rgb.b + 30)
-      ));
-      g.fillRect(-9, 19, 4, 5); g.fillRect(3, 19, 4, 5);
-
-      // Ears
-      if (isDog) {
-        g.fillStyle(dark);
-        g.fillEllipse(-14, -4, 11, 18);
-        g.fillEllipse(14,  -4, 11, 18);
-      } else {
-        g.fillStyle(dark);
-        g.fillTriangle(-17, -2, -9, -2, -14, -16);
-        g.fillTriangle(9,   -2, 17, -2,  14, -16);
-      }
-
-      // Head
-      g.fillStyle(color);
-      g.fillCircle(0, -2, 14);
-
-      // Eyes
-      g.fillStyle(0x1a2e5a);
-      g.fillCircle(-4, -2, 3); g.fillCircle(4, -2, 3);
-      g.fillStyle(0xffffff);
-      g.fillCircle(-3, -3.5, 1.5); g.fillCircle(5, -3.5, 1.5);
-
-      // Nose
-      g.fillStyle(0x1a2e5a);
-      if (isDog) g.fillRoundedRect(-3, 5, 6, 4, 2);
-      else       g.fillTriangle(0, 8, -3, 4, 3, 4);
-
-      // Tail
-      g.fillStyle(dark);
-      g.fillEllipse(17, 9, 13, 7);
-
-      inner.add(g);
-
-      // Patrol
-      this.patrol(outer, inner);
-    }
-
-    // ── Hover ring ──
-    const ring = this.add.graphics();
-    ring.lineStyle(2.5, color, 0.9);
-    if (mode === 'table') ring.strokeEllipse(0, 0, 62, 30);
-    else ring.strokeCircle(0, 0, 22);
-    ring.setVisible(false);
-    outer.add(ring);
-
-    // ── Name badge ──
+    // Name badge
     const label = patient.name.length > 9 ? patient.name.substring(0, 8) + '…' : patient.name;
-    const bw = Math.max(46, label.length * 7 + 14);
-    const by = mode === 'table' ? 18 : 30;
+    const bw = Math.max(46, label.length * 7 + 12);
+    const badgeX = DW * S / 2;
+    const badgeY = DH * S + 4;
     const badge = this.add.graphics();
     badge.fillStyle(0x0f1e3d, 0.88);
-    badge.fillRoundedRect(-bw / 2, by, bw, 17, 5);
+    badge.fillRoundedRect(badgeX - bw / 2, badgeY, bw, 16, 5);
     outer.add(badge);
-    outer.add(this.add.text(0, by + 8.5, label, {
+    outer.add(this.add.text(badgeX, badgeY + 8, label, {
       fontFamily: 'Arial, sans-serif', fontSize: '9px', color: '#e2e8f0',
     }).setOrigin(0.5));
 
-    // ── Interaction ──
-    outer.setSize(mode === 'table' ? 62 : 52, 70).setInteractive({ useHandCursor: true });
-    outer.on('pointerover', () => {
-      ring.setVisible(true);
-      this.tweens.add({ targets: outer, scaleX: 1.1, scaleY: 1.1, duration: 100 });
-    });
-    outer.on('pointerout', () => {
-      ring.setVisible(false);
-      this.tweens.add({ targets: outer, scaleX: 1, scaleY: 1, duration: 100 });
-    });
-    outer.on('pointerdown', () => {
-      _onClick?.(patient);
-      this.tweens.add({ targets: outer, scaleX: 0.88, scaleY: 0.88, duration: 70, yoyo: true });
-    });
+    // Hover highlight
+    const highlight = this.add.graphics();
+    highlight.lineStyle(2, 0xffd700, 0.85);
+    highlight.strokeRect(-2, -2, DW * S + 4, DH * S + 4);
+    highlight.setVisible(false);
+    outer.add(highlight);
 
-    this.sprites.set(patient.id, outer);
+    // Interactive
+    outer.setSize(DW * S, DH * S).setInteractive({ useHandCursor: true });
+    outer.on('pointerover', () => { highlight.setVisible(true); });
+    outer.on('pointerout',  () => { highlight.setVisible(false); });
+    outer.on('pointerdown', () => this.handleDogClick(patient.id));
+
+    const entry: DogEntry = { patient, outer, gfx, face: 1, state: 'patrol', tableSlot: -1 };
+    this.dogs.set(patient.id, entry);
+
+    // Start patrolling
+    this.patrol(entry);
   }
 
-  // ── Walking patrol ────────────────────────────────────────────
-  private patrol(outer: Phaser.GameObjects.Container, inner: Phaser.GameObjects.Container) {
-    const walk = () => {
-      if (!outer.active) return;
-      const tx = Phaser.Math.Between(WAIT_BOUNDS.x1 + 10, WAIT_BOUNDS.x2);
-      const ty = Phaser.Math.Between(WAIT_BOUNDS.y1 + 5, WAIT_BOUNDS.y2);
-      const dist = Phaser.Math.Distance.Between(outer.x, outer.y, tx, ty);
-      const dur  = Math.max(700, (dist / 55) * 1000);
+  private handleDogClick(id: number) {
+    const dog = this.dogs.get(id);
+    if (!dog) return;
 
-      if (Math.abs(tx - outer.x) > 5) inner.setScale(tx < outer.x ? -1 : 1, 1);
+    // Show info panel
+    _onClick?.(dog.patient);
 
-      const bob = this.tweens.add({
-        targets: inner, y: -3, duration: 140, yoyo: true,
-        repeat: Math.ceil(dur / 280), ease: 'Sine.easeInOut',
-      });
+    if (dog.state !== 'patrol') return; // already going to / on table
 
-      this.tweens.add({
-        targets: outer, x: tx, y: ty, duration: dur, ease: 'Sine.easeInOut',
-        onComplete: () => {
-          bob.stop(); inner.setY(0);
-          if (outer.active) this.time.delayedCall(Phaser.Math.Between(900, 3200), walk);
-        },
+    // Find nearest free table
+    let bestSlot = -1, bestDist = Infinity;
+    STATIONS.forEach((s, i) => {
+      if (this.tableOccupied[i]) return;
+      const d = Phaser.Math.Distance.Between(dog.outer.x, dog.outer.y, s.x, s.y);
+      if (d < bestDist) { bestDist = d; bestSlot = i; }
+    });
+
+    if (bestSlot === -1) return; // all tables full
+
+    this.tableOccupied[bestSlot] = true;
+    dog.state    = 'heading';
+    dog.tableSlot = bestSlot;
+
+    // Stop patrol
+    dog.moveTween?.stop();
+    dog.bobTween?.stop();
+
+    this.walkTo(dog, STATIONS[bestSlot].x, STATIONS[bestSlot].y, () => {
+      dog.state = 'on_table';
+      dog.bobTween?.stop();
+      paintDog(dog.gfx, SIT_ART, dog.face);
+    });
+  }
+
+  // ── Walk to a target position ─────────────────────────────────
+  private walkTo(
+    dog: DogEntry,
+    tx: number, ty: number,
+    onArrive?: () => void,
+  ) {
+    const { outer, gfx } = dog;
+    const dist = Phaser.Math.Distance.Between(outer.x, outer.y, tx, ty);
+    const dur  = Math.max(600, (dist / 60) * 1000);
+
+    // Face direction of travel
+    const newFace: 1 | -1 = tx >= outer.x ? 1 : -1;
+    if (newFace !== dog.face) {
+      dog.face = newFace;
+      paintDog(gfx, dog.state === 'on_table' ? SIT_ART : WALK_ART, dog.face);
+    }
+
+    // Walk bob
+    dog.bobTween = this.tweens.add({
+      targets: outer, y: outer.y - 2,
+      duration: 130, yoyo: true,
+      repeat: Math.ceil(dur / 260),
+      ease: 'Sine.easeInOut',
+    });
+
+    dog.moveTween = this.tweens.add({
+      targets: outer, x: tx, y: ty,
+      duration: dur, ease: 'Sine.easeInOut',
+      onComplete: () => {
+        dog.bobTween?.stop();
+        outer.setY(ty);
+        onArrive?.();
+      },
+    });
+  }
+
+  // ── Patrol in waiting area ────────────────────────────────────
+  private patrol(dog: DogEntry) {
+    const pick = () => {
+      if (!dog.outer.active || dog.state !== 'patrol') return;
+
+      const tx = Phaser.Math.Between(WB.x1 + 10, WB.x2);
+      const ty = Phaser.Math.Between(WB.y1 + 5,  WB.y2);
+
+      this.walkTo(dog, tx, ty, () => {
+        if (dog.state === 'patrol') {
+          this.time.delayedCall(Phaser.Math.Between(600, 2800), pick);
+        }
       });
     };
-    this.time.delayedCall(Math.random() * 2000, walk);
+
+    this.time.delayedCall(Math.random() * 1800, pick);
   }
 }
 
@@ -491,7 +433,7 @@ export default function VirtualClinicPage() {
 
   const { data: patients = [] } = useQuery<Patient[]>({
     queryKey: ['patients'],
-    queryFn:  () => api.get('/patients'),
+    queryFn: () => api.get('/patients'),
   });
 
   useEffect(() => {
@@ -500,7 +442,7 @@ export default function VirtualClinicPage() {
       type: Phaser.AUTO,
       parent: canvasRef.current,
       width: W, height: H,
-      backgroundColor: '#cdcdc4',
+      backgroundColor: '#cececc',
       scene: [ClinicScene],
       roundPixels: true,
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
@@ -523,13 +465,11 @@ export default function VirtualClinicPage() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Canvas */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="px-4 pt-4 pb-1 md:px-6 md:pt-6">
           <h1 className="text-xl font-bold text-navy-700">Consulta Virtual</h1>
           <p className="text-navy-400 text-sm">
-            {patients.filter(p => p.active).length} en tratamiento ·{' '}
-            {patients.filter(p => !p.active).length} en espera
+            {patients.length} paciente{patients.length !== 1 ? 's' : ''} · haz clic en un perro para asignarlo a camilla
           </p>
         </div>
         <div className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-0">
@@ -539,12 +479,8 @@ export default function VirtualClinicPage() {
             style={{ width: W, height: H, maxWidth: '100%' }}
           />
         </div>
-        <p className="text-center text-xs text-navy-300 pb-2">
-          Haz clic en un paciente para ver su ficha
-        </p>
       </div>
 
-      {/* Side panel */}
       {selected && (
         <aside className="w-80 bg-white border-l border-navy-100 flex flex-col shadow-xl animate-slide-in overflow-y-auto">
           <div className="flex items-center justify-between p-4 border-b border-navy-50">
@@ -554,7 +490,6 @@ export default function VirtualClinicPage() {
               <X size={18} />
             </button>
           </div>
-
           <div className="p-4 space-y-4 flex-1">
             <div className="flex items-start gap-3">
               <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
@@ -570,7 +505,6 @@ export default function VirtualClinicPage() {
                 </span>
               </div>
             </div>
-
             <div className="card !p-3 !rounded-xl space-y-1.5">
               <div className="flex items-center gap-2 text-xs font-semibold text-navy-400 uppercase tracking-wide">
                 <Users size={12} /> Propietario
@@ -579,7 +513,6 @@ export default function VirtualClinicPage() {
               <p className="text-sm text-navy-400">{selected.tutor.phone}</p>
               {selected.tutor.email && <p className="text-xs text-navy-300">{selected.tutor.email}</p>}
             </div>
-
             {selected._count && (
               <div className="card !p-3 !rounded-xl">
                 <div className="flex items-center gap-2 text-sm text-navy-500">
@@ -589,11 +522,9 @@ export default function VirtualClinicPage() {
               </div>
             )}
           </div>
-
           <div className="p-4 border-t border-navy-50 space-y-2">
             <button onClick={() => navigate(`/chat/${selected.tutor.id}`)} className="btn-secondary w-full justify-center">
-              <MessageSquare size={16} />
-              Chatear con {selected.tutor.name.split(' ')[0]}
+              <MessageSquare size={16} /> Chatear con {selected.tutor.name.split(' ')[0]}
             </button>
             <button onClick={() => navigate(`/patients/${selected.id}`)} className="btn-ghost w-full justify-center">
               <Activity size={16} /> Ver historial completo
