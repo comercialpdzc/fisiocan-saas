@@ -172,8 +172,11 @@ function useNotesMic(onTranscript: (t: string) => void) {
     }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
-    activeRef.current = true; setMicState('recording');
-    start();
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+      stream.getTracks().forEach(t => t.stop());
+      activeRef.current = true; setMicState('recording');
+      start();
+    }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
   }
 
   useEffect(() => () => { activeRef.current = false; recRef.current?.abort(); recRef.current = null; }, []);

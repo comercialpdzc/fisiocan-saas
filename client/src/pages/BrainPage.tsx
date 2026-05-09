@@ -47,15 +47,14 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
     if (!SR) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
-    r.onsoundstart = () => console.log('[Mic] sound detected');
-    r.onspeechstart = () => console.log('[Mic] speech detected');
-    r.onspeechend = () => console.log('[Mic] speech ended');
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
     r.onresult = (e: any) => {
       for (let i = (e.resultIndex ?? 0); i < e.results.length; i++) {
-        const t = String(e.results[i][0].transcript).trim();
-        console.log('[Mic] result (final=' + e.results[i].isFinal + '):', t);
-        if (e.results[i].isFinal && t) onTxRef.current(t);
+        if (e.results[i].isFinal) {
+          const t = String(e.results[i][0].transcript).trim();
+          console.log('[Mic] transcript:', t);
+          if (t) onTxRef.current(t);
+        }
       }
     };
     r.onerror = (e: any) => {
@@ -105,19 +104,22 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     console.log('[Mic] toggle(), state=', state);
     if (state === 'idle') {
       const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
-      if (SR) {
-        wsActiveRef.current = true;
-        setState('recording');
-        startWSRef.current();
-      } else {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-          streamRef.current = stream;
-          const mr = new MediaRecorder(stream);
-          mrRef.current = mr; chunksRef.current = [];
-          mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-          mr.start(100); setState('recording');
-        }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
-      }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        stream.getTracks().forEach(t => t.stop()); // only needed to trigger permission prompt
+        if (SR) {
+          wsActiveRef.current = true;
+          setState('recording');
+          startWSRef.current();
+        } else {
+          navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
+            streamRef.current = s;
+            const mr = new MediaRecorder(s);
+            mrRef.current = mr; chunksRef.current = [];
+            mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+            mr.start(100); setState('recording');
+          }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
+        }
+      }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
     } else if (state === 'recording') {
       if (wsActiveRef.current) {
         wsActiveRef.current = false;
