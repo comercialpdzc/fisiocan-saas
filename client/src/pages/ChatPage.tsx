@@ -41,95 +41,104 @@ function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
  */
 function useAudioRecorder(onTranscript: (text: string) => void) {
   const [state, setState] = useState<RecordState>('idle');
-  const webSpeechActiveRef = useRef(false);
+  const wsActiveRef = useRef(false);
   const wsRecRef = useRef<any>(null);
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const chunks = useRef<Blob[]>([]);
+  const mrRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
-  const onTranscriptRef = useRef(onTranscript);
-  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
+  const onTxRef = useRef(onTranscript);
+  useEffect(() => { onTxRef.current = onTranscript; }, [onTranscript]);
 
-  function startWS() {
-    if (!webSpeechActiveRef.current) return;
-    const Ctor = getWebSpeechCtor()!;
-    const r = new Ctor();
+  // startWSRef.current is reassigned every render so onend always calls the latest version
+  const startWSRef = useRef<() => void>(null!);
+  startWSRef.current = () => {
+    if (!wsActiveRef.current) return;
+    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+    if (!SR) return;
+    const r = new SR();
     r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
     r.onresult = (e: any) => {
-      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
+      for (let i = (e.resultIndex ?? 0); i < e.results.length; i++) {
         if (e.results[i].isFinal) {
-          const t = (e.results[i][0].transcript as string).trim();
-          if (t) onTranscriptRef.current(t);
+          const t = String(e.results[i][0].transcript).trim();
+          console.log('[Mic] transcript:', t);
+          if (t) onTxRef.current(t);
         }
       }
     };
     r.onerror = (e: any) => {
-      const code = e.error as string;
-      if (code === 'not-allowed') {
-        webSpeechActiveRef.current = false; setState('idle');
+      console.log('[Mic] error:', e.error);
+      if ((e.error as string) === 'not-allowed') {
+        wsActiveRef.current = false; setState('idle');
         alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
       }
     };
-    r.onend = () => { wsRecRef.current = null; if (webSpeechActiveRef.current) setTimeout(startWS, 200); };
+    r.onend = () => {
+      console.log('[Mic] session ended, active:', wsActiveRef.current);
+      wsRecRef.current = null;
+      if (wsActiveRef.current) setTimeout(() => startWSRef.current(), 200);
+    };
     wsRecRef.current = r;
-    try { r.start(); } catch { wsRecRef.current = null; }
-  }
-
-  function startWebSpeech() {
-    webSpeechActiveRef.current = true;
-    setState('recording');
-    startWS();
-  }
-
-  function stopWebSpeech() {
-    webSpeechActiveRef.current = false;
-    wsRecRef.current?.stop(); wsRecRef.current = null;
-    setState('idle');
-  }
+    try {
+      r.start();
+      console.log('[Mic] session started');
+    } catch (err: any) {
+      console.error('[Mic] start() failed:', err?.message);
+      wsRecRef.current = null;
+    }
+  };
 
   const stopMediaRecorder = useCallback(async () => {
-    const mr = mediaRecorder.current;
+    const mr = mrRef.current;
     if (!mr || mr.state === 'inactive') return;
     const blob: Blob = await new Promise(resolve => {
-      mr.onstop = () => resolve(new Blob(chunks.current, { type: mr.mimeType || 'audio/webm' }));
+      mr.onstop = () => resolve(new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' }));
       mr.stop();
     });
     streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null; mediaRecorder.current = null;
+    streamRef.current = null; mrRef.current = null;
     setState('transcribing');
     try {
       const fd = new FormData();
       fd.append('audio', blob, 'recording.webm');
       const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
-      if (res.transcript) onTranscriptRef.current(res.transcript);
+      if (res.transcript) onTxRef.current(res.transcript);
     } catch { /* silent */ }
     finally { setState('idle'); }
   }, []);
 
-  async function startMediaRecorder() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      const mr = new MediaRecorder(stream);
-      mediaRecorder.current = mr; chunks.current = [];
-      mr.ondataavailable = e => { if (e.data.size > 0) chunks.current.push(e.data); };
-      mr.start(100); setState('recording');
-    } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
-  }
-
   function toggle() {
+    console.log('[Mic] toggle(), state=', state);
     if (state === 'idle') {
-      if (getWebSpeechCtor()) startWebSpeech();
-      else startMediaRecorder();
+      const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
+      if (SR) {
+        wsActiveRef.current = true;
+        setState('recording');
+        startWSRef.current();
+      } else {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+          streamRef.current = stream;
+          const mr = new MediaRecorder(stream);
+          mrRef.current = mr; chunksRef.current = [];
+          mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+          mr.start(100); setState('recording');
+        }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
+      }
     } else if (state === 'recording') {
-      if (webSpeechActiveRef.current) stopWebSpeech();
-      else stopMediaRecorder();
+      if (wsActiveRef.current) {
+        wsActiveRef.current = false;
+        wsRecRef.current?.stop(); wsRecRef.current = null;
+        setState('idle');
+      } else {
+        stopMediaRecorder();
+      }
     }
   }
 
   useEffect(() => () => {
-    webSpeechActiveRef.current = false;
+    wsActiveRef.current = false;
     wsRecRef.current?.abort(); wsRecRef.current = null;
-    if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
+    if (mrRef.current?.state !== 'inactive') mrRef.current?.stop();
     streamRef.current?.getTracks().forEach(t => t.stop());
   }, []);
 
