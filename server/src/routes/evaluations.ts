@@ -6,67 +6,70 @@ import { requireAuth } from '../middleware/auth';
 const router = Router();
 router.use(requireAuth);
 
-// HTML number inputs send "" for empty fields; coerce safely: "" | null → undefined
+// DB returns null for unset fields; inputs may send "" for empty numbers.
+// strOpt: accepts string | null | undefined
+// numOpt: "" | null | undefined → undefined, else coerce to number
+const strOpt = z.string().nullish();
 const numOpt = (schema: z.ZodNumber) =>
   z.preprocess(v => (v === '' || v == null) ? undefined : Number(v), schema.optional());
 
 const evalSchema = z.object({
   // Anamnesis
-  cirugiasPrevias:        z.string().optional(),
-  medicacionActual:       z.string().optional(),
-  tratamientosAnteriores: z.string().optional(),
-  respuestaTratamientos:  z.string().optional(),
-  alergias:               z.string().optional(),
-  sintomasReferidos:      z.string().optional(), // JSON
-  otrosSintomas:          z.string().optional(),
+  cirugiasPrevias:        strOpt,
+  medicacionActual:       strOpt,
+  tratamientosAnteriores: strOpt,
+  respuestaTratamientos:  strOpt,
+  alergias:               strOpt,
+  sintomasReferidos:      strOpt,
+  otrosSintomas:          strOpt,
   // Exploración estática
-  posturaGeneral:         z.string().optional(),
-  distribucionPeso:       z.string().optional(),
-  estadoMuscularGeneral:  z.string().optional(),
+  posturaGeneral:         strOpt,
+  distribucionPeso:       strOpt,
+  estadoMuscularGeneral:  strOpt,
   condicionCorporal:      numOpt(z.number().int().min(1).max(9)),
-  masaMuscularWsava:      z.string().optional(),
-  estadoPiel:             z.string().optional(),
-  alineacionExtremidades: z.string().optional(),
-  columnaVertebral:       z.string().optional(),
-  cabezaCuello:           z.string().optional(),
-  comportamientoReposo:   z.string().optional(),
-  observacionesEstaticas: z.string().optional(),
+  masaMuscularWsava:      strOpt,
+  estadoPiel:             strOpt,
+  alineacionExtremidades: strOpt,
+  columnaVertebral:       strOpt,
+  cabezaCuello:           strOpt,
+  comportamientoReposo:   strOpt,
+  observacionesEstaticas: strOpt,
   // Exploración dinámica
-  tipoMarcha:             z.string().optional(),
-  cojeraSiNo:             z.string().optional(),
+  tipoMarcha:             strOpt,
+  cojeraSiNo:             strOpt,
   cojeraGrado:            numOpt(z.number().int().min(1).max(4)),
-  cojeraMiembro:          z.string().optional(),
-  inicioMarcha:           z.string().optional(),
-  troteGalope:            z.string().optional(),
-  subidaBajada:           z.string().optional(),
-  proprioceptivePlacing:  z.string().optional(),
-  marchaAlPaso:           z.string().optional(),
-  marchaAlTrote:          z.string().optional(),
-  analisisMiembros:       z.string().optional(),
-  girosSentarse:          z.string().optional(),
-  compensacionesDin:      z.string().optional(),
-  observacionesDinamicas: z.string().optional(),
+  cojeraMiembro:          strOpt,
+  inicioMarcha:           strOpt,
+  troteGalope:            strOpt,
+  subidaBajada:           strOpt,
+  proprioceptivePlacing:  strOpt,
+  marchaAlPaso:           strOpt,
+  marchaAlTrote:          strOpt,
+  analisisMiembros:       strOpt,
+  girosSentarse:          strOpt,
+  compensacionesDin:      strOpt,
+  observacionesDinamicas: strOpt,
   // Palpación y ROM
-  palpacionROM:           z.string().optional(), // JSON
+  palpacionROM:           strOpt,
   // Escalas
   dolorReposo:            numOpt(z.number().int().min(0).max(10)),
   dolorMovimiento:        numOpt(z.number().int().min(0).max(10)),
   nivelFuncional:         numOpt(z.number().int().min(0).max(10)),
   // Pruebas complementarias
-  pruebasComplementarias: z.string().optional(), // JSON
+  pruebasComplementarias: strOpt,
   // Diagnóstico funcional
-  hipotesisDiagnostica:    z.string().optional(),
-  pronosticoFuncional:     z.string().optional(),
-  limitacionesTratamiento: z.string().optional(),
+  hipotesisDiagnostica:    strOpt,
+  pronosticoFuncional:     strOpt,
+  limitacionesTratamiento: strOpt,
   // Plan de tratamiento
-  objetivoCortoplazo:      z.string().optional(),
-  objetivoMedioplazo:      z.string().optional(),
-  objetivoLargoplazo:      z.string().optional(),
-  tecnicasPrevistas:       z.string().optional(), // JSON
+  objetivoCortoplazo:      strOpt,
+  objetivoMedioplazo:      strOpt,
+  objetivoLargoplazo:      strOpt,
+  tecnicasPrevistas:       strOpt,
   frecuenciaSemana:        numOpt(z.number().int().positive()),
   duracionSesionMin:       numOpt(z.number().int().positive()),
-  reevaluacionPrevista:    z.string().optional(),
-  fechaEvaluacion:         z.string().optional(),
+  reevaluacionPrevista:    strOpt,
+  fechaEvaluacion:         strOpt,
 });
 
 // GET /evaluations/:patientId
@@ -81,24 +84,33 @@ router.get('/:patientId', async (req, res) => {
 // PUT /evaluations/:patientId  (upsert)
 router.put('/:patientId', async (req, res) => {
   const parse = evalSchema.safeParse(req.body);
-  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+  if (!parse.success) {
+    console.error('[PUT /evaluations] validation error:', JSON.stringify(parse.error.flatten(), null, 2));
+    res.status(400).json({ error: JSON.stringify(parse.error.flatten()) });
+    return;
+  }
 
   const data = {
     ...parse.data,
     reevaluacionPrevista: parse.data.reevaluacionPrevista
       ? new Date(parse.data.reevaluacionPrevista)
-      : undefined,
+      : null,
     fechaEvaluacion: parse.data.fechaEvaluacion
       ? new Date(parse.data.fechaEvaluacion)
-      : undefined,
+      : null,
   };
 
-  const evaluation = await prisma.patientEvaluation.upsert({
-    where:  { patientId: Number(req.params.patientId) },
-    create: { patientId: Number(req.params.patientId), ...data },
-    update: data,
-  });
-  res.json(evaluation);
+  try {
+    const evaluation = await prisma.patientEvaluation.upsert({
+      where:  { patientId: Number(req.params.patientId) },
+      create: { patientId: Number(req.params.patientId), ...data },
+      update: data,
+    });
+    res.json(evaluation);
+  } catch (err: any) {
+    console.error('[PUT /evaluations] prisma error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 export default router;
