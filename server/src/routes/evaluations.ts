@@ -19,7 +19,7 @@ const evalSchema = z.object({
   posturaGeneral:         z.string().optional(),
   distribucionPeso:       z.string().optional(),
   estadoMuscularGeneral:  z.string().optional(),
-  condicionCorporal:      z.number().int().min(1).max(9).optional(),
+  condicionCorporal:      z.coerce.number().int().min(1).max(9).optional(),
   masaMuscularWsava:      z.string().optional(),
   estadoPiel:             z.string().optional(),
   alineacionExtremidades: z.string().optional(),
@@ -30,7 +30,7 @@ const evalSchema = z.object({
   // Exploración dinámica
   tipoMarcha:             z.string().optional(),
   cojeraSiNo:             z.string().optional(),
-  cojeraGrado:            z.number().int().min(1).max(4).optional(),
+  cojeraGrado:            z.coerce.number().int().min(1).max(4).optional(),
   cojeraMiembro:          z.string().optional(),
   inicioMarcha:           z.string().optional(),
   troteGalope:            z.string().optional(),
@@ -45,9 +45,9 @@ const evalSchema = z.object({
   // Palpación y ROM
   palpacionROM:           z.string().optional(), // JSON
   // Escalas
-  dolorReposo:            z.number().int().min(0).max(10).optional(),
-  dolorMovimiento:        z.number().int().min(0).max(10).optional(),
-  nivelFuncional:         z.number().int().min(0).max(10).optional(),
+  dolorReposo:            z.coerce.number().int().min(0).max(10).optional(),
+  dolorMovimiento:        z.coerce.number().int().min(0).max(10).optional(),
+  nivelFuncional:         z.coerce.number().int().min(0).max(10).optional(),
   // Pruebas complementarias
   pruebasComplementarias: z.string().optional(), // JSON
   // Diagnóstico funcional
@@ -59,8 +59,8 @@ const evalSchema = z.object({
   objetivoMedioplazo:      z.string().optional(),
   objetivoLargoplazo:      z.string().optional(),
   tecnicasPrevistas:       z.string().optional(), // JSON
-  frecuenciaSemana:        z.number().int().positive().optional(),
-  duracionSesionMin:       z.number().int().positive().optional(),
+  frecuenciaSemana:        z.coerce.number().int().positive().optional(),
+  duracionSesionMin:       z.coerce.number().int().positive().optional(),
   reevaluacionPrevista:    z.string().optional(),
   fechaEvaluacion:         z.string().optional(),
 });
