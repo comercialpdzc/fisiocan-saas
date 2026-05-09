@@ -7,33 +7,64 @@ import { es } from 'date-fns/locale';
 
 const ForceGraph3D = lazy(() => import('react-force-graph-3d'));
 
-// ── Audio recorder ─────────────────────────────────────────────────────────────
+// ── Audio / speech recognition ─────────────────────────────────────────────────
 
 type RecordState = 'idle' | 'recording' | 'transcribing';
 
 type SpeechRecognitionCtor = new () => {
   lang: string; continuous: boolean; interimResults: boolean;
   onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+  onend: (() => void) | null;
   start(): void;
+  stop(): void;
+  abort(): void;
 };
 
-function tryWebSpeech(onResult: (text: string) => void) {
+function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
   const w = window as unknown as Record<string, unknown>;
-  const Ctor = (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
-  if (!Ctor) return;
-  const r = new Ctor();
-  r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
-  r.onresult = (e) => onResult(e.results[0][0].transcript);
-  r.start();
+  return (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
 }
 
+/**
+ * Prefers Web Speech API (real-time, no server round-trip).
+ * Falls back to MediaRecorder → /api/brain/transcribe (Whisper) when Web Speech is unavailable.
+ */
 function useAudioRecorder(onTranscript: (text: string) => void) {
   const [state, setState] = useState<RecordState>('idle');
+  const recognitionRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const onTranscriptRef = useRef(onTranscript);
+  useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
 
-  const stop = useCallback(async () => {
+  // ── Web Speech path ────────────────────────────────────────────────────────
+  function startWebSpeech() {
+    const Ctor = getWebSpeechCtor()!;
+    const r = new Ctor();
+    r.lang = 'es-ES';
+    r.continuous = false;
+    r.interimResults = false;
+    r.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      if (text) onTranscriptRef.current(text);
+    };
+    r.onerror = () => setState('idle');
+    r.onend = () => setState('idle');
+    recognitionRef.current = r;
+    r.start();
+    setState('recording');
+  }
+
+  function stopWebSpeech() {
+    recognitionRef.current?.stop();
+    recognitionRef.current = null;
+    // state transitions to 'idle' via onend
+  }
+
+  // ── MediaRecorder + Whisper path ───────────────────────────────────────────
+  const stopMediaRecorder = useCallback(async () => {
     const mr = mediaRecorder.current;
     if (!mr || mr.state === 'inactive') return;
     const blob: Blob = await new Promise(resolve => {
@@ -48,13 +79,12 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
       const fd = new FormData();
       fd.append('audio', blob, 'recording.webm');
       const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
-      if (res.transcript) onTranscript(res.transcript);
-      else if (res.noApiKey) tryWebSpeech(onTranscript);
-    } catch { tryWebSpeech(onTranscript); }
+      if (res.transcript) onTranscriptRef.current(res.transcript);
+    } catch { /* silent fail */ }
     finally { setState('idle'); }
-  }, [onTranscript]);
+  }, []);
 
-  async function start() {
+  async function startMediaRecorder() {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
@@ -67,12 +97,21 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
   }
 
+  // ── Toggle ─────────────────────────────────────────────────────────────────
+  const webSpeechAvailable = !!getWebSpeechCtor();
+
   function toggle() {
-    if (state === 'idle') start();
-    else if (state === 'recording') stop();
+    if (state === 'idle') {
+      if (webSpeechAvailable) startWebSpeech();
+      else startMediaRecorder();
+    } else if (state === 'recording') {
+      if (webSpeechAvailable) stopWebSpeech();
+      else stopMediaRecorder();
+    }
   }
 
   useEffect(() => () => {
+    recognitionRef.current?.abort();
     if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
     streamRef.current?.getTracks().forEach(t => t.stop());
   }, []);
