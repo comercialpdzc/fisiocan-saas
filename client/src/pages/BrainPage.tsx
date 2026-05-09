@@ -1,11 +1,84 @@
 import { useState, useEffect, useRef, useMemo, Suspense, lazy, useCallback } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { Brain, Send, Plus, Trash2, X, BookOpen, Loader2, Network, MessageSquare, Search, RefreshCw, Link2, Mail, Inbox, PenSquare, Reply, ChevronLeft, User } from 'lucide-react';
+import { Brain, Send, Plus, Trash2, X, BookOpen, Loader2, Network, MessageSquare, Search, RefreshCw, Link2, Mail, Inbox, PenSquare, Reply, ChevronLeft, User, Mic, MicOff } from 'lucide-react';
 import { api } from '../lib/api';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const ForceGraph3D = lazy(() => import('react-force-graph-3d'));
+
+// ── Audio recorder ─────────────────────────────────────────────────────────────
+
+type RecordState = 'idle' | 'recording' | 'transcribing';
+
+type SpeechRecognitionCtor = new () => {
+  lang: string; continuous: boolean; interimResults: boolean;
+  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
+  start(): void;
+};
+
+function tryWebSpeech(onResult: (text: string) => void) {
+  const w = window as unknown as Record<string, unknown>;
+  const Ctor = (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
+  if (!Ctor) return;
+  const r = new Ctor();
+  r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
+  r.onresult = (e) => onResult(e.results[0][0].transcript);
+  r.start();
+}
+
+function useAudioRecorder(onTranscript: (text: string) => void) {
+  const [state, setState] = useState<RecordState>('idle');
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const stop = useCallback(async () => {
+    const mr = mediaRecorder.current;
+    if (!mr || mr.state === 'inactive') return;
+    const blob: Blob = await new Promise(resolve => {
+      mr.onstop = () => resolve(new Blob(chunks.current, { type: mr.mimeType || 'audio/webm' }));
+      mr.stop();
+    });
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+    mediaRecorder.current = null;
+    setState('transcribing');
+    try {
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
+      if (res.transcript) onTranscript(res.transcript);
+      else if (res.noApiKey) tryWebSpeech(onTranscript);
+    } catch { tryWebSpeech(onTranscript); }
+    finally { setState('idle'); }
+  }, [onTranscript]);
+
+  async function start() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mr = new MediaRecorder(stream);
+      mediaRecorder.current = mr;
+      chunks.current = [];
+      mr.ondataavailable = e => { if (e.data.size > 0) chunks.current.push(e.data); };
+      mr.start(100);
+      setState('recording');
+    } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
+  }
+
+  function toggle() {
+    if (state === 'idle') start();
+    else if (state === 'recording') stop();
+  }
+
+  useEffect(() => () => {
+    if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  }, []);
+
+  return { state, toggle };
+}
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -116,6 +189,11 @@ export default function BrainPage() {
   const [indexing, setIndexing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const graphContainerRef = useRef<HTMLDivElement>(null);
+
+  const appendTranscript = useCallback((t: string) => {
+    setInput(prev => prev ? `${prev} ${t}` : t);
+  }, []);
+  const { state: micState, toggle: toggleMic } = useAudioRecorder(appendTranscript);
   const fgRef = useRef<any>(null);
   const [graphSize, setGraphSize] = useState({ width: 800, height: 600 });
 
@@ -685,15 +763,35 @@ export default function BrainPage() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <form onSubmit={sendMessage} className="px-4 md:px-6 py-4 border-t border-navy-100 bg-white flex gap-3 flex-shrink-0">
+                <form onSubmit={sendMessage} className="px-4 md:px-6 py-4 border-t border-navy-100 bg-white flex gap-2 items-center flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={toggleMic}
+                    disabled={micState === 'transcribing' || sending}
+                    title={micState === 'recording' ? 'Detener grabación' : 'Grabar mensaje de voz'}
+                    className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                      micState === 'recording'
+                        ? 'bg-red-500 text-white animate-pulse'
+                        : micState === 'transcribing'
+                        ? 'bg-navy-100 text-navy-400 cursor-wait'
+                        : 'bg-navy-100 text-navy-500 hover:bg-navy-200'
+                    }`}
+                  >
+                    {micState === 'transcribing'
+                      ? <Loader2 size={18} className="animate-spin" />
+                      : micState === 'recording'
+                      ? <MicOff size={18} />
+                      : <Mic size={18} />
+                    }
+                  </button>
                   <input
                     className="input flex-1"
-                    placeholder="Pregunta, crea una cita, un plan terapéutico…"
+                    placeholder={micState === 'recording' ? 'Grabando…' : micState === 'transcribing' ? 'Transcribiendo…' : 'Pregunta, crea una cita, un plan terapéutico…'}
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    disabled={sending}
+                    disabled={sending || micState !== 'idle'}
                   />
-                  <button type="submit" disabled={!input.trim() || sending} className="btn-primary px-4 min-h-[44px]">
+                  <button type="submit" disabled={!input.trim() || sending || micState !== 'idle'} className="btn-primary px-4 min-h-[44px]">
                     <Send size={16} />
                   </button>
                 </form>

@@ -136,12 +136,84 @@ async function syncDrive() {
   console.log(`   ✅  Drive: ${synced} synced, ${failed} failed`);
 }
 
+// ─── 3. Patient profile photos ────────────────────────────────────────────────
+
+async function syncPatientPhotos() {
+  console.log('\n🐾  Migrating patient profile photos → Google Drive…');
+
+  const patients = await prisma.patient.findMany({
+    where: { photoUrl: { not: null } },
+    select: { id: true, name: true, photoUrl: true },
+  });
+
+  console.log(`   Found ${patients.length} patients with photos`);
+  let synced = 0, failed = 0;
+
+  for (const patient of patients) {
+    const url = patient.photoUrl!;
+    // Skip if already a Drive URL
+    if (url.includes('drive.google.com') || url.includes('googleusercontent.com')) {
+      console.log(`   ⏭  [${patient.id}] ${patient.name} — already in Drive`);
+      continue;
+    }
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) { console.log(`   ✗  [${patient.id}] HTTP ${resp.status}`); failed++; continue; }
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      const ext = url.split('.').pop()?.split('?')[0] ?? 'jpg';
+      const result = await uploadToDrive(buffer, 'image/jpeg', `foto-perfil.${ext}`, patient.name, 'general');
+      if (result) {
+        await prisma.patient.update({ where: { id: patient.id }, data: { photoUrl: result.driveUrl } });
+        console.log(`   ✓  [${patient.id}] ${patient.name} → Drive`);
+        synced++;
+      } else { console.log(`   ✗  [${patient.id}] Drive upload returned null`); failed++; }
+    } catch (err) { console.log(`   ✗  [${patient.id}] Error: ${err}`); failed++; }
+  }
+
+  console.log(`   ✅  Patient photos: ${synced} synced, ${failed} failed`);
+}
+
+// ─── 4. FollowUpMedia (portal photos) ────────────────────────────────────────
+
+async function syncFollowUpMedia() {
+  console.log('\n📸  Migrating portal follow-up photos → Google Drive…');
+
+  // Only migrate Vercel Blob URLs (not already in Drive)
+  const media = await prisma.followUpMedia.findMany({
+    where: { url: { contains: 'blob.vercel-storage.com' } },
+    include: { patient: { select: { name: true } } },
+  });
+
+  console.log(`   Found ${media.length} follow-up photos`);
+  let synced = 0, failed = 0;
+
+  for (const m of media) {
+    try {
+      const resp = await fetch(m.url);
+      if (!resp.ok) { console.log(`   ✗  [${m.id}] HTTP ${resp.status}`); failed++; continue; }
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      const ext = m.url.split('.').pop()?.split('?')[0] ?? 'jpg';
+      const mime = m.mediaType === 'video' ? 'video/mp4' : 'image/jpeg';
+      const result = await uploadToDrive(buffer, mime, `followup-${m.id}.${ext}`, m.patient?.name ?? null, 'followup');
+      if (result) {
+        await prisma.followUpMedia.update({ where: { id: m.id }, data: { url: result.driveUrl } });
+        console.log(`   ✓  [${m.id}] ${m.patient?.name ?? '?'} → Drive${m.caption ? ` (${m.caption})` : ''}`);
+        synced++;
+      } else { console.log(`   ✗  [${m.id}] Drive upload returned null`); failed++; }
+    } catch (err) { console.log(`   ✗  [${m.id}] Error: ${err}`); failed++; }
+  }
+
+  console.log(`   ✅  Follow-up photos: ${synced} synced, ${failed} failed`);
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   console.log('🐾  FISIOCAN → Google migration script');
   await syncCalendar();
   await syncDrive();
+  await syncPatientPhotos();
+  await syncFollowUpMedia();
   await prisma.$disconnect();
   console.log('\n✅  Done.');
 }
