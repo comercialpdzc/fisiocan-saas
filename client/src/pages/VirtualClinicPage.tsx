@@ -23,31 +23,33 @@ function useVisitMic(onTranscript: (t: string) => void) {
     if (!SR || !activeRef.current) return;
     const r = new SR();
     r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
-    console.log('[Mic] starting');
-    r.onsoundstart = () => console.log('[Mic] sound detected');
-    r.onspeechstart = () => console.log('[Mic] speech detected');
-    r.onspeechend = () => console.log('[Mic] speech ended');
+    r.onaudiostart = () => console.log('[Mic] AUDIO START');
+    r.onaudioend  = () => console.log('[Mic] AUDIO END');
+    r.onsoundstart = () => console.log('[Mic] sound');
+    r.onspeechstart = () => console.log('[Mic] speech start');
+    r.onspeechend = () => console.log('[Mic] speech end');
+    r.onnomatch = () => console.log('[Mic] NO MATCH');
     r.onresult = (e: any) => {
-      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
-        const t = (e.results[i][0].transcript as string).trim();
-        console.log('[Mic] result (final=' + e.results[i].isFinal + '):', t);
-        if (e.results[i].isFinal && t) cbRef.current(t);
-      }
+      console.log('[Mic] RESULT fired, len:', e.results.length);
+      const texto = (e.results[0][0].transcript as string).trim();
+      console.log('[Mic] texto:', texto);
+      if (texto) cbRef.current(texto);
     };
     r.onerror = (e: any) => {
-      console.log('[Mic] error:', e.error);
+      console.log('[Mic] ERROR:', e.error, e.message);
       if (e.error === 'not-allowed') {
         activeRef.current = false; setState('idle');
         alert('Permiso de micrófono denegado.');
       }
     };
     r.onend = () => {
-      console.log('[Mic] ended — active:', activeRef.current);
+      console.log('[Mic] END, active:', activeRef.current);
       recRef.current = null;
       if (activeRef.current) setTimeout(start, 200);
     };
     recRef.current = r;
-    try { r.start(); } catch (e: any) { console.error('[Mic] start failed:', e?.message); recRef.current = null; }
+    console.log('[Mic] calling start()');
+    try { r.start(); } catch (e: any) { console.error('[Mic] start() threw:', e?.message); recRef.current = null; }
   }
 
   function toggle() {
@@ -58,11 +60,8 @@ function useVisitMic(onTranscript: (t: string) => void) {
     }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      stream.getTracks().forEach(t => t.stop());
-      activeRef.current = true; setState('recording');
-      start();
-    }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
+    activeRef.current = true; setState('recording');
+    start();
   }
 
   useEffect(() => () => { activeRef.current = false; recRef.current?.abort(); recRef.current = null; }, []);
