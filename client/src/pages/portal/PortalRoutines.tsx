@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { Dumbbell, ExternalLink, PlayCircle } from 'lucide-react';
+import { Dumbbell, ExternalLink, PlayCircle, FileText } from 'lucide-react';
 import { portalApi } from '../../lib/api';
 
 interface PatientRoutine {
   id: number;
   notes?: string;
   patient: { id: number; name: string };
-  routine: { id: number; name: string; description?: string; videoUrl?: string; duration?: number; category?: string };
+  routine: { id: number; name: string; description?: string; videoUrl?: string; pdfUrl?: string; duration?: number; category?: string };
 }
 
 const CAT_COLORS: Record<string, string> = {
@@ -76,18 +76,23 @@ export default function PortalRoutines() {
                     <span className="font-medium">Nota de tu fisio: </span>{pr.notes}
                   </div>
                 )}
-                {pr.routine.videoUrl ? (
-                  <a
-                    href={pr.routine.videoUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 bg-navy-700 text-white text-sm px-4 py-2 rounded-lg hover:bg-navy-800 transition-colors"
-                  >
-                    <PlayCircle size={16} /> Ver vídeo del ejercicio
-                  </a>
-                ) : (
-                  <span className="text-xs text-navy-300">Sin vídeo adjunto</span>
-                )}
+                <div className="flex flex-wrap gap-2">
+                  {pr.routine.videoUrl && (
+                    <a href={pr.routine.videoUrl} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-2 bg-navy-700 text-white text-sm px-4 py-2 rounded-lg hover:bg-navy-800 transition-colors">
+                      <PlayCircle size={16} /> Ver vídeo
+                    </a>
+                  )}
+                  {pr.routine.pdfUrl && (
+                    <a href={pr.routine.pdfUrl} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-2 bg-teal-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                      <FileText size={16} /> Ver PDF
+                    </a>
+                  )}
+                  {!pr.routine.videoUrl && !pr.routine.pdfUrl && (
+                    <span className="text-xs text-navy-300">Sin material adjunto</span>
+                  )}
+                </div>
               </div>
             ))}
           </div>

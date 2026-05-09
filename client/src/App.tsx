@@ -14,6 +14,7 @@ import RoutinesPage from './pages/RoutinesPage';
 import ChatPage from './pages/ChatPage';
 import PlansPage from './pages/PlansPage';
 import VirtualClinicPage from './pages/VirtualClinicPage';
+import BrainPage from './pages/BrainPage';
 
 // Portal del cliente
 import PortalLoginPage from './pages/portal/PortalLoginPage';
@@ -24,6 +25,7 @@ import PortalAppointments from './pages/portal/PortalAppointments';
 import PortalRoutines from './pages/portal/PortalRoutines';
 import PortalPlans from './pages/portal/PortalPlans';
 import PortalChat from './pages/portal/PortalChat';
+import PortalFollowUp from './pages/portal/PortalFollowUp';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
@@ -51,6 +53,7 @@ export default function App() {
           <Route path="chat"         element={<ChatPage />} />
           <Route path="chat/:tutorId" element={<ChatPage />} />
           <Route path="clinic"       element={<VirtualClinicPage />} />
+          <Route path="brain"        element={<BrainPage />} />
         </Route>
 
         {/* ── Portal cliente ── */}
@@ -61,6 +64,7 @@ export default function App() {
           <Route path="appointments" element={<PortalAppointments />} />
           <Route path="routines"     element={<PortalRoutines />} />
           <Route path="plans"        element={<PortalPlans />} />
+          <Route path="followup"     element={<PortalFollowUp />} />
           <Route path="chat"         element={<PortalChat />} />
         </Route>
       </Routes>

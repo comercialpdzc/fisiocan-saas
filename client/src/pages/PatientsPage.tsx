@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { PawPrint, Plus, Search, ChevronRight } from 'lucide-react';
+import { PawPrint, Plus, Search, ChevronRight, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface Patient {
@@ -22,6 +22,7 @@ export default function PatientsPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [showNew, setShowNew] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { data: patients = [] } = useQuery<Patient[]>({
     queryKey: ['patients'],
@@ -33,11 +34,18 @@ export default function PatientsPage() {
     queryFn: () => api.get('/tutors'),
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => api.delete(`/patients/${id}`),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['patients'] }); setDeleteId(null); },
+  });
+
   const filtered = patients.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.tutor.name.toLowerCase().includes(search.toLowerCase()) ||
     p.species.toLowerCase().includes(search.toLowerCase())
   );
+
+  const patientToDelete = patients.find(p => p.id === deleteId);
 
   return (
     <div className="p-4 md:p-8">
@@ -72,19 +80,24 @@ export default function PatientsPage() {
             {/* Mobile: card list */}
             <div className="md:hidden divide-y divide-navy-50">
               {filtered.map(p => (
-                <Link key={p.id} to={`/patients/${p.id}`} className="flex items-center gap-3 p-4 hover:bg-navy-50 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
-                    <PawPrint size={16} className="text-teal-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-navy-700">{p.name}</div>
-                    <div className="text-xs text-navy-400 truncate">{p.species}{p.breed ? ` · ${p.breed}` : ''} · {p.tutor.name}</div>
-                  </div>
+                <div key={p.id} className="flex items-center gap-3 p-4 hover:bg-navy-50 transition-colors">
+                  <Link to={`/patients/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
+                      <PawPrint size={16} className="text-teal-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-navy-700">{p.name}</div>
+                      <div className="text-xs text-navy-400 truncate">{p.species}{p.breed ? ` · ${p.breed}` : ''} · {p.tutor.name}</div>
+                    </div>
+                  </Link>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={p.active ? 'badge-green' : 'badge-gray'}>{p.active ? 'Activo' : 'Inactivo'}</span>
-                    <ChevronRight size={16} className="text-navy-300" />
+                    <button onClick={() => setDeleteId(p.id)} className="p-1.5 text-navy-300 hover:text-red-500 transition-colors">
+                      <Trash2 size={15} />
+                    </button>
+                    <Link to={`/patients/${p.id}`}><ChevronRight size={16} className="text-navy-300" /></Link>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
 
@@ -117,9 +130,14 @@ export default function PatientsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link to={`/patients/${p.id}`} className="text-navy-300 group-hover:text-teal-500 transition-colors">
-                        <ChevronRight size={18} />
-                      </Link>
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => setDeleteId(p.id)} className="p-1.5 text-navy-300 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                          <Trash2 size={15} />
+                        </button>
+                        <Link to={`/patients/${p.id}`} className="text-navy-300 group-hover:text-teal-500 transition-colors">
+                          <ChevronRight size={18} />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -130,6 +148,27 @@ export default function PatientsPage() {
       </div>
 
       {showNew && <NewPatientModal tutors={tutors} onClose={() => setShowNew(false)} onCreated={() => { qc.invalidateQueries({ queryKey: ['patients'] }); setShowNew(false); }} />}
+
+      {deleteId !== null && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setDeleteId(null)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-bold text-navy-700 mb-2">¿Eliminar paciente?</h2>
+            <p className="text-sm text-navy-400 mb-5">
+              Se eliminará <span className="font-semibold text-navy-700">{patientToDelete?.name}</span> y todos sus datos (ficha, citas, planes, ejercicios). Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteId(null)} className="btn-ghost flex-1 justify-center">Cancelar</button>
+              <button
+                onClick={() => deleteMutation.mutate(deleteId)}
+                disabled={deleteMutation.isPending}
+                className="flex-1 justify-center btn bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {deleteMutation.isPending ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

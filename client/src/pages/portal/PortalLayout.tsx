@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, PawPrint, Dumbbell, FileText, MessageSquare, LogOut, CalendarDays, Menu, X } from 'lucide-react';
+import { LayoutDashboard, PawPrint, Dumbbell, FileText, MessageSquare, LogOut, CalendarDays, Menu, X, Camera } from 'lucide-react';
 import { clearPortalAuth, getPortalUser } from '../../lib/portalAuth';
 const logoUrl = '/logo.png';
 
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/portal/appointments', label: 'Citas',        icon: CalendarDays },
   { to: '/portal/routines',     label: 'Ejercicios',   icon: Dumbbell },
   { to: '/portal/plans',        label: 'Planes',       icon: FileText },
+  { to: '/portal/followup',     label: 'Seguimiento',  icon: Camera },
   { to: '/portal/chat',         label: 'Mensajes',     icon: MessageSquare },
 ];
 

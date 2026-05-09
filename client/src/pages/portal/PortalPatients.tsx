@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { PawPrint, Dumbbell, FileText } from 'lucide-react';
+import { useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { PawPrint, Dumbbell, FileText, Camera } from 'lucide-react';
 import { portalApi } from '../../lib/api';
 
 interface PortalMe {
   patients: Array<{
     id: number; name: string; species: string; breed?: string;
-    weight?: string; sex?: string; neutered?: string; active: boolean;
+    weight?: string; sex?: string; neutered?: string; active: boolean; photoUrl?: string;
     rehabRoutines: Array<{ routine: { name: string; category?: string } }>;
     _count: { plans: number };
     intakeData?: { motivoConsulta?: string; objetivos?: string };
@@ -13,10 +14,23 @@ interface PortalMe {
 }
 
 export default function PortalPatients() {
+  const qc = useQueryClient();
   const { data: me, isLoading } = useQuery<PortalMe>({
     queryKey: ['portal-me'],
     queryFn: () => portalApi.get('/portal/me'),
   });
+
+  const photoRefs = useRef<Record<number, HTMLInputElement | null>>({});
+
+  async function uploadPhoto(patientId: number, file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch(`${import.meta.env.VITE_API_URL ?? ''}/api/upload`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!data.url) { alert(data.error ?? 'Error al subir foto'); return; }
+    await portalApi.patch(`/portal/patients/${patientId}/photo`, { photoUrl: data.url });
+    qc.invalidateQueries({ queryKey: ['portal-me'] });
+  }
 
   if (isLoading) return <div className="p-8 text-navy-400">Cargando…</div>;
 
@@ -31,8 +45,21 @@ export default function PortalPatients() {
         {me?.patients.map(p => (
           <div key={p.id} className="card">
             <div className="flex items-start gap-4 mb-4">
-              <div className="w-14 h-14 rounded-2xl bg-teal-100 flex items-center justify-center flex-shrink-0">
-                <PawPrint size={26} className="text-teal-600" />
+              <div className="relative group flex-shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-teal-100 flex items-center justify-center overflow-hidden">
+                  {p.photoUrl
+                    ? <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
+                    : <PawPrint size={26} className="text-teal-600" />}
+                </div>
+                <button
+                  onClick={() => photoRefs.current[p.id]?.click()}
+                  className="absolute inset-0 rounded-2xl bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  title="Cambiar foto">
+                  <Camera size={16} className="text-white" />
+                </button>
+                <input type="file" accept="image/*" className="hidden"
+                  ref={el => { photoRefs.current[p.id] = el; }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadPhoto(p.id, f); }} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">

@@ -18,6 +18,7 @@ const routineSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   videoUrl: z.string().url().optional().or(z.literal('')),
+  pdfUrl: z.string().url().optional().or(z.literal('')),
   duration: z.number().int().positive().optional(),
   category: z.string().optional(),
 });

@@ -17,9 +17,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  messages     Message[]
-  appointments Appointment[] @relation("FisioAppointments")
-  plans        Plan[]
+  messages         Message[]
+  appointments     Appointment[]     @relation("FisioAppointments")
+  plans            Plan[]
+  sessionFollowups SessionFollowup[]
 }
 
 model Tutor {
@@ -28,14 +29,14 @@ model Tutor {
   phone          String
   email          String?
   howFoundUs     String?
-  // Portal de cliente
   portalEmail    String?  @unique
   portalPassword String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  patients Patient[]
-  messages Message[]
+  patients   Patient[]
+  messages   Message[]
+  mediaFiles MediaFile[]
 }
 
 model Patient {
@@ -47,6 +48,9 @@ model Patient {
   weight    String?
   sex       String?
   neutered  String?
+  photoUrl  String?
+  diseases  String? // Enfermedades diagnosticadas
+  allergies String? // Alergias conocidas
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -54,10 +58,16 @@ model Patient {
   tutorId Int
   tutor   Tutor @relation(fields: [tutorId], references: [id])
 
-  intakeData    IntakeData?
-  appointments  Appointment[]
-  rehabRoutines PatientRoutine[]
-  plans         Plan[]
+  intakeData          IntakeData?
+  appointments        Appointment[]
+  appointmentPatients AppointmentPatient[]
+  rehabRoutines       PatientRoutine[]
+  plans               Plan[]
+  followUpMedia       FollowUpMedia[]
+  patientMedia        PatientMedia[]
+  evaluation          PatientEvaluation?
+  sessionFollowups    SessionFollowup[]
+  mediaFiles          MediaFile[]
 }
 
 model IntakeData {
@@ -86,22 +96,40 @@ model IntakeData {
   escaleras           String?
   observaciones       String?
   objetivos           String?
+  enfermedades        String? // Enfermedades diagnosticadas (onboarding)
+  alergias            String? // Alergias conocidas (onboarding)
   createdAt           DateTime @default(now())
 }
 
 model Appointment {
-  id        Int      @id @default(autoincrement())
-  date      DateTime
-  duration  Int      @default(60)
-  notes     String?
-  status    String   @default("SCHEDULED")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  date          DateTime
+  duration      Int      @default(60)
+  notes         String?
+  status        String   @default("SCHEDULED")
+  googleEventId String? // Google Calendar event ID for sync
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   patientId Int
   patient   Patient @relation(fields: [patientId], references: [id])
   fisioId   Int
   fisio     User    @relation("FisioAppointments", fields: [fisioId], references: [id])
+
+  appointmentPatients AppointmentPatient[]
+  sessionFollowups    SessionFollowup[]
+}
+
+// Junction table: one appointment can have multiple patients
+model AppointmentPatient {
+  id            Int         @id @default(autoincrement())
+  appointmentId Int
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  patientId     Int
+  patient       Patient     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([appointmentId, patientId])
 }
 
 model RehabRoutine {
@@ -109,6 +137,7 @@ model RehabRoutine {
   name        String
   description String?
   videoUrl    String?
+  pdfUrl      String?
   duration    Int?
   category    String?
   createdAt   DateTime @default(now())
@@ -129,12 +158,11 @@ model PatientRoutine {
   @@unique([patientId, routineId])
 }
 
-// Planes enviados por María al paciente (ejercicios, nutrición, general)
 model Plan {
   id          Int      @id @default(autoincrement())
   title       String
   type        String   @default("GENERAL") // EXERCISE | NUTRITION | GENERAL
-  content     String // texto enriquecido / markdown
+  content     String
   patientId   Int
   patient     Patient  @relation(fields: [patientId], references: [id])
   createdById Int
@@ -144,14 +172,261 @@ model Plan {
   updatedAt   DateTime @updatedAt
 }
 
-model Message {
-  id        Int      @id @default(autoincrement())
-  body      String
+// ── Primera Evaluación ─────────────────────────────────────────────────────
+
+model PatientEvaluation {
+  id        Int     @id @default(autoincrement())
+  patientId Int     @unique
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  // Anamnesis
+  cirugiasPrevias        String?
+  medicacionActual       String?
+  tratamientosAnteriores String?
+  respuestaTratamientos  String?
+  alergias               String?
+  sintomasReferidos      String? // JSON array of checkbox keys
+  otrosSintomas          String?
+
+  // Exploración estática
+  posturaGeneral         String? // Normal|Cifosis|Lordosis|Escoliosis|Asimétrica
+  distribucionPeso       String? // Simétrica|Descarga anterior|Descarga posterior|Lateral
+  estadoMuscularGeneral  String? // Normal|Hipertonía|Hipotonía|Atrofia focal
+  condicionCorporal      Int? // 1–9
+  estadoPiel             String?
+  observacionesEstaticas String?
+
+  // Exploración dinámica
+  tipoMarcha             String? // Normal|Atáxica|Espástica|Parética|Otros
+  cojeraSiNo             String? // No|Sí
+  cojeraGrado            Int? // 1–4
+  cojeraMiembro          String?
+  inicioMarcha           String? // Fluido|Dificultoso|Con apoyo
+  troteGalope            String? // Normal|Alterado|No evaluado
+  subidaBajada           String? // Normal|Dificultosa|No evaluado
+  proprioceptivePlacing  String? // Normal|Retrasado|Ausente
+  observacionesDinamicas String?
+
+  // Palpación y ROM — JSON: [{zona, tono, dolor, notas}]
+  palpacionROM String?
+
+  // Escalas globales
+  dolorReposo     Int? // 0–10
+  dolorMovimiento Int? // 0–10
+  nivelFuncional  Int? // 0–10
+
+  // Pruebas complementarias — JSON: [{tipo, resultado, hallazgos, archivoUrl}]
+  pruebasComplementarias String?
+
+  // Diagnóstico funcional
+  hipotesisDiagnostica    String?
+  pronosticoFuncional     String? // Favorable|Reservado|Desfavorable
+  limitacionesTratamiento String?
+
+  // Plan de tratamiento
+  objetivoCortoplazo   String?
+  objetivoMedioplazo   String?
+  objetivoLargoplazo   String?
+  tecnicasPrevistas    String? // JSON array of technique keys
+  frecuenciaSemana     Int?
+  duracionSesionMin    Int?
+  reevaluacionPrevista DateTime?
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Hoja de Sesión / Seguimiento ───────────────────────────────────────────
+
+model SessionFollowup {
+  id            Int          @id @default(autoincrement())
+  patientId     Int
+  patient       Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId Int?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  sessionNumber Int          @default(1)
+  fisioId       Int
+  fisio         User         @relation(fields: [fisioId], references: [id])
+  date          DateTime     @default(now())
+  durationMin   Int?
+
+  // Estado al inicio
+  dolorReferido      Int? // 0–10
+  movilidadReferida  String? // Igual|Mejor|Peor
+  actividadCasa      String? // Igual|Mejor|Peor
+  actividadNotas     String?
+  medicacionCambios  String? // Sin cambios|Cambios
+  medicacionDetalle  String?
+  incidenciasDesde   String?
+  observacionesTutor String?
+
+  // Exploración rápida — sliders 0–10
+  dolorReposoRapido     Int?
+  dolorMovimientoRapido Int?
+  rangoMovimiento       Int?
+  nivelFuncionalRapido  Int?
+  posturaPeso           String?
+  marchaRapida          String? // Normal|Cojera
+  cojeraGradoRapido     Int?
+  cojeraMiembroRapido   String?
+  tonoMuscular          String? // Normal|Aumentado|Disminuido
+  proprioceptiveRapido  String? // Normal|Retrasado|Ausente|No evaluado
+  hallazgosPalpacion    String?
+
+  // Tratamiento realizado
+  tecnicasRealizadas     String? // JSON array
+  descripcionTratamiento String?
+
+  // Respuesta al tratamiento
+  respuestaInmediata  String? // Buena|Regular|Sin cambios|Leve empeoramiento
+  dolorPostSesion     Int? // 0–10
+  tolerancia          String? // Buena|Aceptable|Pobre|Sedación
+  observacionesSesion String?
+
+  // Evolución respecto a sesión anterior
+  evolucionGeneral     String? // Mejoría significativa|Mejoría leve|Estable|Empeoramiento
+  objetivosAlcanzados  String?
+  modificacionPlan     String? // No|Sí
+  modificacionDetalle  String?
+  comentariosEvolucion String?
+
+  // Pautas domiciliarias
+  ejerciciosRecomendaciones String?
+  restriccionesActividad    String?
+  calorFrioEnCasa           String?
+  otrasIndicaciones         String?
+
+  // Próxima sesión
+  fechaProximaSesion DateTime?
+  frecuenciaProxima  String?
+  objetivosProxima   String?
+  alertasSigns       String?
+
+  mediaFiles MediaFile[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ── Archivos multimedia (referencia a Google Drive o Vercel Blob) ──────────
+
+model MediaFile {
+  id           Int              @id @default(autoincrement())
+  patientId    Int?
+  patient      Patient?         @relation(fields: [patientId], references: [id])
+  sessionId    Int?
+  session      SessionFollowup? @relation(fields: [sessionId], references: [id])
+  evaluationId Int? // FK to PatientEvaluation
+  tutorId      Int? // FK to Tutor
+  tutor        Tutor?           @relation(fields: [tutorId], references: [id])
+  driveFileId  String?
+  driveUrl     String?
+  thumbnailUrl String? // Google Drive thumbnail or generated preview
+  localUrl     String? // fallback: Vercel Blob URL
+  fileType     String           @default("image") // image|video|pdf|document|audio
+  originType   String           @default("general") // evaluation|followup|cerebro|tutor
+  description  String?
+  createdAt    DateTime         @default(now())
+}
+
+// ── Gmail contacts ─────────────────────────────────────────────────────────
+
+model GmailContact {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  name          String?
+  type          String    @default("otro") // veterinario|tutor|otro
+  brainNoteId   Int? // optional link to brain graph node
+  lastContactAt DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model FollowUpMedia {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  url       String
+  mediaType String   @default("photo")
+  caption   String?
+  createdAt DateTime @default(now())
+}
+
+model PatientMedia {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  url       String
+  mediaType String   @default("photo")
+  caption   String?
+  takenAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id        Int       @id @default(autoincrement())
+  body      String
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
 
   fisioId   Int?
   fisio     User?   @relation(fields: [fisioId], references: [id])
   tutorId   Int?
   tutor     Tutor?  @relation(fields: [tutorId], references: [id])
   fromTutor Boolean @default(false)
+}
+
+model BrainNote {
+  id         Int      @id @default(autoincrement())
+  title      String
+  content    String
+  tags       String   @default("")
+  originType String   @default("manual")
+  sourceRef  String?
+  x          Float?
+  y          Float?
+  z          Float?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  synapsesA BrainSynapse[] @relation("SynapseNodeA")
+  synapsesB BrainSynapse[] @relation("SynapseNodeB")
+}
+
+model BrainSynapse {
+  id            Int      @id @default(autoincrement())
+  nodeIdA       Int
+  nodeIdB       Int
+  strength      Float    @default(1.0)
+  count         Int      @default(1)
+  firstLinkedAt DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  nodeA BrainNote @relation("SynapseNodeA", fields: [nodeIdA], references: [id], onDelete: Cascade)
+  nodeB BrainNote @relation("SynapseNodeB", fields: [nodeIdB], references: [id], onDelete: Cascade)
+
+  @@unique([nodeIdA, nodeIdB])
+}
+
+model BrainIndexedMessage {
+  id        Int      @id @default(autoincrement())
+  messageId Int      @unique
+  indexedAt DateTime @default(now())
+}
+
+model BrainConversation {
+  id        Int            @id @default(autoincrement())
+  title     String         @default("Nueva conversación")
+  createdAt DateTime       @default(now())
+  messages  BrainMessage[]
+}
+
+model BrainMessage {
+  id             Int                @id @default(autoincrement())
+  role           String
+  content        String
+  createdAt      DateTime           @default(now())
+  conversationId Int?
+  conversation   BrainConversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 }

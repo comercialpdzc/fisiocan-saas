@@ -101,6 +101,7 @@ router.get('/me', requirePortalAuth, async (req: PortalRequest, res) => {
           rehabRoutines: { include: { routine: true } },
           appointments: { where: { date: { gte: new Date() }, status: 'SCHEDULED' }, orderBy: { date: 'asc' }, take: 3 },
           _count: { select: { plans: true } },
+          intakeData: { select: { motivoConsulta: true, objetivos: true } },
         },
       },
     },
@@ -164,6 +165,57 @@ router.post('/messages', requirePortalAuth, async (req: PortalRequest, res) => {
     data: { body: parse.data.body, tutorId: req.tutorId!, fromTutor: true },
   });
   res.status(201).json(msg);
+});
+
+// ── Update patient photo ────────────────────────────────────────────────────
+router.patch('/patients/:id/photo', requirePortalAuth, async (req: PortalRequest, res) => {
+  const patientId = Number(req.params.id);
+  const parse = z.object({ photoUrl: z.string().url() }).safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: 'URL inválida' }); return; }
+  const patient = await prisma.patient.findFirst({ where: { id: patientId, tutorId: req.tutorId } });
+  if (!patient) { res.status(403).json({ error: 'No autorizado' }); return; }
+  const updated = await prisma.patient.update({ where: { id: patientId }, data: { photoUrl: parse.data.photoUrl } });
+  res.json(updated);
+});
+
+// ── Follow-up media ────────────────────────────────────────────────────────
+router.get('/followup', requirePortalAuth, async (req: PortalRequest, res) => {
+  const patients = await prisma.patient.findMany({ where: { tutorId: req.tutorId }, select: { id: true, name: true } });
+  const ids = patients.map(p => p.id);
+  const media = await prisma.followUpMedia.findMany({
+    where: { patientId: { in: ids } },
+    include: { patient: { select: { id: true, name: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+  res.json(media);
+});
+
+router.post('/followup', requirePortalAuth, async (req: PortalRequest, res) => {
+  const parse = z.object({
+    patientId: z.number(),
+    url: z.string().url(),
+    mediaType: z.enum(['photo', 'video']).default('photo'),
+    caption: z.string().optional(),
+  }).safeParse(req.body);
+  if (!parse.success) { res.status(400).json({ error: parse.error.flatten() }); return; }
+
+  // Verify patient belongs to this tutor
+  const patient = await prisma.patient.findFirst({ where: { id: parse.data.patientId, tutorId: req.tutorId } });
+  if (!patient) { res.status(403).json({ error: 'Paciente no encontrado' }); return; }
+
+  const media = await prisma.followUpMedia.create({ data: { ...parse.data } });
+  res.status(201).json(media);
+});
+
+router.delete('/followup/:id', requirePortalAuth, async (req: PortalRequest, res) => {
+  const id = Number(req.params.id);
+  const media = await prisma.followUpMedia.findFirst({
+    where: { id },
+    include: { patient: { select: { tutorId: true } } },
+  });
+  if (!media || media.patient.tutorId !== req.tutorId) { res.status(403).json({ error: 'No autorizado' }); return; }
+  await prisma.followUpMedia.delete({ where: { id } });
+  res.status(204).send();
 });
 
 export default router;

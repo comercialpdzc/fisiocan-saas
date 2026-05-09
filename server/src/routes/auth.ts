@@ -6,6 +6,23 @@ import { prisma } from '../db';
 
 const router = Router();
 
+// Google login for admin
+router.post('/google', async (req, res) => {
+  const { credential } = req.body;
+  if (!credential) { res.status(400).json({ error: 'Token requerido' }); return; }
+
+  const googleRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${credential}`);
+  if (!googleRes.ok) { res.status(401).json({ error: 'Token de Google inválido' }); return; }
+
+  const payload = await googleRes.json() as { aud?: string; email?: string; email_verified?: string };
+  if (payload.email_verified !== 'true') { res.status(401).json({ error: 'Email no verificado' }); return; }
+
+  const user = await prisma.user.findUnique({ where: { email: payload.email! } });
+  if (!user) { res.status(401).json({ error: 'No tienes acceso al panel' }); return; }
+
+  const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET!, { expiresIn: '7d' });
+  res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+});
 
 const loginSchema = z.object({
   email: z.string().email(),

@@ -153,6 +153,9 @@ exports.Prisma.PatientScalarFieldEnum = {
   weight: 'weight',
   sex: 'sex',
   neutered: 'neutered',
+  photoUrl: 'photoUrl',
+  diseases: 'diseases',
+  allergies: 'allergies',
   active: 'active',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -184,6 +187,8 @@ exports.Prisma.IntakeDataScalarFieldEnum = {
   escaleras: 'escaleras',
   observaciones: 'observaciones',
   objetivos: 'objetivos',
+  enfermedades: 'enfermedades',
+  alergias: 'alergias',
   createdAt: 'createdAt'
 };
 
@@ -193,10 +198,18 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   duration: 'duration',
   notes: 'notes',
   status: 'status',
+  googleEventId: 'googleEventId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   patientId: 'patientId',
   fisioId: 'fisioId'
+};
+
+exports.Prisma.AppointmentPatientScalarFieldEnum = {
+  id: 'id',
+  appointmentId: 'appointmentId',
+  patientId: 'patientId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.RehabRoutineScalarFieldEnum = {
@@ -204,6 +217,7 @@ exports.Prisma.RehabRoutineScalarFieldEnum = {
   name: 'name',
   description: 'description',
   videoUrl: 'videoUrl',
+  pdfUrl: 'pdfUrl',
   duration: 'duration',
   category: 'category',
   createdAt: 'createdAt',
@@ -230,13 +244,199 @@ exports.Prisma.PlanScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PatientEvaluationScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  cirugiasPrevias: 'cirugiasPrevias',
+  medicacionActual: 'medicacionActual',
+  tratamientosAnteriores: 'tratamientosAnteriores',
+  respuestaTratamientos: 'respuestaTratamientos',
+  alergias: 'alergias',
+  sintomasReferidos: 'sintomasReferidos',
+  otrosSintomas: 'otrosSintomas',
+  posturaGeneral: 'posturaGeneral',
+  distribucionPeso: 'distribucionPeso',
+  estadoMuscularGeneral: 'estadoMuscularGeneral',
+  condicionCorporal: 'condicionCorporal',
+  estadoPiel: 'estadoPiel',
+  observacionesEstaticas: 'observacionesEstaticas',
+  tipoMarcha: 'tipoMarcha',
+  cojeraSiNo: 'cojeraSiNo',
+  cojeraGrado: 'cojeraGrado',
+  cojeraMiembro: 'cojeraMiembro',
+  inicioMarcha: 'inicioMarcha',
+  troteGalope: 'troteGalope',
+  subidaBajada: 'subidaBajada',
+  proprioceptivePlacing: 'proprioceptivePlacing',
+  observacionesDinamicas: 'observacionesDinamicas',
+  palpacionROM: 'palpacionROM',
+  dolorReposo: 'dolorReposo',
+  dolorMovimiento: 'dolorMovimiento',
+  nivelFuncional: 'nivelFuncional',
+  pruebasComplementarias: 'pruebasComplementarias',
+  hipotesisDiagnostica: 'hipotesisDiagnostica',
+  pronosticoFuncional: 'pronosticoFuncional',
+  limitacionesTratamiento: 'limitacionesTratamiento',
+  objetivoCortoplazo: 'objetivoCortoplazo',
+  objetivoMedioplazo: 'objetivoMedioplazo',
+  objetivoLargoplazo: 'objetivoLargoplazo',
+  tecnicasPrevistas: 'tecnicasPrevistas',
+  frecuenciaSemana: 'frecuenciaSemana',
+  duracionSesionMin: 'duracionSesionMin',
+  reevaluacionPrevista: 'reevaluacionPrevista',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SessionFollowupScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  appointmentId: 'appointmentId',
+  sessionNumber: 'sessionNumber',
+  fisioId: 'fisioId',
+  date: 'date',
+  durationMin: 'durationMin',
+  dolorReferido: 'dolorReferido',
+  movilidadReferida: 'movilidadReferida',
+  actividadCasa: 'actividadCasa',
+  actividadNotas: 'actividadNotas',
+  medicacionCambios: 'medicacionCambios',
+  medicacionDetalle: 'medicacionDetalle',
+  incidenciasDesde: 'incidenciasDesde',
+  observacionesTutor: 'observacionesTutor',
+  dolorReposoRapido: 'dolorReposoRapido',
+  dolorMovimientoRapido: 'dolorMovimientoRapido',
+  rangoMovimiento: 'rangoMovimiento',
+  nivelFuncionalRapido: 'nivelFuncionalRapido',
+  posturaPeso: 'posturaPeso',
+  marchaRapida: 'marchaRapida',
+  cojeraGradoRapido: 'cojeraGradoRapido',
+  cojeraMiembroRapido: 'cojeraMiembroRapido',
+  tonoMuscular: 'tonoMuscular',
+  proprioceptiveRapido: 'proprioceptiveRapido',
+  hallazgosPalpacion: 'hallazgosPalpacion',
+  tecnicasRealizadas: 'tecnicasRealizadas',
+  descripcionTratamiento: 'descripcionTratamiento',
+  respuestaInmediata: 'respuestaInmediata',
+  dolorPostSesion: 'dolorPostSesion',
+  tolerancia: 'tolerancia',
+  observacionesSesion: 'observacionesSesion',
+  evolucionGeneral: 'evolucionGeneral',
+  objetivosAlcanzados: 'objetivosAlcanzados',
+  modificacionPlan: 'modificacionPlan',
+  modificacionDetalle: 'modificacionDetalle',
+  comentariosEvolucion: 'comentariosEvolucion',
+  ejerciciosRecomendaciones: 'ejerciciosRecomendaciones',
+  restriccionesActividad: 'restriccionesActividad',
+  calorFrioEnCasa: 'calorFrioEnCasa',
+  otrasIndicaciones: 'otrasIndicaciones',
+  fechaProximaSesion: 'fechaProximaSesion',
+  frecuenciaProxima: 'frecuenciaProxima',
+  objetivosProxima: 'objetivosProxima',
+  alertasSigns: 'alertasSigns',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MediaFileScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  sessionId: 'sessionId',
+  evaluationId: 'evaluationId',
+  tutorId: 'tutorId',
+  driveFileId: 'driveFileId',
+  driveUrl: 'driveUrl',
+  thumbnailUrl: 'thumbnailUrl',
+  localUrl: 'localUrl',
+  fileType: 'fileType',
+  originType: 'originType',
+  description: 'description',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.GmailContactScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  type: 'type',
+  brainNoteId: 'brainNoteId',
+  lastContactAt: 'lastContactAt',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.FollowUpMediaScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  url: 'url',
+  mediaType: 'mediaType',
+  caption: 'caption',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PatientMediaScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  url: 'url',
+  mediaType: 'mediaType',
+  caption: 'caption',
+  takenAt: 'takenAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
   body: 'body',
   createdAt: 'createdAt',
+  readAt: 'readAt',
   fisioId: 'fisioId',
   tutorId: 'tutorId',
   fromTutor: 'fromTutor'
+};
+
+exports.Prisma.BrainNoteScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  content: 'content',
+  tags: 'tags',
+  originType: 'originType',
+  sourceRef: 'sourceRef',
+  x: 'x',
+  y: 'y',
+  z: 'z',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BrainSynapseScalarFieldEnum = {
+  id: 'id',
+  nodeIdA: 'nodeIdA',
+  nodeIdB: 'nodeIdB',
+  strength: 'strength',
+  count: 'count',
+  firstLinkedAt: 'firstLinkedAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BrainIndexedMessageScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  indexedAt: 'indexedAt'
+};
+
+exports.Prisma.BrainConversationScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BrainMessageScalarFieldEnum = {
+  id: 'id',
+  role: 'role',
+  content: 'content',
+  createdAt: 'createdAt',
+  conversationId: 'conversationId'
 };
 
 exports.Prisma.SortOrder = {
@@ -261,10 +461,22 @@ exports.Prisma.ModelName = {
   Patient: 'Patient',
   IntakeData: 'IntakeData',
   Appointment: 'Appointment',
+  AppointmentPatient: 'AppointmentPatient',
   RehabRoutine: 'RehabRoutine',
   PatientRoutine: 'PatientRoutine',
   Plan: 'Plan',
-  Message: 'Message'
+  PatientEvaluation: 'PatientEvaluation',
+  SessionFollowup: 'SessionFollowup',
+  MediaFile: 'MediaFile',
+  GmailContact: 'GmailContact',
+  FollowUpMedia: 'FollowUpMedia',
+  PatientMedia: 'PatientMedia',
+  Message: 'Message',
+  BrainNote: 'BrainNote',
+  BrainSynapse: 'BrainSynapse',
+  BrainIndexedMessage: 'BrainIndexedMessage',
+  BrainConversation: 'BrainConversation',
+  BrainMessage: 'BrainMessage'
 };
 
 /**

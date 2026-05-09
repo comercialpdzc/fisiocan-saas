@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { Dumbbell, Plus, Pencil, Trash2, ExternalLink } from 'lucide-react';
+import { Dumbbell, Plus, Pencil, Trash2, ExternalLink, FileText, Upload } from 'lucide-react';
 import { api } from '../lib/api';
 
 interface Routine {
   id: number; name: string; description?: string;
-  videoUrl?: string; duration?: number; category?: string;
+  videoUrl?: string; pdfUrl?: string; duration?: number; category?: string;
 }
 
 const CATEGORIES = ['Movilidad', 'Hidroterapia', 'Propiocepción', 'Fortalecimiento', 'Flexibilidad', 'Masoterapia', 'Otro'];
@@ -57,12 +57,20 @@ export default function RoutinesPage() {
                         {r.duration && <span className="text-xs text-navy-400">{r.duration} min</span>}
                       </div>
                       {r.description && <p className="text-xs text-navy-400 mt-1 line-clamp-2">{r.description}</p>}
-                      {r.videoUrl && (
-                        <a href={r.videoUrl} target="_blank" rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-teal-500 hover:underline mt-2">
-                          <ExternalLink size={11} /> Ver video
-                        </a>
-                      )}
+                      <div className="flex flex-wrap gap-3 mt-2">
+                        {r.videoUrl && (
+                          <a href={r.videoUrl} target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-teal-500 hover:underline">
+                            <ExternalLink size={11} /> Ver video
+                          </a>
+                        )}
+                        {r.pdfUrl && (
+                          <a href={r.pdfUrl} target="_blank" rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-navy-500 hover:underline">
+                            <FileText size={11} /> Ver PDF
+                          </a>
+                        )}
+                      </div>
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
                       <button onClick={() => setEditing(r)} className="p-2 text-navy-300 hover:text-navy-600 transition-colors rounded-lg hover:bg-navy-50 min-h-[44px] min-w-[44px] flex items-center justify-center">
@@ -103,10 +111,25 @@ function RoutineModal({ initial, onClose, onSaved }: { initial?: Routine; onClos
     name: initial?.name ?? '',
     description: initial?.description ?? '',
     videoUrl: initial?.videoUrl ?? '',
+    pdfUrl: initial?.pdfUrl ?? '',
     duration: initial?.duration?.toString() ?? '',
     category: initial?.category ?? '',
   });
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const pdfRef = useRef<HTMLInputElement>(null);
+
+  async function handlePdfUpload(file: File) {
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${import.meta.env.VITE_API_URL ?? ''}/api/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.url) setForm(p => ({ ...p, pdfUrl: data.url }));
+      else alert(data.error ?? 'Error al subir el PDF');
+    } finally { setUploading(false); }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -145,9 +168,36 @@ function RoutineModal({ initial, onClose, onSaved }: { initial?: Routine; onClos
           <div><label className="label">URL del vídeo</label>
             <input className="input" type="url" placeholder="https://youtube.com/…" value={form.videoUrl} onChange={f('videoUrl')} />
           </div>
+          <div>
+            <label className="label">PDF de la rutina</label>
+            {form.pdfUrl ? (
+              <div className="flex items-center gap-2">
+                <a href={form.pdfUrl} target="_blank" rel="noreferrer"
+                  className="flex-1 input text-sm text-navy-500 truncate flex items-center gap-2">
+                  <FileText size={13} /> {form.pdfUrl.split('/').pop()}
+                </a>
+                <button type="button" onClick={() => setForm(p => ({ ...p, pdfUrl: '' }))}
+                  className="p-2 text-navy-300 hover:text-red-500 transition-colors">
+                  ×
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input className="input flex-1" type="url" placeholder="https://… o sube un PDF →"
+                  value={form.pdfUrl} onChange={f('pdfUrl')} />
+                <button type="button" disabled={uploading}
+                  onClick={() => pdfRef.current?.click()}
+                  className="btn-ghost gap-1.5 flex-shrink-0">
+                  <Upload size={14} />{uploading ? 'Subiendo…' : 'Subir'}
+                </button>
+                <input ref={pdfRef} type="file" accept=".pdf,application/pdf" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handlePdfUpload(f); }} />
+              </div>
+            )}
+          </div>
           <div className="flex gap-2 pt-2">
             <button type="button" onClick={onClose} className="btn-ghost flex-1 justify-center">Cancelar</button>
-            <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">{loading ? 'Guardando…' : 'Guardar'}</button>
+            <button type="submit" disabled={loading || uploading} className="btn-primary flex-1 justify-center">{loading ? 'Guardando…' : 'Guardar'}</button>
           </div>
         </form>
       </div>

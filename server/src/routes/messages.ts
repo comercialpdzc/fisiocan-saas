@@ -38,6 +38,25 @@ const msgSchema = z.object({
   tutorId: z.number().int().positive(),
 });
 
+// PATCH mark tutor messages as read
+router.patch('/read/:tutorId', async (req, res) => {
+  await prisma.message.updateMany({
+    where: { tutorId: Number(req.params.tutorId), fromTutor: true, readAt: null },
+    data: { readAt: new Date() },
+  });
+  res.json({ ok: true });
+});
+
+// GET unread counts per tutor
+router.get('/unread', async (_req, res) => {
+  const counts = await prisma.message.groupBy({
+    by: ['tutorId'],
+    where: { fromTutor: true, readAt: null },
+    _count: { id: true },
+  });
+  res.json(counts);
+});
+
 // POST message from fisio to tutor
 router.post('/', async (req: AuthRequest, res) => {
   const parse = msgSchema.safeParse(req.body);

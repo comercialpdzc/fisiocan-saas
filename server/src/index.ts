@@ -14,6 +14,13 @@ import messagesRouter from './routes/messages';
 import intakeRouter from './routes/intake';
 import plansRouter from './routes/plans';
 import portalRouter from './routes/portal';
+import uploadRouter from './routes/upload';
+import brainRouter from './routes/brain';
+import evaluationsRouter from './routes/evaluations';
+import sessionFollowupsRouter from './routes/session-followups';
+import driveRouter from './routes/drive';
+import gmailRouter from './routes/gmail';
+import adminRouter from './routes/admin';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -51,6 +58,13 @@ app.use('/api/messages',     messagesRouter);
 app.use('/api/intake',       intakeRouter);
 app.use('/api/plans',        plansRouter);
 app.use('/api/portal',       portalRouter);
+app.use('/api/upload',            uploadRouter);
+app.use('/api/brain',             brainRouter);
+app.use('/api/evaluations',       evaluationsRouter);
+app.use('/api/session-followups', sessionFollowupsRouter);
+app.use('/api/drive',             driveRouter);
+app.use('/api/gmail',             gmailRouter);
+app.use('/api/admin',             adminRouter);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'FISIOCAN SaaS' }));
 

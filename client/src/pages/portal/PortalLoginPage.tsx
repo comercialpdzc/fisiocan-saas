@@ -23,6 +23,7 @@ export default function PortalLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -89,37 +90,43 @@ export default function PortalLoginPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img src={logoUrl} alt="FISIOCAN" className="w-24 h-24 rounded-2xl object-contain bg-white p-2 shadow-lg mx-auto mb-4" />
-          <p className="text-navy-200 text-sm mt-1">Portal para propietarios</p>
+          <h1 className="text-white font-bold text-xl">Portal del propietario</h1>
+          <p className="text-navy-200 text-sm mt-1">Accede con tu cuenta de Google</p>
         </div>
 
         <div className="bg-white rounded-2xl p-8 shadow-2xl space-y-5">
-          {/* Google Sign-In */}
-          {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
-            <>
-              <div id="google-signin-btn" className="w-full" />
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-navy-100" />
-                <span className="text-xs text-navy-300">o con contraseña</span>
-                <div className="flex-1 h-px bg-navy-100" />
-              </div>
-            </>
-          )}
+          {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+          {loading && <p className="text-sm text-navy-400 text-center">Iniciando sesión…</p>}
 
-          {/* Email / password form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="label">Email</label>
-              <input type="email" className="input" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
-            </div>
-            <div>
-              <label className="label">Contraseña</label>
-              <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
-            </div>
-            {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-            <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-2.5">
-              {loading ? 'Entrando…' : 'Acceder al portal'}
-            </button>
-          </form>
+          {/* Google Sign-In — primary method */}
+          <div id="google-signin-btn" className="w-full" />
+
+          {/* Password fallback — collapsed by default */}
+          {!showPassword ? (
+            <p className="text-center text-xs text-navy-400">
+              <button
+                type="button"
+                onClick={() => setShowPassword(true)}
+                className="text-navy-400 hover:text-navy-600 underline underline-offset-2"
+              >
+                Acceder con contraseña
+              </button>
+            </p>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 pt-2 border-t border-navy-100">
+              <div>
+                <label className="label">Email</label>
+                <input type="email" className="input" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+              </div>
+              <div>
+                <label className="label">Contraseña</label>
+                <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+              </div>
+              <button type="submit" disabled={loading} className="btn-primary w-full justify-center py-2.5">
+                {loading ? 'Entrando…' : 'Acceder al portal'}
+              </button>
+            </form>
+          )}
 
           <p className="text-center text-xs text-navy-400">
             ¿No tienes acceso? Contacta con tu fisioterapeuta.

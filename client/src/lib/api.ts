@@ -23,11 +23,28 @@ async function request<T>(path: string, options?: RequestInit, portal = false): 
   return res.json();
 }
 
+async function requestForm<T>(path: string, body: FormData): Promise<T> {
+  const token = getToken();
+  const res = await fetch(`${BASE}${path}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  if (res.status === 204) return undefined as T;
+  return res.json();
+}
+
 export const api = {
-  get:    <T>(path: string)              => request<T>(path),
-  post:   <T>(path: string, body: unknown) => request<T>(path, { method: 'POST',  body: JSON.stringify(body) }),
-  patch:  <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
-  delete: <T>(path: string)              => request<T>(path, { method: 'DELETE' }),
+  get:      <T>(path: string)               => request<T>(path),
+  post:     <T>(path: string, body: unknown) => request<T>(path, { method: 'POST',  body: JSON.stringify(body) }),
+  patch:    <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
+  delete:   <T>(path: string)               => request<T>(path, { method: 'DELETE' }),
+  put:      <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+  postForm: <T>(path: string, body: FormData) => requestForm<T>(path, body),
 };
 
 // Portal API (uses different token)
@@ -35,4 +52,5 @@ export const portalApi = {
   get:    <T>(path: string)              => request<T>(path, undefined, true),
   post:   <T>(path: string, body: unknown) => request<T>(path, { method: 'POST',  body: JSON.stringify(body) }, true),
   patch:  <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }, true),
+  delete: <T>(path: string)              => request<T>(path, { method: 'DELETE' }, true),
 };

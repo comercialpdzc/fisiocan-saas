@@ -9,7 +9,7 @@ import { es } from 'date-fns/locale';
 interface PortalMe {
   id: number; name: string;
   patients: Array<{
-    id: number; name: string; species: string; breed?: string; active: boolean;
+    id: number; name: string; species: string; breed?: string; active: boolean; photoUrl?: string;
     rehabRoutines: Array<{ id: number; routine: { name: string } }>;
     appointments: Array<{ id: number; date: string; duration: number }>;
     _count: { plans: number };
@@ -55,8 +55,10 @@ export default function PortalDashboard() {
         {me?.patients.map(p => (
           <Link key={p.id} to="/portal/routines" className="card hover:shadow-md transition-shadow">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
-                <PawPrint size={22} className="text-teal-600" />
+              <div className="w-12 h-12 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {p.photoUrl
+                  ? <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
+                  : <PawPrint size={22} className="text-teal-600" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">

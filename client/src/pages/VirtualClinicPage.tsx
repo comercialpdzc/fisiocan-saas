@@ -508,14 +508,12 @@ export default function VirtualClinicPage() {
         </div>
         <div
           ref={wrapperRef}
-          className="flex-1 flex items-center justify-center p-2 md:p-4 min-h-0 overflow-hidden"
+          className="flex-1 flex items-stretch p-2 md:p-4 min-h-0 overflow-hidden"
         >
-          {/* Container: 100% width up to 640px, height derived from aspect ratio */}
           <div
             ref={canvasRef}
             className="rounded-2xl overflow-hidden shadow-xl border border-navy-100 w-full"
             style={{
-              maxWidth: W,
               aspectRatio: `${W} / ${H}`,
               transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
               transformOrigin: 'center center',
