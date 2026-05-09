@@ -141,7 +141,7 @@ function useNotesMic(onTranscript: (t: string) => void) {
     const Ctor = getWebSpeechCtor();
     if (!Ctor) { alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.'); return; }
     if (micState === 'recording') {
-      recRef.current?.stop(); recRef.current = null; return;
+      recRef.current?.stop(); recRef.current = null; setMicState('idle'); return;
     }
     const r = new Ctor();
     r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;

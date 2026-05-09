@@ -63,6 +63,7 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
   function stopWebSpeech() {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
+    setState('idle');
   }
 
   const stopMediaRecorder = useCallback(async () => {

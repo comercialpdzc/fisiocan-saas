@@ -137,9 +137,7 @@ export async function uploadToDrive(
       requestBody: { role: 'reader', type: 'anyone' },
     });
 
-    const driveUrl =
-      file.data.webContentLink ??
-      `https://drive.google.com/uc?export=view&id=${file.data.id}`;
+    const driveUrl = `https://lh3.googleusercontent.com/d/${file.data.id}`;
 
     const thumbnailUrl = file.data.thumbnailLink ?? null;
 
