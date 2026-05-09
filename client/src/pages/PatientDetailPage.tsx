@@ -351,6 +351,73 @@ function Slider({ label, value, onChange }: { label: string; value: number; onCh
   );
 }
 
+// ── JSON field helpers ────────────────────────────────────────────────────
+
+function parseJson<T>(val: string | undefined, def: T): T {
+  if (!val) return def;
+  try { return { ...def as object, ...JSON.parse(val) } as T; } catch { return def; }
+}
+
+// ── MultiCheck: checkboxes + free notes ──────────────────────────────────
+
+function MultiCheck({ label, options, checks, onChecks, notes, onNotes }: {
+  label?: string; options: string[];
+  checks: string[]; onChecks: (v: string[]) => void;
+  notes: string; onNotes: (v: string) => void;
+}) {
+  const toggle = (o: string) =>
+    onChecks(checks.includes(o) ? checks.filter(c => c !== o) : [...checks, o]);
+  return (
+    <div className="space-y-2">
+      {label && <p className="text-xs font-semibold text-navy-500 uppercase tracking-wide">{label}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+        {options.map(o => (
+          <label key={o} className="flex items-center gap-2 text-sm text-navy-600 cursor-pointer">
+            <input type="checkbox" className="accent-teal-500 w-4 h-4 flex-shrink-0"
+              checked={checks.includes(o)} onChange={() => toggle(o)} />
+            {o}
+          </label>
+        ))}
+      </div>
+      <textarea className="input resize-none text-xs" rows={2} value={notes}
+        onChange={e => onNotes(e.target.value)} placeholder="Observaciones libres…" />
+    </div>
+  );
+}
+
+// ── ShowChecksField: renders a parsed JSON check field in view mode ───────
+
+function ShowChecksField({ value, label }: { value?: string; label: string }) {
+  if (!value) return null;
+  let obj: Record<string, unknown> = {};
+  let wasPlainText = false;
+  try { obj = JSON.parse(value); } catch { wasPlainText = true; }
+  if (wasPlainText) return <Row label={label} value={value} />;
+
+  const allChecks: string[] = [];
+  for (const k of Object.keys(obj)) {
+    if (k === 'notas') continue;
+    const v = obj[k];
+    if (Array.isArray(v)) allChecks.push(...(v as string[]));
+    else if (typeof v === 'string' && v) allChecks.push(`${k}: ${v}`);
+  }
+  const notas = typeof obj.notas === 'string' ? obj.notas : '';
+  if (!allChecks.length && !notas) return null;
+  return (
+    <div className="text-sm border-b border-navy-50 pb-3 last:border-0 last:pb-0 sm:grid sm:grid-cols-3 sm:gap-2">
+      <span className="font-medium text-navy-500 block mb-1 sm:mb-0">{label}</span>
+      <div className="sm:col-span-2 space-y-1">
+        {allChecks.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {allChecks.map(c => <span key={c} className="text-xs bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-100">{c}</span>)}
+          </div>
+        )}
+        {notas && <p className="text-navy-600 whitespace-pre-wrap text-xs mt-1">{notas}</p>}
+      </div>
+    </div>
+  );
+}
+
 function Section({ title, children, defaultOpen = true }: { title: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -560,14 +627,14 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         <Section title="Exploración Estática">
           <Row label="Postura global" value={form.posturaGeneral} />
           <Row label="Distribución del peso" value={form.distribucionPeso} />
-          <Row label="Alineación de las extremidades" value={form.alineacionExtremidades} />
+          <ShowChecksField label="Alineación de las extremidades" value={form.alineacionExtremidades} />
           <Row label="Musculatura general" value={form.estadoMuscularGeneral} />
-          <Row label="Columna vertebral" value={form.columnaVertebral} />
-          <Row label="Cabeza y cuello" value={form.cabezaCuello} />
+          <ShowChecksField label="Columna vertebral" value={form.columnaVertebral} />
+          <ShowChecksField label="Cabeza y cuello" value={form.cabezaCuello} />
           <Row label="Condición corporal (WSAVA)" value={form.condicionCorporal != null ? `${form.condicionCorporal}/9` : undefined} />
           <Row label="Masa muscular (WSAVA)" value={form.masaMuscularWsava} />
           <Row label="Piel y tejidos blandos" value={form.estadoPiel} />
-          <Row label="Comportamiento en reposo" value={form.comportamientoReposo} />
+          <ShowChecksField label="Comportamiento en reposo" value={form.comportamientoReposo} />
           <Row label="Observaciones estáticas" value={form.observacionesEstaticas} />
         </Section>
 
@@ -579,11 +646,11 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
             <Row label="Miembro/s afectado/s" value={form.cojeraMiembro} />
           </>}
           <Row label="Inicio de la marcha" value={form.inicioMarcha} />
-          <Row label="Marcha al paso" value={form.marchaAlPaso} />
-          <Row label="Marcha al trote" value={form.marchaAlTrote} />
-          <Row label="Análisis por zonas (miembros/columna)" value={form.analisisMiembros} />
-          <Row label="Giros, sentarse y levantarse" value={form.girosSentarse} />
-          <Row label="Compensaciones" value={form.compensacionesDin} />
+          <ShowChecksField label="Marcha al paso" value={form.marchaAlPaso} />
+          <ShowChecksField label="Marcha al trote" value={form.marchaAlTrote} />
+          <ShowChecksField label="Análisis por zonas (miembros/columna)" value={form.analisisMiembros} />
+          <ShowChecksField label="Giros, sentarse y levantarse" value={form.girosSentarse} />
+          <ShowChecksField label="Compensaciones" value={form.compensacionesDin} />
           <Row label="Trote / Galope" value={form.troteGalope} />
           <Row label="Subida / bajada de rampas" value={form.subidaBajada} />
           <Row label="Proprioceptive placing" value={form.proprioceptivePlacing} />
@@ -716,9 +783,24 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         </div>
 
         {/* ALINEACIÓN DE LAS EXTREMIDADES */}
-        <div><label className="label">Alineación de las extremidades</label>
-          <textarea className="input resize-none" rows={3} value={form.alineacionExtremidades || ''} onChange={f('alineacionExtremidades')}
-            placeholder={"Miembros anteriores: normal / valgo / varo / rotación interna / externa\nMiembros posteriores: normal / valgo / varo / luxación de rótula / angulaciones\nObservaciones…"} />
+        <div className="space-y-3">
+          <label className="label">Alineación de las extremidades</label>
+          {(() => {
+            const d = parseJson(form.alineacionExtremidades, { ma: [] as string[], mp: [] as string[], notas: '' });
+            const upd = (patch: Partial<typeof d>) => set('alineacionExtremidades', JSON.stringify({ ...d, ...patch }));
+            return (
+              <div className="space-y-3">
+                <MultiCheck label="Miembros anteriores"
+                  options={['Normal','Valgo','Varo','Rotación interna','Rotación externa','Asimetría']}
+                  checks={d.ma} onChecks={v => upd({ ma: v })}
+                  notes="" onNotes={() => {}} />
+                <MultiCheck label="Miembros posteriores"
+                  options={['Normal','Valgo','Varo','Luxación de rótula','Angulaciones','Asimetría']}
+                  checks={d.mp} onChecks={v => upd({ mp: v })}
+                  notes={d.notas} onNotes={v => upd({ notas: v })} />
+              </div>
+            );
+          })()}
         </div>
 
         {/* MUSCULATURA */}
@@ -730,15 +812,51 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         </div>
 
         {/* COLUMNA VERTEBRAL */}
-        <div><label className="label">Columna vertebral</label>
-          <textarea className="input resize-none" rows={3} value={form.columnaVertebral || ''} onChange={f('columnaVertebral')}
-            placeholder={"Cervical: normal / cifosis / lordosis / escoliosis / rigidez\nTorácica: normal / cifosis / escoliosis / rigidez\nLumbar: normal / lordosis / cifosis / escoliosis\nObservaciones…"} />
+        <div className="space-y-2">
+          <label className="label">Columna vertebral</label>
+          {(() => {
+            const d = parseJson(form.columnaVertebral, { cervical: '', toracica: '', lumbar: '', notas: '' });
+            const upd = (patch: Partial<typeof d>) => set('columnaVertebral', JSON.stringify({ ...d, ...patch }));
+            return (
+              <div className="space-y-2">
+                {([
+                  ['Cervical', 'cervical', ['Normal','Cifosis','Lordosis','Escoliosis','Rigidez']] as const,
+                  ['Torácica', 'toracica', ['Normal','Cifosis','Escoliosis','Rigidez']] as const,
+                  ['Lumbar',   'lumbar',   ['Normal','Lordosis','Cifosis','Escoliosis']] as const,
+                ] as [string, 'cervical'|'toracica'|'lumbar', readonly string[]][]).map(([lbl, key, opts]) => (
+                  <div key={key} className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-navy-500 w-16 flex-shrink-0">{lbl}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {opts.map(o => (
+                        <label key={o} className="flex items-center gap-1.5 text-sm text-navy-600 cursor-pointer">
+                          <input type="radio" name={`columna-${key}`} value={o} checked={d[key] === o}
+                            onChange={() => upd({ [key]: o })} className="accent-teal-500" />
+                          {o}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <textarea className="input resize-none text-xs" rows={2} value={d.notas}
+                  onChange={e => upd({ notas: e.target.value })} placeholder="Observaciones columna…" />
+              </div>
+            );
+          })()}
         </div>
 
         {/* CABEZA Y CUELLO */}
-        <div><label className="label">Cabeza y cuello</label>
-          <textarea className="input resize-none" rows={2} value={form.cabezaCuello || ''} onChange={f('cabezaCuello')}
-            placeholder="Normal / Inclinación lateral / Rotación / Extensión / Flexión — descripción…" />
+        <div className="space-y-2">
+          <label className="label">Cabeza y cuello</label>
+          {(() => {
+            const d = parseJson(form.cabezaCuello, { checks: [] as string[], notas: '' });
+            const upd = (patch: Partial<typeof d>) => set('cabezaCuello', JSON.stringify({ ...d, ...patch }));
+            return (
+              <MultiCheck
+                options={['Normal','Inclinación lateral D','Inclinación lateral I','Rotación D','Rotación I','Extensión','Flexión']}
+                checks={d.checks} onChecks={v => upd({ checks: v })}
+                notes={d.notas} onNotes={v => upd({ notas: v })} />
+            );
+          })()}
         </div>
 
         {/* CONDICIÓN CORPORAL WSAVA */}
@@ -754,9 +872,22 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
             <span>1 Caquexia</span><span>5 Ideal</span><span>9 Obesidad</span>
           </div>
         </div>
-        <div><label className="label">Masa muscular (WSAVA muscle condition score)</label>
-          <textarea className="input resize-none" rows={2} value={form.masaMuscularWsava || ''} onChange={f('masaMuscularWsava')}
-            placeholder="Normal / Pérdida leve / Pérdida moderada / Pérdida grave — localización de la atrofia si existe…" />
+        <div className="space-y-2">
+          <label className="label">Masa muscular (WSAVA muscle condition score)</label>
+          <select className="input" value={form.masaMuscularWsava?.split('\n')[0] || ''}
+            onChange={e => set('masaMuscularWsava', e.target.value + (form.masaMuscularWsava?.includes('\n') ? '\n' + form.masaMuscularWsava.split('\n').slice(1).join('\n') : ''))}>
+            <option value="">—</option>
+            {['Normal','Pérdida leve','Pérdida moderada','Pérdida grave'].map(v => <option key={v}>{v}</option>)}
+          </select>
+          {(() => {
+            const parts = (form.masaMuscularWsava || '').split('\n');
+            const notas = parts.slice(1).join('\n');
+            return (
+              <textarea className="input resize-none text-xs" rows={2}
+                value={notas} placeholder="Localización de la atrofia si existe…"
+                onChange={e => set('masaMuscularWsava', (parts[0] || '') + '\n' + e.target.value)} />
+            );
+          })()}
         </div>
 
         {/* PIEL Y TEJIDOS BLANDOS */}
@@ -766,9 +897,24 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         </div>
 
         {/* COMPORTAMIENTO EN REPOSO */}
-        <div><label className="label">Comportamiento en reposo</label>
-          <textarea className="input resize-none" rows={2} value={form.comportamientoReposo || ''} onChange={f('comportamientoReposo')}
-            placeholder="Tranquilo / Inquieto / Ansioso — posturas antiálgicas observadas, descripción…" />
+        <div className="space-y-2">
+          <label className="label">Comportamiento en reposo</label>
+          {(() => {
+            const d = parseJson(form.comportamientoReposo, { estado: '', checks: [] as string[], notas: '' });
+            const upd = (patch: Partial<typeof d>) => set('comportamientoReposo', JSON.stringify({ ...d, ...patch }));
+            return (
+              <div className="space-y-2">
+                <select className="input" value={d.estado} onChange={e => upd({ estado: e.target.value })}>
+                  <option value="">Estado general —</option>
+                  {['Tranquilo','Inquieto','Ansioso','Agresivo'].map(v => <option key={v}>{v}</option>)}
+                </select>
+                <MultiCheck
+                  options={['Posturas antiálgicas','Evita tumbarse de un lado','Cambios frecuentes de postura','Dificultad para levantarse del suelo']}
+                  checks={d.checks} onChecks={v => upd({ checks: v })}
+                  notes={d.notas} onNotes={v => upd({ notas: v })} />
+              </div>
+            );
+          })()}
         </div>
 
         <div><label className="label">Observaciones estáticas adicionales</label>
@@ -830,25 +976,131 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
             <option value="">—</option>
             {['Normal', 'Retrasado', 'Ausente'].map(v => <option key={v}>{v}</option>)}
           </select></div>
-        <div><label className="label">Marcha al paso — análisis detallado</label>
-          <textarea className="input resize-none" rows={4} value={form.marchaAlPaso || ''} onChange={f('marchaAlPaso')}
-            placeholder={"Patrón de pisada (secuencia 4 miembros), longitud del paso, cadencia\nFase de apoyo / vuelo de cada miembro\nCojera: de apoyo o de suspensión, grado (0–5)\nObservaciones…"} />
+        {/* MARCHA AL PASO */}
+        <div className="space-y-2">
+          <label className="label">Marcha al paso — análisis detallado</label>
+          {(() => {
+            const d = parseJson(form.marchaAlPaso, { patron: '', cojera: '', gradoCojera: 0, checks: [] as string[], notas: '' });
+            const upd = (p: Partial<typeof d>) => set('marchaAlPaso', JSON.stringify({ ...d, ...p }));
+            return (
+              <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <p className="text-xs font-medium text-navy-500 mb-1">Patrón de pisada</p>
+                    <select className="input" value={d.patron} onChange={e => upd({ patron: e.target.value })}>
+                      <option value="">—</option>
+                      {['Normal','Asimétrico','Irregular','No evaluado'].map(v => <option key={v}>{v}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-navy-500 mb-1">Tipo de cojera</p>
+                    <select className="input" value={d.cojera} onChange={e => upd({ cojera: e.target.value })}>
+                      <option value="">—</option>
+                      {['De apoyo','De suspensión','Mixta','No evaluado'].map(v => <option key={v}>{v}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-xs text-navy-500 mb-1">
+                    <span>Grado de cojera (0–5)</span><span className="font-semibold text-navy-700">{d.gradoCojera}</span>
+                  </div>
+                  <input type="range" min={0} max={5} value={d.gradoCojera}
+                    onChange={e => upd({ gradoCojera: Number(e.target.value) })} className="w-full accent-teal-500" />
+                  <div className="flex justify-between text-[10px] text-navy-300 mt-0.5">
+                    <span>0 Sin cojera</span><span>3 Moderada</span><span>5 No apoya</span>
+                  </div>
+                </div>
+                <MultiCheck
+                  options={['Longitud de paso simétrica','Cadencia regular','Fase apoyo/vuelo normal','Aterrizaje talón primero','Aterrizaje plano','Aterrizaje de punta']}
+                  checks={d.checks} onChecks={v => upd({ checks: v })}
+                  notes={d.notas} onNotes={v => upd({ notas: v })} />
+              </div>
+            );
+          })()}
         </div>
-        <div><label className="label">Marcha al trote — análisis detallado</label>
-          <textarea className="input resize-none" rows={4} value={form.marchaAlTrote || ''} onChange={f('marchaAlTrote')}
-            placeholder={"Simetría de movimientos\nCabeceo (head bob) — sube al apoyar miembro anterior indica dolor en ese miembro\nHip hike — cadera sube al apoyar indica dolor en posterior\nExtensión en fase de vuelo\nObservaciones…"} />
+
+        {/* MARCHA AL TROTE */}
+        <div className="space-y-2">
+          <label className="label">Marcha al trote — análisis detallado</label>
+          {(() => {
+            const d = parseJson(form.marchaAlTrote, { checks: [] as string[], notas: '' });
+            const upd = (p: Partial<typeof d>) => set('marchaAlTrote', JSON.stringify({ ...d, ...p }));
+            return (
+              <MultiCheck
+                options={['Simétrico','Head bob (anterior)','Hip hike (posterior)','Extensión reducida en vuelo','Compensación visible','No evaluado']}
+                checks={d.checks} onChecks={v => upd({ checks: v })}
+                notes={d.notas} onNotes={v => upd({ notas: v })} />
+            );
+          })()}
         </div>
-        <div><label className="label">Análisis por zonas (miembros y columna)</label>
-          <textarea className="input resize-none" rows={5} value={form.analisisMiembros || ''} onChange={f('analisisMiembros')}
-            placeholder={"Miembros anteriores: extensión hombro/codo, flexión carpo, aterrizaje del pie\nMiembros posteriores: propulsión cadera, extensión rodilla/corvejón, arrastre dedos, sobrepisada\nColumna: flexión lateral rítmica, segmentos rígidos, lordosis/cifosis dinámica\nObservaciones…"} />
+
+        {/* ANÁLISIS POR ZONAS */}
+        <div className="space-y-2">
+          <label className="label">Análisis por zonas (miembros y columna)</label>
+          {(() => {
+            const d = parseJson(form.analisisMiembros, { ma: [] as string[], mp: [] as string[], columna: [] as string[], notas: '' });
+            const upd = (p: Partial<typeof d>) => set('analisisMiembros', JSON.stringify({ ...d, ...p }));
+            return (
+              <div className="space-y-3">
+                <MultiCheck label="Miembros anteriores"
+                  options={['Ext. hombro/codo normal','Flexión carpo normal','Aterrizaje normal','Aterrizaje de punta','Reducción extensión']}
+                  checks={d.ma} onChecks={v => upd({ ma: v })}
+                  notes="" onNotes={() => {}} />
+                <MultiCheck label="Miembros posteriores"
+                  options={['Propulsión normal','Ext. rodilla/corvejón normal','Arrastre de dedos','Sobrepisada normal','Sobrepisada anterior','Sobrepisada posterior']}
+                  checks={d.mp} onChecks={v => upd({ mp: v })}
+                  notes="" onNotes={() => {}} />
+                <MultiCheck label="Columna"
+                  options={['Flexión lateral rítmica normal','Segmentos rígidos','Lordosis dinámica','Cifosis dinámica']}
+                  checks={d.columna} onChecks={v => upd({ columna: v })}
+                  notes={d.notas} onNotes={v => upd({ notas: v })} />
+              </div>
+            );
+          })()}
         </div>
-        <div><label className="label">Inicio/parada, giros y cambios de dirección, sentarse/levantarse</label>
-          <textarea className="input resize-none" rows={4} value={form.girosSentarse || ''} onChange={f('girosSentarse')}
-            placeholder={"Inicio desde parado (rigidez inicial), frenada\nGiros: evita girar hacia un lado, cruce de miembros, asimetría D vs I\nSentarse: posición de la cadera (sitting test), descenso controlado\nLevantarse: qué miembro impulsa, intentos necesarios\nSubida/bajada rampas o escaleras\nObservaciones…"} />
+
+        {/* GIROS Y SENTARSE */}
+        <div className="space-y-2">
+          <label className="label">Inicio/parada, giros, sentarse y levantarse</label>
+          {(() => {
+            const d = parseJson(form.girosSentarse, { inicio: [] as string[], giros: [] as string[], sentarse: [] as string[], levantarse: [] as string[], notas: '' });
+            const upd = (p: Partial<typeof d>) => set('girosSentarse', JSON.stringify({ ...d, ...p }));
+            return (
+              <div className="space-y-3">
+                <MultiCheck label="Inicio y parada"
+                  options={['Inicio fluido','Rigidez inicial','Rigidez mejora al caminar','Necesita ayuda para arrancar']}
+                  checks={d.inicio} onChecks={v => upd({ inicio: v })}
+                  notes="" onNotes={() => {}} />
+                <MultiCheck label="Giros"
+                  options={['Simétrico','Evita girar D','Evita girar I','Arrastra miembros al girar']}
+                  checks={d.giros} onChecks={v => upd({ giros: v })}
+                  notes="" onNotes={() => {}} />
+                <MultiCheck label="Sentarse"
+                  options={['Cadera centrada','Desplaza cadera D','Desplaza cadera I','Se deja caer','Descenso controlado']}
+                  checks={d.sentarse} onChecks={v => upd({ sentarse: v })}
+                  notes="" onNotes={() => {}} />
+                <MultiCheck label="Levantarse"
+                  options={['Normal','Varios intentos','Impulsa con MAD','Impulsa con MAI','Impulsa con MPD','Impulsa con MPI']}
+                  checks={d.levantarse} onChecks={v => upd({ levantarse: v })}
+                  notes={d.notas} onNotes={v => upd({ notas: v })} />
+              </div>
+            );
+          })()}
         </div>
-        <div><label className="label">Compensaciones observadas</label>
-          <textarea className="input resize-none" rows={3} value={form.compensacionesDin || ''} onChange={f('compensacionesDin')}
-            placeholder={"Rigidez cervical compensando lumbar, sobrecarga anteriores por dolor en posteriores\nHiperextensión de corvejón compensando rodilla, cifosis torácica por dolor abdominal/lumbar\nKnuckling, arrastre de uñas\nOtras compensaciones…"} />
+
+        {/* COMPENSACIONES */}
+        <div className="space-y-2">
+          <label className="label">Compensaciones observadas</label>
+          {(() => {
+            const d = parseJson(form.compensacionesDin, { checks: [] as string[], notas: '' });
+            const upd = (p: Partial<typeof d>) => set('compensacionesDin', JSON.stringify({ ...d, ...p }));
+            return (
+              <MultiCheck
+                options={['Rigidez cervical (compensa lumbar)','Sobrecarga miembros anteriores','Hiperext. corvejón (compensa rodilla)','Cifosis torácica','Knuckling','Arrastre de uñas']}
+                checks={d.checks} onChecks={v => upd({ checks: v })}
+                notes={d.notas} onNotes={v => upd({ notas: v })} />
+            );
+          })()}
         </div>
         <div><label className="label">Observaciones dinámicas adicionales</label>
           <textarea className="input resize-none" rows={2} value={form.observacionesDinamicas || ''} onChange={f('observacionesDinamicas')} /></div>
