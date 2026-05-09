@@ -41,11 +41,24 @@ function useVisitMic(onTranscript: (t: string) => void) {
       const text = e.results[idx][0].transcript;
       if (text.trim()) cbRef.current(text.trim());
     };
-    r.onerror = () => { setState('idle'); recRef.current = null; };
+    r.onerror = (e: any) => {
+      setState('idle'); recRef.current = null;
+      const code = e.error as string;
+      if (code === 'not-allowed') {
+        alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
+      } else if (code !== 'aborted' && code !== 'no-speech') {
+        alert(`Error de reconocimiento de voz: ${code}`);
+      }
+    };
     r.onend = () => { setState('idle'); recRef.current = null; };
     recRef.current = r;
-    r.start();
-    setState('recording');
+    try {
+      r.start();
+      setState('recording');
+    } catch (err: any) {
+      setState('idle'); recRef.current = null;
+      alert(`No se pudo iniciar el micrófono: ${err?.message ?? err}`);
+    }
   }
 
   useEffect(() => () => { recRef.current?.abort(); }, []);
