@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import {
   ArrowLeft, PawPrint, Phone, Mail, Dumbbell, CalendarDays, FileText,
   Plus, X, Camera, Image, Video, Trash2, Upload, Pencil, ClipboardList,
-  Stethoscope, ChevronDown, ChevronUp, Loader2,
+  Stethoscope, ChevronDown, ChevronUp, Loader2, NotebookPen, Mic, MicOff, Save,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { format } from 'date-fns';
@@ -56,7 +56,7 @@ interface MediaFile { url: string; fileType: string; description: string; }
 const STATUS_LABEL: Record<string, string> = { SCHEDULED: 'Programada', COMPLETED: 'Completada', CANCELLED: 'Cancelada', NO_SHOW: 'No asistió' };
 const STATUS_CLASS: Record<string, string> = { SCHEDULED: 'badge-blue', COMPLETED: 'badge-green', CANCELLED: 'badge-red', NO_SHOW: 'badge-yellow' };
 
-type TabKey = 'intake' | 'evaluation' | 'sessions' | 'appointments' | 'routines' | 'media' | 'followup';
+type TabKey = 'intake' | 'evaluation' | 'sessions' | 'appointments' | 'routines' | 'media' | 'followup' | 'notes';
 const TABS: { key: TabKey; label: string; Icon: React.ElementType }[] = [
   { key: 'intake',       label: 'Ficha',       Icon: FileText },
   { key: 'evaluation',   label: 'Evaluación',  Icon: Stethoscope },
@@ -65,6 +65,7 @@ const TABS: { key: TabKey; label: string; Icon: React.ElementType }[] = [
   { key: 'routines',     label: 'Rutinas',     Icon: Dumbbell },
   { key: 'media',        label: 'Multimedia',  Icon: Camera },
   { key: 'followup',     label: 'Seguimiento', Icon: Image },
+  { key: 'notes',        label: 'Notas',       Icon: NotebookPen },
 ];
 
 // ── Checkbox/radio helpers ────────────────────────────────────────────────
@@ -112,6 +113,193 @@ const PRUEBAS = [
   ['laboratorio', 'Análisis laboratorio'],
   ['otras', 'Otras'],
 ];
+
+// ── Web Speech (voice dictation for notes) ───────────────────────────────
+
+type NotesMicState = 'idle' | 'recording';
+
+type SpeechRecognitionCtor = new () => {
+  lang: string; continuous: boolean; interimResults: boolean;
+  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start(): void; stop(): void; abort(): void;
+};
+
+function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
+  const w = window as unknown as Record<string, unknown>;
+  return (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
+}
+
+function useNotesMic(onTranscript: (t: string) => void) {
+  const [micState, setMicState] = useState<NotesMicState>('idle');
+  const recRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
+  const cbRef = useRef(onTranscript);
+  useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
+
+  function toggleMic() {
+    const Ctor = getWebSpeechCtor();
+    if (!Ctor) { alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.'); return; }
+    if (micState === 'recording') {
+      recRef.current?.stop(); recRef.current = null; return;
+    }
+    const r = new Ctor();
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.onresult = (e) => {
+      const idx = Object.keys(e.results).length - 1;
+      const text = e.results[idx][0].transcript;
+      if (text.trim()) cbRef.current(text.trim());
+    };
+    r.onerror = () => { setMicState('idle'); recRef.current = null; };
+    r.onend = () => { setMicState('idle'); recRef.current = null; };
+    recRef.current = r;
+    r.start();
+    setMicState('recording');
+  }
+
+  useEffect(() => () => { recRef.current?.abort(); }, []);
+  return { micState, toggleMic };
+}
+
+// ── BrainNote interface ───────────────────────────────────────────────────
+
+interface BrainNote {
+  id: number; title: string; content: string; tags: string;
+  originType: string; createdAt: string; updatedAt: string;
+}
+
+// ── NotesTab ──────────────────────────────────────────────────────────────
+
+function NotesTab({ patientName }: { patientName: string }) {
+  const qc = useQueryClient();
+  const [noteText, setNoteText] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const appendTranscript = useCallback((t: string) => {
+    setNoteText(prev => prev ? `${prev} ${t}` : t);
+  }, []);
+  const { micState, toggleMic } = useNotesMic(appendTranscript);
+
+  const { data: allNotes = [] } = useQuery<BrainNote[]>({
+    queryKey: ['brain-notes'],
+    queryFn: () => api.get('/brain/notes'),
+  });
+
+  const patientNotes = allNotes.filter(n =>
+    n.tags?.split(',').map(t => t.trim().toLowerCase()).includes(patientName.toLowerCase()) ||
+    n.title.toLowerCase().includes(patientName.toLowerCase())
+  ).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+  async function saveNote() {
+    if (!noteText.trim()) return;
+    setSaving(true);
+    try {
+      const today = format(new Date(), "d MMM yyyy", { locale: es });
+      await api.post('/brain/notes', {
+        title: `Visita ${patientName} — ${today}`,
+        content: noteText.trim(),
+        tags: `visita,${patientName},sesión`,
+        originType: 'session',
+      });
+      setNoteText('');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      qc.invalidateQueries({ queryKey: ['brain-notes'] });
+    } catch { alert('Error al guardar la nota'); }
+    finally { setSaving(false); }
+  }
+
+  const deleteNote = useMutation({
+    mutationFn: (id: number) => api.delete(`/brain/notes/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['brain-notes'] }),
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Create new note */}
+      <div className="card space-y-3">
+        <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Nueva nota de visita</h3>
+        <div className="relative">
+          <textarea
+            className="input resize-none pr-12"
+            rows={5}
+            placeholder={micState === 'recording' ? 'Escuchando… habla ahora' : 'Escribe o dicta tus observaciones de la sesión…'}
+            value={noteText}
+            onChange={e => setNoteText(e.target.value)}
+            disabled={micState === 'recording'}
+          />
+          <button
+            type="button"
+            onClick={toggleMic}
+            title={micState === 'recording' ? 'Detener dictado' : 'Dictar con voz'}
+            className={`absolute bottom-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+              micState === 'recording'
+                ? 'bg-red-500 text-white animate-pulse'
+                : 'bg-navy-100 text-navy-500 hover:bg-navy-200'
+            }`}
+          >
+            {micState === 'recording' ? <MicOff size={15} /> : <Mic size={15} />}
+          </button>
+        </div>
+        {micState === 'recording' && (
+          <div className="flex items-center gap-2 text-xs text-red-500">
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            Grabando… pulsa el micrófono para terminar
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={saveNote}
+          disabled={!noteText.trim() || saving || micState === 'recording'}
+          className={`btn-primary w-full justify-center gap-2 ${saved ? 'bg-green-500 hover:bg-green-500' : ''}`}
+        >
+          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+          {saved ? '¡Nota guardada!' : saving ? 'Guardando…' : 'Guardar nota'}
+        </button>
+      </div>
+
+      {/* Past notes */}
+      <div className="card space-y-3">
+        <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">
+          Notas anteriores <span className="ml-1 text-navy-300 font-normal normal-case">({patientNotes.length})</span>
+        </h3>
+        {patientNotes.length === 0 ? (
+          <p className="text-sm text-navy-300 py-2">Sin notas registradas para {patientName}.</p>
+        ) : (
+          <div className="space-y-3">
+            {patientNotes.map(note => (
+              <div key={note.id} className="border border-navy-100 rounded-xl p-4 group">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-navy-700">{note.title}</p>
+                    <p className="text-xs text-navy-400 mt-0.5">
+                      {format(new Date(note.createdAt), "d MMM yyyy · HH:mm", { locale: es })}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => { if (confirm('¿Eliminar esta nota?')) deleteNote.mutate(note.id); }}
+                    className="p-1.5 text-navy-200 hover:text-red-400 transition-colors rounded-lg opacity-0 group-hover:opacity-100 flex-shrink-0"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                <p className="text-sm text-navy-600 mt-2 whitespace-pre-wrap">{note.content}</p>
+                {note.tags && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {note.tags.split(',').map(tag => tag.trim()).filter(Boolean).map(tag => (
+                      <span key={tag} className="text-xs bg-navy-50 text-navy-400 px-2 py-0.5 rounded-full">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ── Utility components ────────────────────────────────────────────────────
 
@@ -1356,6 +1544,11 @@ export default function PatientDetailPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ── Notas ── */}
+      {tab === 'notes' && (
+        <NotesTab patientName={patient.name} />
       )}
 
       {/* ── Edit modal ── */}

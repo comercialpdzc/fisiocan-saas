@@ -1,9 +1,56 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { X, MessageSquare, PawPrint, Activity, Users, CalendarDays } from 'lucide-react';
+import { X, MessageSquare, PawPrint, Activity, Users, CalendarDays, Mic, MicOff, Loader2, NotebookPen, Save, ChevronDown, ChevronUp } from 'lucide-react';
 import Phaser from 'phaser';
 import { api } from '../lib/api';
+
+// ── Web Speech hook for visit notes ───────────────────────────────────────────
+
+type MicState = 'idle' | 'recording';
+
+type SpeechRecognitionCtor = new () => {
+  lang: string; continuous: boolean; interimResults: boolean;
+  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+  onend: (() => void) | null;
+  start(): void; stop(): void; abort(): void;
+};
+
+function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
+  const w = window as unknown as Record<string, unknown>;
+  return (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
+}
+
+function useVisitMic(onTranscript: (t: string) => void) {
+  const [state, setState] = useState<MicState>('idle');
+  const recRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
+  const cbRef = useRef(onTranscript);
+  useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
+
+  function toggle() {
+    const Ctor = getWebSpeechCtor();
+    if (!Ctor) { alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.'); return; }
+    if (state === 'recording') {
+      recRef.current?.stop(); recRef.current = null; return;
+    }
+    const r = new Ctor();
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.onresult = (e) => {
+      const idx = Object.keys(e.results).length - 1;
+      const text = e.results[idx][0].transcript;
+      if (text.trim()) cbRef.current(text.trim());
+    };
+    r.onerror = () => { setState('idle'); recRef.current = null; };
+    r.onend = () => { setState('idle'); recRef.current = null; };
+    recRef.current = r;
+    r.start();
+    setState('recording');
+  }
+
+  useEffect(() => () => { recRef.current?.abort(); }, []);
+  return { state, toggle };
+}
 
 // ── Types ─────────────────────────────────────────────────────────────
 interface Patient {
@@ -400,8 +447,11 @@ class ClinicScene extends Phaser.Scene {
 }
 
 // ── React component ───────────────────────────────────────────────────
+interface BrainNote { id: number; title: string; content: string; tags: string; originType: string; createdAt: string; }
+
 export default function VirtualClinicPage() {
   const navigate   = useNavigate();
+  const qc         = useQueryClient();
   const canvasRef  = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const gameRef    = useRef<Phaser.Game | null>(null);
@@ -409,6 +459,57 @@ export default function VirtualClinicPage() {
   const [transform, setTransform] = useState({ scale: 1, x: 0, y: 0 });
   const gestureRef  = useRef({ scale: 1, x: 0, y: 0, lastDist: 0, lastMidX: 0, lastMidY: 0 });
   const lastTapRef  = useRef(0);
+
+  // ── Visit notes state ──────────────────────────────────────────────────────
+  const [noteText, setNoteText] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteSaved, setNoteSaved] = useState(false);
+  const [showPastNotes, setShowPastNotes] = useState(false);
+
+  const appendTranscript = useCallback((t: string) => {
+    setNoteText(prev => prev ? `${prev} ${t}` : t);
+  }, []);
+  const { state: micState, toggle: toggleMic } = useVisitMic(appendTranscript);
+
+  // Load past notes for selected patient
+  const { data: allNotes = [] } = useQuery<BrainNote[]>({
+    queryKey: ['brain-notes'],
+    queryFn: () => api.get('/brain/notes'),
+    enabled: !!selected,
+  });
+  const patientNotes = selected
+    ? allNotes.filter(n =>
+        n.tags.toLowerCase().includes(selected.name.toLowerCase()) ||
+        n.title.toLowerCase().includes(selected.name.toLowerCase())
+      ).slice(0, 5)
+    : [];
+
+  // Reset note input when patient changes
+  useEffect(() => {
+    setNoteText('');
+    setNoteSaved(false);
+    setShowPastNotes(false);
+  }, [selected?.id]);
+
+  async function saveNote() {
+    if (!noteText.trim() || !selected) return;
+    setNoteSaving(true);
+    try {
+      const today = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      await api.post('/brain/notes', {
+        title: `Visita ${selected.name} — ${today}`,
+        content: noteText.trim(),
+        tags: `visita,${selected.name.toLowerCase()},sesión`,
+        originType: 'session',
+      });
+      qc.invalidateQueries({ queryKey: ['brain-notes'] });
+      setNoteText('');
+      setNoteSaved(true);
+      setTimeout(() => setNoteSaved(false), 3000);
+    } finally {
+      setNoteSaving(false);
+    }
+  }
 
   const { data: patients = [] } = useQuery<Patient[]>({
     queryKey: ['patients'],
@@ -591,6 +692,76 @@ export default function VirtualClinicPage() {
                   <CalendarDays size={14} />
                   {selected._count.appointments} cita{selected._count.appointments !== 1 ? 's' : ''} registrada{selected._count.appointments !== 1 ? 's' : ''}
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Visit notes ────────────────────────────────────────── */}
+          <div className="px-4 pb-3 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-navy-400 uppercase tracking-wide">
+              <NotebookPen size={12} /> Notas de visita
+            </div>
+            <div className="relative">
+              <textarea
+                className="w-full text-sm text-navy-700 border border-navy-200 rounded-xl px-3 py-2.5 pr-10 resize-none focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-200 placeholder:text-navy-300 bg-navy-50/40"
+                rows={3}
+                placeholder="Observaciones, tratamiento realizado, respuesta…"
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+              />
+              {/* Mic inside textarea */}
+              <button
+                type="button"
+                onClick={toggleMic}
+                title={micState === 'recording' ? 'Detener grabación' : 'Dictar nota por voz'}
+                className={`absolute bottom-2.5 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
+                  micState === 'recording'
+                    ? 'bg-red-500 text-white animate-pulse'
+                    : 'bg-navy-200 text-navy-500 hover:bg-teal-100 hover:text-teal-600'
+                }`}
+              >
+                {micState === 'recording' ? <MicOff size={13} /> : <Mic size={13} />}
+              </button>
+            </div>
+            {micState === 'recording' && (
+              <p className="text-xs text-red-500 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
+                Grabando… habla con naturalidad
+              </p>
+            )}
+            <button
+              onClick={saveNote}
+              disabled={!noteText.trim() || noteSaving}
+              className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium transition-colors ${
+                noteSaved
+                  ? 'bg-green-100 text-green-600 border border-green-200'
+                  : 'btn-primary'
+              }`}
+            >
+              {noteSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+              {noteSaved ? '¡Nota guardada!' : 'Guardar nota'}
+            </button>
+
+            {/* Past notes for this patient */}
+            {patientNotes.length > 0 && (
+              <div>
+                <button
+                  onClick={() => setShowPastNotes(s => !s)}
+                  className="flex items-center gap-1 text-xs text-navy-400 hover:text-navy-600 transition-colors"
+                >
+                  {showPastNotes ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                  {patientNotes.length} nota{patientNotes.length !== 1 ? 's' : ''} anterior{patientNotes.length !== 1 ? 'es' : ''}
+                </button>
+                {showPastNotes && (
+                  <div className="mt-1.5 space-y-1.5 max-h-40 overflow-y-auto">
+                    {patientNotes.map(n => (
+                      <div key={n.id} className="bg-navy-50 rounded-lg px-3 py-2">
+                        <p className="text-[10px] font-semibold text-navy-500 truncate">{n.title}</p>
+                        <p className="text-[11px] text-navy-600 mt-0.5 line-clamp-2">{n.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
