@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MessageSquare, Send, PawPrint, ArrowLeft, Mic, MicOff } from 'lucide-react';
+import { MessageSquare, Send, PawPrint, ArrowLeft, Mic, MicOff, Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -19,41 +19,55 @@ interface Message {
   tutor?: { id: number; name: string };
 }
 
-// ─── Voice recognition (Web Speech API, client-side) ─────────────────────────
-type MicState = 'idle' | 'recording';
+// ─── Audio recording + Groq Whisper transcription ────────────────────────────
+type MicState = 'idle' | 'recording' | 'transcribing';
 
 function useAudioRecorder(onTranscript: (text: string) => void) {
   const [state, setState] = useState<MicState>('idle');
-  const recRef = useRef<any>(null);
+  const mrRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const onTxRef = useRef(onTranscript);
   useEffect(() => { onTxRef.current = onTranscript; }, [onTranscript]);
 
+  const stopAndTranscribe = useCallback(async () => {
+    const mr = mrRef.current;
+    if (!mr || mr.state === 'inactive') return;
+    const blob: Blob = await new Promise(resolve => {
+      mr.onstop = () => resolve(new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' }));
+      mr.stop();
+    });
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null; mrRef.current = null;
+    setState('transcribing');
+    try {
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const res = await api.postForm<{ transcript: string | null }>('/brain/transcribe', fd);
+      if (res.transcript) onTxRef.current(res.transcript);
+    } catch { /* silent */ }
+    finally { setState('idle'); }
+  }, []);
+
   function toggle() {
-    if (state === 'recording') {
-      recRef.current?.stop();
-      setState('idle');
-      return;
+    if (state === 'idle') {
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        streamRef.current = stream;
+        const mr = new MediaRecorder(stream);
+        mrRef.current = mr; chunksRef.current = [];
+        mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+        mr.start(100); setState('recording');
+      }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
+    } else if (state === 'recording') {
+      stopAndTranscribe();
     }
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('Reconocimiento de voz no soportado. Usa Chrome.'); return; }
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
-      const rec = new SR();
-      rec.lang = 'es-ES';
-      rec.continuous = false;
-      rec.interimResults = false;
-      rec.onresult = (e: any) => {
-        const text = e.results[0][0].transcript;
-        if (text) onTxRef.current(text);
-      };
-      rec.onend = () => setState('idle');
-      rec.onerror = () => setState('idle');
-      recRef.current = rec;
-      rec.start();
-      setState('recording');
-    }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
   }
 
-  useEffect(() => () => { recRef.current?.stop(); }, []);
+  useEffect(() => () => {
+    if (mrRef.current?.state !== 'inactive') mrRef.current?.stop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  }, []);
+
   return { state, toggle };
 }
 
@@ -221,21 +235,30 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={toggleMic}
-              title={micState === 'recording' ? 'Detener escucha' : 'Dictar por voz'}
+              disabled={micState === 'transcribing'}
+              title={micState === 'recording' ? 'Detener grabación' : 'Grabar audio'}
               className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
                 micState === 'recording'
                   ? 'bg-red-500 text-white animate-pulse'
+                  : micState === 'transcribing'
+                  ? 'bg-navy-100 text-navy-400 cursor-wait'
                   : 'bg-navy-100 text-navy-500 hover:bg-navy-200'
               }`}
             >
-              {micState === 'recording' ? <MicOff size={18} /> : <Mic size={18} />}
+              {micState === 'transcribing'
+                ? <Loader2 size={18} className="animate-spin" />
+                : micState === 'recording'
+                ? <MicOff size={18} />
+                : <Mic size={18} />
+              }
             </button>
 
             <input
               className="input flex-1"
-              placeholder={micState === 'recording' ? 'Escuchando…' : 'Escribe un mensaje…'}
+              placeholder={micState === 'recording' ? 'Grabando…' : micState === 'transcribing' ? 'Transcribiendo…' : 'Escribe un mensaje…'}
               value={text}
               onChange={e => setText(e.target.value)}
+              disabled={micState !== 'idle'}
             />
             <button type="submit" disabled={!text.trim() || sendMsg.isPending || micState !== 'idle'} className="btn-primary px-4 min-h-[44px]">
               <Send size={16} />

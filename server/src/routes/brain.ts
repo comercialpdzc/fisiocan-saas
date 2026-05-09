@@ -666,18 +666,18 @@ router.post('/chat', async (req: AuthRequest, res) => {
   indexMessageBackground(savedMsg.id, cleanText, apiKey).catch(console.error);
 });
 
-// ── Audio Transcription (via OpenAI Whisper) ──────────────────────────────────
+// ── Audio Transcription (via Groq Whisper) ────────────────────────────────────
 
 /**
  * POST /api/brain/transcribe
  * Accepts a multipart audio file (webm/ogg/mp4/wav/m4a).
- * Transcribes using OpenAI Whisper (OPENAI_API_KEY env var).
+ * Transcribes using Groq Whisper (GROQ_API_KEY env var — free tier available).
  */
 router.post('/transcribe', audioUpload.single('audio'), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: 'No audio file received' }); return; }
 
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (!openaiKey) {
+  const groqKey = process.env.GROQ_API_KEY;
+  if (!groqKey) {
     res.json({ transcript: null, noApiKey: true });
     return;
   }
@@ -687,18 +687,19 @@ router.post('/transcribe', audioUpload.single('audio'), async (req, res) => {
 
     const form = new FormData();
     form.append('file', new Blob([req.file.buffer], { type: mimeType }), 'recording.webm');
-    form.append('model', 'whisper-1');
+    form.append('model', 'whisper-large-v3-turbo');
     form.append('language', 'es');
+    form.append('response_format', 'json');
 
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey}` },
+      headers: { Authorization: `Bearer ${groqKey}` },
       body: form,
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('[Transcribe] Whisper error:', response.status, errText);
+      console.error('[Transcribe] Groq error:', response.status, errText);
       res.status(500).json({ error: 'Error transcribing audio' });
       return;
     }
