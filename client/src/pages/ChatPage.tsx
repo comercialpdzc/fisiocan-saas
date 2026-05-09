@@ -123,8 +123,13 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
   }
 
   function toggle() {
-    if (state === 'idle') startMediaRecorder();
-    else if (state === 'recording') stopMediaRecorder();
+    if (state === 'idle') {
+      if (getWebSpeechCtor()) startWebSpeech();
+      else startMediaRecorder();
+    } else if (state === 'recording') {
+      if (recognitionRef.current) stopWebSpeech();
+      else stopMediaRecorder();
+    }
   }
 
   useEffect(() => () => {

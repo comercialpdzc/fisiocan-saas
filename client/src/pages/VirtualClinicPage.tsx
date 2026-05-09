@@ -5,56 +5,49 @@ import { X, MessageSquare, PawPrint, Activity, Users, CalendarDays, Mic, MicOff,
 import Phaser from 'phaser';
 import { api } from '../lib/api';
 
-// ── MediaRecorder → Whisper hook for visit notes ─────────────────────────────
+// ── Web Speech API hook for visit notes ──────────────────────────────────────
 
-type MicState = 'idle' | 'recording' | 'transcribing';
+type MicState = 'idle' | 'recording';
 
 function useVisitMic(onTranscript: (t: string) => void) {
   const [state, setState] = useState<MicState>('idle');
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const chunks = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
+  const recRef = useRef<any>(null);
   const cbRef = useRef(onTranscript);
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
-  const stopRecording = useCallback(async () => {
-    const mr = mediaRecorder.current;
-    if (!mr || mr.state === 'inactive') return;
-    const blob: Blob = await new Promise(resolve => {
-      mr.onstop = () => resolve(new Blob(chunks.current, { type: mr.mimeType || 'audio/webm' }));
-      mr.stop();
-    });
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null; mediaRecorder.current = null;
-    setState('transcribing');
-    try {
-      const fd = new FormData();
-      fd.append('audio', blob, 'recording.webm');
-      const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
-      if (res.noApiKey) { alert('No hay clave de API configurada en el servidor.'); return; }
-      if (res.transcript) cbRef.current(res.transcript);
-    } catch { /* silent */ }
-    finally { setState('idle'); }
-  }, []);
-
-  async function toggle() {
-    if (state === 'recording') { stopRecording(); return; }
-    if (state !== 'idle') return;
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-      const mr = new MediaRecorder(stream);
-      mediaRecorder.current = mr; chunks.current = [];
-      mr.ondataavailable = e => { if (e.data.size > 0) chunks.current.push(e.data); };
-      mr.start(100);
-      setState('recording');
-    } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
+  function toggle() {
+    if (state === 'recording') {
+      recRef.current?.stop();
+      recRef.current = null;
+      setState('idle');
+      return;
+    }
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
+    const r = new SR();
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
+    r.onresult = (e: any) => {
+      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const t = (e.results[i][0].transcript as string).trim();
+          if (t) cbRef.current(t);
+        }
+      }
+    };
+    r.onerror = (e: any) => {
+      setState('idle'); recRef.current = null;
+      const code = e.error as string;
+      if (code === 'aborted' || code === 'no-speech') return;
+      if (code === 'not-allowed') alert('Permiso de micrófono denegado.');
+      else alert(`Error de dictado: ${code}`);
+    };
+    r.onend = () => { setState('idle'); recRef.current = null; };
+    recRef.current = r;
+    try { r.start(); setState('recording'); }
+    catch (err: any) { alert(`Error al iniciar dictado: ${err?.message ?? err}`); }
   }
 
-  useEffect(() => () => {
-    if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
-    streamRef.current?.getTracks().forEach(t => t.stop());
-  }, []);
+  useEffect(() => () => { recRef.current?.abort(); }, []);
 
   return { state, toggle };
 }
@@ -720,21 +713,14 @@ export default function VirtualClinicPage() {
               <button
                 type="button"
                 onClick={toggleMic}
-                disabled={micState === 'transcribing'}
-                title={micState === 'recording' ? 'Detener grabación' : 'Dictar nota por voz'}
+                title={micState === 'recording' ? 'Detener dictado' : 'Dictar nota por voz'}
                 className={`absolute bottom-2.5 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
                   micState === 'recording'
                     ? 'bg-red-500 text-white animate-pulse'
-                    : micState === 'transcribing'
-                    ? 'bg-navy-200 text-navy-400 cursor-wait'
                     : 'bg-navy-200 text-navy-500 hover:bg-teal-100 hover:text-teal-600'
                 }`}
               >
-                {micState === 'transcribing'
-                  ? <Loader2 size={13} className="animate-spin" />
-                  : micState === 'recording'
-                  ? <MicOff size={13} />
-                  : <Mic size={13} />}
+                {micState === 'recording' ? <MicOff size={13} /> : <Mic size={13} />}
               </button>
             </div>
             {micState === 'recording' && (
