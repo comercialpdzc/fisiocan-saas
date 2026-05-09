@@ -12,6 +12,7 @@ interface Patient {
   weight?: string;
   sex?: string;
   active: boolean;
+  photoUrl?: string;
   tutor: { id: number; name: string; phone: string };
   _count: { appointments: number };
 }
@@ -82,8 +83,10 @@ export default function PatientsPage() {
               {filtered.map(p => (
                 <div key={p.id} className="flex items-center gap-3 p-4 hover:bg-navy-50 transition-colors">
                   <Link to={`/patients/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0">
-                      <PawPrint size={16} className="text-teal-600" />
+                    <div className="w-10 h-10 rounded-xl bg-teal-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {p.photoUrl
+                        ? <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
+                        : <PawPrint size={16} className="text-teal-600" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium text-navy-700">{p.name}</div>
@@ -115,8 +118,10 @@ export default function PatientsPage() {
                   <tr key={p.id} className="hover:bg-navy-50 transition-colors group">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
-                          <PawPrint size={14} className="text-teal-600" />
+                        <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {p.photoUrl
+                            ? <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
+                            : <PawPrint size={14} className="text-teal-600" />}
                         </div>
                         <span className="font-medium text-navy-700">{p.name}</span>
                       </div>

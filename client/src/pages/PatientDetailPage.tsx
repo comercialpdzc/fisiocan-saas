@@ -144,10 +144,9 @@ function useNotesMic(onTranscript: (t: string) => void) {
       recRef.current?.stop(); recRef.current = null; setMicState('idle'); return;
     }
     const r = new Ctor();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
     r.onresult = (e) => {
-      const idx = Object.keys(e.results).length - 1;
-      const text = e.results[idx][0].transcript;
+      const text = e.results[0][0].transcript;
       if (text.trim()) cbRef.current(text.trim());
     };
     r.onerror = () => { setMicState('idle'); recRef.current = null; };
