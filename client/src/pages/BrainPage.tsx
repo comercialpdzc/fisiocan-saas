@@ -120,17 +120,10 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
   }
 
-  // ── Toggle ─────────────────────────────────────────────────────────────────
-  const webSpeechAvailable = !!getWebSpeechCtor();
-
+  // ── Toggle — always MediaRecorder → Whisper ────────────────────────────────
   function toggle() {
-    if (state === 'idle') {
-      if (webSpeechAvailable) startWebSpeech();
-      else startMediaRecorder();
-    } else if (state === 'recording') {
-      if (webSpeechAvailable) stopWebSpeech();
-      else stopMediaRecorder();
-    }
+    if (state === 'idle') startMediaRecorder();
+    else if (state === 'recording') stopMediaRecorder();
   }
 
   useEffect(() => () => {

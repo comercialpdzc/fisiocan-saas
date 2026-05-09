@@ -30,13 +30,19 @@ interface Patient {
 
 interface PatientEvaluation {
   id?: number;
+  fechaEvaluacion?: string;
   cirugiasPrevias?: string; medicacionActual?: string; tratamientosAnteriores?: string;
   respuestaTratamientos?: string; alergias?: string; sintomasReferidos?: string; otrosSintomas?: string;
+  // Exploración estática
   posturaGeneral?: string; distribucionPeso?: string; estadoMuscularGeneral?: string;
-  condicionCorporal?: number; estadoPiel?: string; observacionesEstaticas?: string;
+  condicionCorporal?: number; masaMuscularWsava?: string; estadoPiel?: string;
+  alineacionExtremidades?: string; columnaVertebral?: string; cabezaCuello?: string;
+  comportamientoReposo?: string; observacionesEstaticas?: string;
+  // Exploración dinámica
   tipoMarcha?: string; cojeraSiNo?: string; cojeraGrado?: number; cojeraMiembro?: string;
   inicioMarcha?: string; troteGalope?: string; subidaBajada?: string; proprioceptivePlacing?: string;
-  observacionesDinamicas?: string;
+  marchaAlPaso?: string; marchaAlTrote?: string; analisisMiembros?: string;
+  girosSentarse?: string; compensacionesDin?: string; observacionesDinamicas?: string;
   palpacionROM?: string; dolorReposo?: number; dolorMovimiento?: number; nivelFuncional?: number;
   pruebasComplementarias?: string;
   hipotesisDiagnostica?: string; pronosticoFuncional?: string; limitacionesTratamiento?: string;
@@ -114,70 +120,57 @@ const PRUEBAS = [
   ['otras', 'Otras'],
 ];
 
-// ── Web Speech (voice dictation for notes) ───────────────────────────────
+// ── MediaRecorder → Whisper (voice dictation for notes) ─────────────────
 
-type NotesMicState = 'idle' | 'recording';
-
-type SpeechRecognitionCtor = new () => {
-  lang: string; continuous: boolean; interimResults: boolean;
-  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  start(): void; stop(): void; abort(): void;
-};
-
-function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
-  const w = window as unknown as Record<string, unknown>;
-  return (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
-}
+type NotesMicState = 'idle' | 'recording' | 'transcribing';
 
 function useNotesMic(onTranscript: (t: string) => void) {
   const [micState, setMicState] = useState<NotesMicState>('idle');
-  const recRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const cbRef = useRef(onTranscript);
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
-  function toggleMic() {
-    const Ctor = getWebSpeechCtor();
-    if (!Ctor) { alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.'); return; }
-    if (micState === 'recording') {
-      recRef.current?.stop(); recRef.current = null; setMicState('idle'); return;
-    }
-    const r = new Ctor();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
-    r.onresult = (e: any) => {
-      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const text = (e.results[i][0].transcript as string).trim();
-          if (text) cbRef.current(text);
-        }
-      }
-    };
-    r.onerror = (e: any) => {
-      setMicState('idle'); recRef.current = null;
-      const code = e.error as string;
-      console.error('[SpeechRecognition] error:', code);
-      if (code === 'aborted') return;
-      if (code === 'not-allowed') {
-        alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
-      } else if (code === 'no-speech') {
-        alert('No se detectó habla. Verifica que el micrófono esté activo y habla más cerca de él.');
-      } else {
-        alert(`Error de reconocimiento de voz: ${code}`);
-      }
-    };
-    r.onend = () => { setMicState('idle'); recRef.current = null; };
-    recRef.current = r;
+  const stopRecording = useCallback(async () => {
+    const mr = mediaRecorder.current;
+    if (!mr || mr.state === 'inactive') return;
+    const blob: Blob = await new Promise(resolve => {
+      mr.onstop = () => resolve(new Blob(chunks.current, { type: mr.mimeType || 'audio/webm' }));
+      mr.stop();
+    });
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null; mediaRecorder.current = null;
+    setMicState('transcribing');
     try {
-      r.start();
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
+      if (res.noApiKey) { alert('No hay clave de OpenAI configurada en el servidor.'); return; }
+      if (res.transcript) cbRef.current(res.transcript);
+    } catch { /* silent */ }
+    finally { setMicState('idle'); }
+  }, []);
+
+  async function toggleMic() {
+    if (micState === 'recording') { stopRecording(); return; }
+    if (micState !== 'idle') return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mr = new MediaRecorder(stream);
+      mediaRecorder.current = mr; chunks.current = [];
+      mr.ondataavailable = e => { if (e.data.size > 0) chunks.current.push(e.data); };
+      mr.start(100);
       setMicState('recording');
-    } catch (err: any) {
-      setMicState('idle'); recRef.current = null;
-      alert(`No se pudo iniciar el micrófono: ${err?.message ?? err}`);
-    }
+    } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
   }
 
-  useEffect(() => () => { recRef.current?.abort(); }, []);
+  useEffect(() => () => {
+    if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  }, []);
+
   return { micState, toggleMic };
 }
 
@@ -247,19 +240,26 @@ function NotesTab({ patientName }: { patientName: string }) {
             placeholder={micState === 'recording' ? 'Escuchando… habla ahora' : 'Escribe o dicta tus observaciones de la sesión…'}
             value={noteText}
             onChange={e => setNoteText(e.target.value)}
-            disabled={micState === 'recording'}
+            disabled={micState !== 'idle'}
           />
           <button
             type="button"
             onClick={toggleMic}
+            disabled={micState === 'transcribing'}
             title={micState === 'recording' ? 'Detener dictado' : 'Dictar con voz'}
             className={`absolute bottom-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
               micState === 'recording'
                 ? 'bg-red-500 text-white animate-pulse'
+                : micState === 'transcribing'
+                ? 'bg-navy-100 text-navy-400 cursor-wait'
                 : 'bg-navy-100 text-navy-500 hover:bg-navy-200'
             }`}
           >
-            {micState === 'recording' ? <MicOff size={15} /> : <Mic size={15} />}
+            {micState === 'transcribing'
+              ? <Loader2 size={15} className="animate-spin" />
+              : micState === 'recording'
+              ? <MicOff size={15} />
+              : <Mic size={15} />}
           </button>
         </div>
         {micState === 'recording' && (
@@ -268,10 +268,16 @@ function NotesTab({ patientName }: { patientName: string }) {
             Grabando… pulsa el micrófono para terminar
           </div>
         )}
+        {micState === 'transcribing' && (
+          <div className="flex items-center gap-2 text-xs text-navy-400">
+            <Loader2 size={12} className="animate-spin" />
+            Transcribiendo…
+          </div>
+        )}
         <button
           type="button"
           onClick={saveNote}
-          disabled={!noteText.trim() || saving || micState === 'recording'}
+          disabled={!noteText.trim() || saving || micState !== 'idle'}
           className={`btn-primary w-full justify-center gap-2 ${saved ? 'bg-green-500 hover:bg-green-500' : ''}`}
         >
           {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
@@ -535,6 +541,12 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         </div>
         {saved && <span className="text-sm text-teal-600 font-medium">Guardado</span>}
 
+        {form.fechaEvaluacion && (
+          <div className="text-sm text-navy-500 -mb-2">
+            Fecha de evaluación: <span className="font-medium text-navy-700">{form.fechaEvaluacion.slice(0, 10)}</span>
+          </div>
+        )}
+
         <Section title="Anamnesis">
           <Row label="Cirugías previas" value={form.cirugiasPrevias} />
           <Row label="Medicación actual" value={form.medicacionActual} />
@@ -546,11 +558,16 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         </Section>
 
         <Section title="Exploración Estática">
-          <Row label="Postura general" value={form.posturaGeneral} />
+          <Row label="Postura global" value={form.posturaGeneral} />
           <Row label="Distribución del peso" value={form.distribucionPeso} />
-          <Row label="Estado muscular general" value={form.estadoMuscularGeneral} />
-          <Row label="Condición corporal" value={form.condicionCorporal != null ? `${form.condicionCorporal}/9` : undefined} />
-          <Row label="Estado de la piel / cicatrices" value={form.estadoPiel} />
+          <Row label="Alineación de las extremidades" value={form.alineacionExtremidades} />
+          <Row label="Musculatura general" value={form.estadoMuscularGeneral} />
+          <Row label="Columna vertebral" value={form.columnaVertebral} />
+          <Row label="Cabeza y cuello" value={form.cabezaCuello} />
+          <Row label="Condición corporal (WSAVA)" value={form.condicionCorporal != null ? `${form.condicionCorporal}/9` : undefined} />
+          <Row label="Masa muscular (WSAVA)" value={form.masaMuscularWsava} />
+          <Row label="Piel y tejidos blandos" value={form.estadoPiel} />
+          <Row label="Comportamiento en reposo" value={form.comportamientoReposo} />
           <Row label="Observaciones estáticas" value={form.observacionesEstaticas} />
         </Section>
 
@@ -562,6 +579,11 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
             <Row label="Miembro/s afectado/s" value={form.cojeraMiembro} />
           </>}
           <Row label="Inicio de la marcha" value={form.inicioMarcha} />
+          <Row label="Marcha al paso" value={form.marchaAlPaso} />
+          <Row label="Marcha al trote" value={form.marchaAlTrote} />
+          <Row label="Análisis por zonas (miembros/columna)" value={form.analisisMiembros} />
+          <Row label="Giros, sentarse y levantarse" value={form.girosSentarse} />
+          <Row label="Compensaciones" value={form.compensacionesDin} />
           <Row label="Trote / Galope" value={form.troteGalope} />
           <Row label="Subida / bajada de rampas" value={form.subidaBajada} />
           <Row label="Proprioceptive placing" value={form.proprioceptivePlacing} />
@@ -636,6 +658,14 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         </div>
       )}
 
+      {/* FECHA DE EVALUACIÓN */}
+      <div className="card">
+        <div><label className="label">Fecha de la evaluación</label>
+          <input type="date" className="input" value={form.fechaEvaluacion?.slice(0, 10) ?? ''}
+            onChange={f('fechaEvaluacion')} />
+        </div>
+      </div>
+
       {/* ANAMNESIS */}
       <Section title="Anamnesis">
         <div><label className="label">Cirugías previas</label>
@@ -669,24 +699,52 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
 
       {/* EXPLORACIÓN ESTÁTICA */}
       <Section title="Exploración Estática">
-        <div><label className="label">Postura general</label>
+        {/* POSTURA GLOBAL */}
+        <div><label className="label">Postura global</label>
           <select className="input" value={form.posturaGeneral || ''} onChange={f('posturaGeneral')}>
             <option value="">—</option>
             {['Normal', 'Cifosis', 'Lordosis', 'Escoliosis', 'Asimétrica'].map(v => <option key={v}>{v}</option>)}
-          </select></div>
+          </select>
+        </div>
+
+        {/* DISTRIBUCIÓN DEL PESO */}
         <div><label className="label">Distribución del peso</label>
           <select className="input" value={form.distribucionPeso || ''} onChange={f('distribucionPeso')}>
             <option value="">—</option>
-            {['Simétrica', 'Descarga anterior', 'Descarga posterior', 'Lateral'].map(v => <option key={v}>{v}</option>)}
-          </select></div>
-        <div><label className="label">Estado muscular general</label>
+            {['Homogénea', 'Anterior', 'Posterior', 'Lateral D', 'Lateral I', 'Diagonal'].map(v => <option key={v}>{v}</option>)}
+          </select>
+        </div>
+
+        {/* ALINEACIÓN DE LAS EXTREMIDADES */}
+        <div><label className="label">Alineación de las extremidades</label>
+          <textarea className="input resize-none" rows={3} value={form.alineacionExtremidades || ''} onChange={f('alineacionExtremidades')}
+            placeholder={"Miembros anteriores: normal / valgo / varo / rotación interna / externa\nMiembros posteriores: normal / valgo / varo / luxación de rótula / angulaciones\nObservaciones…"} />
+        </div>
+
+        {/* MUSCULATURA */}
+        <div><label className="label">Musculatura general</label>
           <select className="input" value={form.estadoMuscularGeneral || ''} onChange={f('estadoMuscularGeneral')}>
             <option value="">—</option>
-            {['Normal', 'Hipertonía', 'Hipotonía', 'Atrofia focal'].map(v => <option key={v}>{v}</option>)}
-          </select></div>
+            {['Normal', 'Hipertonía', 'Hipotonía', 'Atrofia focal', 'Atrofia generalizada'].map(v => <option key={v}>{v}</option>)}
+          </select>
+        </div>
+
+        {/* COLUMNA VERTEBRAL */}
+        <div><label className="label">Columna vertebral</label>
+          <textarea className="input resize-none" rows={3} value={form.columnaVertebral || ''} onChange={f('columnaVertebral')}
+            placeholder={"Cervical: normal / cifosis / lordosis / escoliosis / rigidez\nTorácica: normal / cifosis / escoliosis / rigidez\nLumbar: normal / lordosis / cifosis / escoliosis\nObservaciones…"} />
+        </div>
+
+        {/* CABEZA Y CUELLO */}
+        <div><label className="label">Cabeza y cuello</label>
+          <textarea className="input resize-none" rows={2} value={form.cabezaCuello || ''} onChange={f('cabezaCuello')}
+            placeholder="Normal / Inclinación lateral / Rotación / Extensión / Flexión — descripción…" />
+        </div>
+
+        {/* CONDICIÓN CORPORAL WSAVA */}
         <div>
           <div className="flex justify-between text-xs text-navy-500 mb-1">
-            <span>Condición corporal</span>
+            <span>Condición corporal (WSAVA 1–9)</span>
             <span className="font-semibold text-navy-700">{form.condicionCorporal ?? 5}/9</span>
           </div>
           <input type="range" min={1} max={9} value={form.condicionCorporal ?? 5}
@@ -696,10 +754,26 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
             <span>1 Caquexia</span><span>5 Ideal</span><span>9 Obesidad</span>
           </div>
         </div>
-        <div><label className="label">Estado de la piel / cicatrices</label>
-          <textarea className="input resize-none" rows={2} value={form.estadoPiel || ''} onChange={f('estadoPiel')} /></div>
-        <div><label className="label">Observaciones estáticas</label>
-          <textarea className="input resize-none" rows={2} value={form.observacionesEstaticas || ''} onChange={f('observacionesEstaticas')} /></div>
+        <div><label className="label">Masa muscular (WSAVA muscle condition score)</label>
+          <textarea className="input resize-none" rows={2} value={form.masaMuscularWsava || ''} onChange={f('masaMuscularWsava')}
+            placeholder="Normal / Pérdida leve / Pérdida moderada / Pérdida grave — localización de la atrofia si existe…" />
+        </div>
+
+        {/* PIEL Y TEJIDOS BLANDOS */}
+        <div><label className="label">Piel y tejidos blandos</label>
+          <textarea className="input resize-none" rows={2} value={form.estadoPiel || ''} onChange={f('estadoPiel')}
+            placeholder="Normal / Cicatrices / Eritema / Edema / Inflamación — localización…" />
+        </div>
+
+        {/* COMPORTAMIENTO EN REPOSO */}
+        <div><label className="label">Comportamiento en reposo</label>
+          <textarea className="input resize-none" rows={2} value={form.comportamientoReposo || ''} onChange={f('comportamientoReposo')}
+            placeholder="Tranquilo / Inquieto / Ansioso — posturas antiálgicas observadas, descripción…" />
+        </div>
+
+        <div><label className="label">Observaciones estáticas adicionales</label>
+          <textarea className="input resize-none" rows={2} value={form.observacionesEstaticas || ''} onChange={f('observacionesEstaticas')} />
+        </div>
       </Section>
 
       {/* EXPLORACIÓN DINÁMICA */}
@@ -756,7 +830,27 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
             <option value="">—</option>
             {['Normal', 'Retrasado', 'Ausente'].map(v => <option key={v}>{v}</option>)}
           </select></div>
-        <div><label className="label">Observaciones dinámicas</label>
+        <div><label className="label">Marcha al paso — análisis detallado</label>
+          <textarea className="input resize-none" rows={4} value={form.marchaAlPaso || ''} onChange={f('marchaAlPaso')}
+            placeholder={"Patrón de pisada (secuencia 4 miembros), longitud del paso, cadencia\nFase de apoyo / vuelo de cada miembro\nCojera: de apoyo o de suspensión, grado (0–5)\nObservaciones…"} />
+        </div>
+        <div><label className="label">Marcha al trote — análisis detallado</label>
+          <textarea className="input resize-none" rows={4} value={form.marchaAlTrote || ''} onChange={f('marchaAlTrote')}
+            placeholder={"Simetría de movimientos\nCabeceo (head bob) — sube al apoyar miembro anterior indica dolor en ese miembro\nHip hike — cadera sube al apoyar indica dolor en posterior\nExtensión en fase de vuelo\nObservaciones…"} />
+        </div>
+        <div><label className="label">Análisis por zonas (miembros y columna)</label>
+          <textarea className="input resize-none" rows={5} value={form.analisisMiembros || ''} onChange={f('analisisMiembros')}
+            placeholder={"Miembros anteriores: extensión hombro/codo, flexión carpo, aterrizaje del pie\nMiembros posteriores: propulsión cadera, extensión rodilla/corvejón, arrastre dedos, sobrepisada\nColumna: flexión lateral rítmica, segmentos rígidos, lordosis/cifosis dinámica\nObservaciones…"} />
+        </div>
+        <div><label className="label">Inicio/parada, giros y cambios de dirección, sentarse/levantarse</label>
+          <textarea className="input resize-none" rows={4} value={form.girosSentarse || ''} onChange={f('girosSentarse')}
+            placeholder={"Inicio desde parado (rigidez inicial), frenada\nGiros: evita girar hacia un lado, cruce de miembros, asimetría D vs I\nSentarse: posición de la cadera (sitting test), descenso controlado\nLevantarse: qué miembro impulsa, intentos necesarios\nSubida/bajada rampas o escaleras\nObservaciones…"} />
+        </div>
+        <div><label className="label">Compensaciones observadas</label>
+          <textarea className="input resize-none" rows={3} value={form.compensacionesDin || ''} onChange={f('compensacionesDin')}
+            placeholder={"Rigidez cervical compensando lumbar, sobrecarga anteriores por dolor en posteriores\nHiperextensión de corvejón compensando rodilla, cifosis torácica por dolor abdominal/lumbar\nKnuckling, arrastre de uñas\nOtras compensaciones…"} />
+        </div>
+        <div><label className="label">Observaciones dinámicas adicionales</label>
           <textarea className="input resize-none" rows={2} value={form.observacionesDinamicas || ''} onChange={f('observacionesDinamicas')} /></div>
       </Section>
 

@@ -193,7 +193,12 @@ model PatientEvaluation {
   distribucionPeso        String?  // Simétrica|Descarga anterior|Descarga posterior|Lateral
   estadoMuscularGeneral   String?  // Normal|Hipertonía|Hipotonía|Atrofia focal
   condicionCorporal       Int?     // 1–9
+  masaMuscularWsava       String?  // WSAVA muscle condition score
   estadoPiel              String?
+  alineacionExtremidades  String?  // Alineación de extremidades
+  columnaVertebral        String?  // Evaluación columna cervical/torácica/lumbar
+  cabezaCuello            String?  // Posición cabeza y cuello
+  comportamientoReposo    String?  // Comportamiento en reposo
   observacionesEstaticas  String?
 
   // Exploración dinámica
@@ -205,6 +210,11 @@ model PatientEvaluation {
   troteGalope             String?  // Normal|Alterado|No evaluado
   subidaBajada            String?  // Normal|Dificultosa|No evaluado
   proprioceptivePlacing   String?  // Normal|Retrasado|Ausente
+  marchaAlPaso            String?  // Análisis detallado marcha al paso
+  marchaAlTrote           String?  // Análisis detallado marcha al trote
+  analisisMiembros        String?  // Análisis por zonas: miembros y columna
+  girosSentarse           String?  // Giros, sentarse y levantarse
+  compensacionesDin       String?  // Compensaciones observadas
   observacionesDinamicas  String?
 
   // Palpación y ROM — JSON: [{zona, tono, dolor, notas}]
@@ -231,6 +241,8 @@ model PatientEvaluation {
   frecuenciaSemana        Int?
   duracionSesionMin       Int?
   reevaluacionPrevista    DateTime?
+
+  fechaEvaluacion DateTime?  // fecha real de la exploración (editable)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -5,70 +5,57 @@ import { X, MessageSquare, PawPrint, Activity, Users, CalendarDays, Mic, MicOff,
 import Phaser from 'phaser';
 import { api } from '../lib/api';
 
-// ── Web Speech hook for visit notes ───────────────────────────────────────────
+// ── MediaRecorder → Whisper hook for visit notes ─────────────────────────────
 
-type MicState = 'idle' | 'recording';
-
-type SpeechRecognitionCtor = new () => {
-  lang: string; continuous: boolean; interimResults: boolean;
-  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  start(): void; stop(): void; abort(): void;
-};
-
-function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
-  const w = window as unknown as Record<string, unknown>;
-  return (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
-}
+type MicState = 'idle' | 'recording' | 'transcribing';
 
 function useVisitMic(onTranscript: (t: string) => void) {
   const [state, setState] = useState<MicState>('idle');
-  const recRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const cbRef = useRef(onTranscript);
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
-  function toggle() {
-    const Ctor = getWebSpeechCtor();
-    if (!Ctor) { alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.'); return; }
-    if (state === 'recording') {
-      recRef.current?.stop(); recRef.current = null; setState('idle'); return;
-    }
-    const r = new Ctor();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
-    r.onresult = (e: any) => {
-      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const text = (e.results[i][0].transcript as string).trim();
-          if (text) cbRef.current(text);
-        }
-      }
-    };
-    r.onerror = (e: any) => {
-      setState('idle'); recRef.current = null;
-      const code = e.error as string;
-      console.error('[SpeechRecognition] error:', code);
-      if (code === 'aborted') return;
-      if (code === 'not-allowed') {
-        alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
-      } else if (code === 'no-speech') {
-        alert('No se detectó habla. Verifica que el micrófono esté activo y habla más cerca de él.');
-      } else {
-        alert(`Error de reconocimiento de voz: ${code}`);
-      }
-    };
-    r.onend = () => { setState('idle'); recRef.current = null; };
-    recRef.current = r;
+  const stopRecording = useCallback(async () => {
+    const mr = mediaRecorder.current;
+    if (!mr || mr.state === 'inactive') return;
+    const blob: Blob = await new Promise(resolve => {
+      mr.onstop = () => resolve(new Blob(chunks.current, { type: mr.mimeType || 'audio/webm' }));
+      mr.stop();
+    });
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null; mediaRecorder.current = null;
+    setState('transcribing');
     try {
-      r.start();
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
+      if (res.noApiKey) { alert('No hay clave de OpenAI configurada en el servidor.'); return; }
+      if (res.transcript) cbRef.current(res.transcript);
+    } catch { /* silent */ }
+    finally { setState('idle'); }
+  }, []);
+
+  async function toggle() {
+    if (state === 'recording') { stopRecording(); return; }
+    if (state !== 'idle') return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mr = new MediaRecorder(stream);
+      mediaRecorder.current = mr; chunks.current = [];
+      mr.ondataavailable = e => { if (e.data.size > 0) chunks.current.push(e.data); };
+      mr.start(100);
       setState('recording');
-    } catch (err: any) {
-      setState('idle'); recRef.current = null;
-      alert(`No se pudo iniciar el micrófono: ${err?.message ?? err}`);
-    }
+    } catch { alert('No se pudo acceder al micrófono. Verifica los permisos.'); }
   }
 
-  useEffect(() => () => { recRef.current?.abort(); }, []);
+  useEffect(() => () => {
+    if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
+    streamRef.current?.getTracks().forEach(t => t.stop());
+  }, []);
+
   return { state, toggle };
 }
 
@@ -733,14 +720,21 @@ export default function VirtualClinicPage() {
               <button
                 type="button"
                 onClick={toggleMic}
+                disabled={micState === 'transcribing'}
                 title={micState === 'recording' ? 'Detener grabación' : 'Dictar nota por voz'}
                 className={`absolute bottom-2.5 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
                   micState === 'recording'
                     ? 'bg-red-500 text-white animate-pulse'
+                    : micState === 'transcribing'
+                    ? 'bg-navy-200 text-navy-400 cursor-wait'
                     : 'bg-navy-200 text-navy-500 hover:bg-teal-100 hover:text-teal-600'
                 }`}
               >
-                {micState === 'recording' ? <MicOff size={13} /> : <Mic size={13} />}
+                {micState === 'transcribing'
+                  ? <Loader2 size={13} className="animate-spin" />
+                  : micState === 'recording'
+                  ? <MicOff size={13} />
+                  : <Mic size={13} />}
               </button>
             </div>
             {micState === 'recording' && (

@@ -20,7 +20,12 @@ const evalSchema = z.object({
   distribucionPeso:       z.string().optional(),
   estadoMuscularGeneral:  z.string().optional(),
   condicionCorporal:      z.number().int().min(1).max(9).optional(),
+  masaMuscularWsava:      z.string().optional(),
   estadoPiel:             z.string().optional(),
+  alineacionExtremidades: z.string().optional(),
+  columnaVertebral:       z.string().optional(),
+  cabezaCuello:           z.string().optional(),
+  comportamientoReposo:   z.string().optional(),
   observacionesEstaticas: z.string().optional(),
   // Exploración dinámica
   tipoMarcha:             z.string().optional(),
@@ -31,6 +36,11 @@ const evalSchema = z.object({
   troteGalope:            z.string().optional(),
   subidaBajada:           z.string().optional(),
   proprioceptivePlacing:  z.string().optional(),
+  marchaAlPaso:           z.string().optional(),
+  marchaAlTrote:          z.string().optional(),
+  analisisMiembros:       z.string().optional(),
+  girosSentarse:          z.string().optional(),
+  compensacionesDin:      z.string().optional(),
   observacionesDinamicas: z.string().optional(),
   // Palpación y ROM
   palpacionROM:           z.string().optional(), // JSON
@@ -52,6 +62,7 @@ const evalSchema = z.object({
   frecuenciaSemana:        z.number().int().positive().optional(),
   duracionSesionMin:       z.number().int().positive().optional(),
   reevaluacionPrevista:    z.string().optional(),
+  fechaEvaluacion:         z.string().optional(),
 });
 
 // GET /evaluations/:patientId
@@ -72,6 +83,9 @@ router.put('/:patientId', async (req, res) => {
     ...parse.data,
     reevaluacionPrevista: parse.data.reevaluacionPrevista
       ? new Date(parse.data.reevaluacionPrevista)
+      : undefined,
+    fechaEvaluacion: parse.data.fechaEvaluacion
+      ? new Date(parse.data.fechaEvaluacion)
       : undefined,
   };
 
