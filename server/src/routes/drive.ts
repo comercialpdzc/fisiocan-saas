@@ -121,11 +121,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
  * Returns MediaFile records for given context.
  */
 router.get('/files', async (req, res) => {
-  const { patientId, sessionId, evaluationId } = req.query;
+  const { patientId, sessionId, evaluationId, originType } = req.query;
   const where: Record<string, unknown> = {};
   if (patientId)    where.patientId    = Number(patientId);
   if (sessionId)    where.sessionId    = Number(sessionId);
   if (evaluationId) where.evaluationId = Number(evaluationId);
+  if (originType)   where.originType   = String(originType);
 
   const files = await prisma.mediaFile.findMany({
     where,

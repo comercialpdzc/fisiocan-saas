@@ -385,7 +385,6 @@ function MediaGrid({ files, onDescChange }: { files: MediaFile[]; onDescChange: 
 // ── Primera Evaluación Form ───────────────────────────────────────────────
 
 function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patientId: number; patientName: string; evaluation?: PatientEvaluation | null }) {
-  const apiUrl = (import.meta.env.VITE_API_URL ?? '') + '/api';
   const qc = useQueryClient();
 
   const hasData = !!(initEval && Object.keys(initEval).some(k => k !== 'id' && (initEval as Record<string, unknown>)[k] != null && (initEval as Record<string, unknown>)[k] !== ''));
@@ -429,35 +428,44 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
     return () => clearInterval(timer);
   }, [viewMode, form, patientId, qc]);
 
-  // Multimedia state
+  // Multimedia — loaded from DB, independent of evaluation form
   const evalFileRef = useRef<HTMLInputElement>(null);
-  const [evalMediaFiles, setEvalMediaFiles] = useState<MediaFile[]>([]);
-  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
+  const [uploadingCount, setUploadingCount] = useState(0);
+  const { data: evalMediaFiles = [] } = useQuery<Array<{
+    id: number; driveUrl: string | null; localUrl: string | null;
+    thumbnailUrl: string | null; fileType: string; description: string | null;
+  }>>({
+    queryKey: ['eval-media', patientId],
+    queryFn: () => api.get(`/drive/files?patientId=${patientId}&originType=evaluation`),
+  });
 
   async function handleEvalFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
+    setUploadingCount(files.length);
     for (const file of files) {
-      setUploadingFiles(prev => [...prev, file.name]);
       try {
         const fd = new FormData();
         fd.append('file', file);
+        fd.append('patientId', String(patientId));
         fd.append('patientName', patientName);
-        fd.append('context', 'evaluation');
-        fd.append('description', '');
-        const r = await fetch(`${apiUrl}/drive/upload`, { method: 'POST', body: fd });
-        if (!r.ok) throw new Error('Upload failed');
-        const { url } = await r.json();
-        const fileType = file.type;
-        setEvalMediaFiles(prev => [...prev, { url, fileType, description: '' }]);
-      } catch { alert(`Error al subir ${file.name}`); }
-      finally { setUploadingFiles(prev => prev.filter(n => n !== file.name)); }
+        fd.append('type', 'evaluation');
+        await api.postForm('/drive/upload', fd);
+        qc.invalidateQueries({ queryKey: ['eval-media', patientId] });
+      } catch (err: any) {
+        alert(`Error al subir ${file.name}: ${err?.message ?? err}`);
+      }
+      setUploadingCount(prev => Math.max(0, prev - 1));
     }
     if (evalFileRef.current) evalFileRef.current.value = '';
   }
 
-  function updateEvalMediaDesc(idx: number, desc: string) {
-    setEvalMediaFiles(prev => prev.map((f, i) => i === idx ? { ...f, description: desc } : f));
+  async function deleteEvalMedia(id: number) {
+    if (!confirm('¿Eliminar este archivo?')) return;
+    try {
+      await api.delete(`/drive/files/${id}`);
+      qc.invalidateQueries({ queryKey: ['eval-media', patientId] });
+    } catch { alert('Error al eliminar'); }
   }
 
   function set<K extends keyof PatientEvaluation>(k: K, v: PatientEvaluation[K]) {
@@ -580,6 +588,39 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
           <Row label="Frecuencia (veces/semana)" value={form.frecuenciaSemana} />
           <Row label="Duración sesión (min)" value={form.duracionSesionMin} />
           <Row label="Reevaluación prevista" value={form.reevaluacionPrevista?.slice(0, 10)} />
+        </Section>
+
+        <Section title="Fotos y vídeos de la evaluación" defaultOpen={false}>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => evalFileRef.current?.click()}
+              className="btn-secondary text-sm flex items-center gap-1">
+              <Upload size={14} /> Añadir archivo
+            </button>
+            {uploadingCount > 0 && (
+              <span className="flex items-center gap-1 text-xs text-navy-400">
+                <Loader2 size={12} className="animate-spin" /> Subiendo {uploadingCount} archivo{uploadingCount > 1 ? 's' : ''}…
+              </span>
+            )}
+          </div>
+          <input ref={evalFileRef} type="file" accept="image/*,video/*" multiple className="hidden" onChange={handleEvalFileChange} />
+          {evalMediaFiles.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-3">
+              {evalMediaFiles.map(f => {
+                const url = f.driveUrl ?? f.localUrl ?? '';
+                return (
+                  <div key={f.id} className="relative rounded-xl overflow-hidden bg-navy-50 aspect-video group">
+                    {f.fileType === 'video'
+                      ? <video src={url} controls className="w-full h-full object-cover" />
+                      : <img src={url} alt="" className="w-full h-full object-cover" />}
+                    <button type="button" onClick={() => deleteEvalMedia(f.id)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <X size={12} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Section>
       </div>
     );
@@ -835,23 +876,6 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
       </Section>
 
       {/* FOTOS Y VÍDEOS */}
-      <Section title="Fotos y vídeos de la evaluación" defaultOpen={false}>
-        <div>
-          <button type="button" onClick={() => evalFileRef.current?.click()}
-            className="btn-secondary text-sm flex items-center gap-1">
-            <Upload size={14} /> Añadir archivo
-          </button>
-          <input ref={evalFileRef} type="file" accept="image/*,video/*" multiple className="hidden"
-            onChange={handleEvalFileChange} />
-        </div>
-        {uploadingFiles.map(name => (
-          <div key={name} className="flex items-center gap-2 text-xs text-navy-400 mt-2">
-            <Loader2 size={12} className="animate-spin" /> Subiendo {name}…
-          </div>
-        ))}
-        <MediaGrid files={evalMediaFiles} onDescChange={updateEvalMediaDesc} />
-      </Section>
-
       <div className="flex items-center justify-end gap-3 sticky bottom-4 z-10">
         {saved && <span className="text-sm text-teal-600 font-medium">Guardado</span>}
         <button type="submit" disabled={saving} className="btn-primary">
