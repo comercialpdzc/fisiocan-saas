@@ -45,19 +45,26 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     const r = new Ctor();
     r.lang = 'es-ES';
     r.continuous = true;
-    r.interimResults = false;
-    r.onresult = (e) => {
-      const idx = e.results.length - 1;
-      const text = e.results[idx][0].transcript;
-      if (text) onTranscriptRef.current(text);
+    r.interimResults = true;
+    r.onresult = (e: any) => {
+      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const text = (e.results[i][0].transcript as string).trim();
+          if (text) onTranscriptRef.current(text);
+        }
+      }
     };
     r.onerror = (e: any) => {
       setState('idle');
       recognitionRef.current = null;
       const code = e.error as string;
+      console.error('[SpeechRecognition] error:', code);
+      if (code === 'aborted') return;
       if (code === 'not-allowed') {
         alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
-      } else if (code !== 'aborted' && code !== 'no-speech') {
+      } else if (code === 'no-speech') {
+        alert('No se detectó habla. Verifica que el micrófono esté activo y habla más cerca de él.');
+      } else {
         alert(`Error de reconocimiento de voz: ${code}`);
       }
     };
