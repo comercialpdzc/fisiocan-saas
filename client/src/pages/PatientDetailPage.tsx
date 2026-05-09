@@ -138,11 +138,14 @@ function useNotesMic(onTranscript: (t: string) => void) {
     if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
     const r = new SR();
     r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
+    let lastInterim = '';
     r.onresult = (e: any) => {
       for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
           const t = (e.results[i][0].transcript as string).trim();
-          if (t) cbRef.current(t);
+          if (t) { cbRef.current(t); lastInterim = ''; }
+        } else {
+          lastInterim = (lastInterim + ' ' + e.results[i][0].transcript).trim();
         }
       }
     };
@@ -153,7 +156,10 @@ function useNotesMic(onTranscript: (t: string) => void) {
       if (code === 'not-allowed') alert('Permiso de micrófono denegado.');
       else alert(`Error de dictado: ${code}`);
     };
-    r.onend = () => { setMicState('idle'); recRef.current = null; };
+    r.onend = () => {
+      if (lastInterim) { cbRef.current(lastInterim); lastInterim = ''; }
+      setMicState('idle'); recRef.current = null;
+    };
     recRef.current = r;
     try { r.start(); setMicState('recording'); }
     catch (err: any) { alert(`Error al iniciar dictado: ${err?.message ?? err}`); }

@@ -52,11 +52,14 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     const Ctor = getWebSpeechCtor()!;
     const r = new Ctor();
     r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
+    let lastInterim = '';
     r.onresult = (e: any) => {
       for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
         if (e.results[i].isFinal) {
           const t = (e.results[i][0].transcript as string).trim();
-          if (t) onTranscriptRef.current(t);
+          if (t) { onTranscriptRef.current(t); lastInterim = ''; }
+        } else {
+          lastInterim = (lastInterim + ' ' + e.results[i][0].transcript).trim();
         }
       }
     };
@@ -74,7 +77,10 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
         alert(`Error de reconocimiento de voz: ${code}`);
       }
     };
-    r.onend = () => { setState('idle'); recognitionRef.current = null; };
+    r.onend = () => {
+      if (lastInterim) { onTranscriptRef.current(lastInterim); lastInterim = ''; }
+      setState('idle'); recognitionRef.current = null;
+    };
     recognitionRef.current = r;
     try {
       r.start();
