@@ -19,76 +19,18 @@ interface Message {
   tutor?: { id: number; name: string };
 }
 
-// ─── Audio / speech recognition ──────────────────────────────────────────────
+// ─── Audio recording + Claude transcription ───────────────────────────────────
 type RecordState = 'idle' | 'recording' | 'transcribing';
 
-type SpeechRecognitionCtor = new () => {
-  lang: string; continuous: boolean; interimResults: boolean;
-  onresult: ((e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  start(): void; stop(): void; abort(): void;
-};
-
-function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
-  const w = window as unknown as Record<string, unknown>;
-  return (w.SpeechRecognition ?? w.webkitSpeechRecognition) as SpeechRecognitionCtor | undefined;
-}
-
-/**
- * Prefers Web Speech API (real-time, no server round-trip).
- * Falls back to MediaRecorder → Whisper when Web Speech is unavailable.
- */
 function useAudioRecorder(onTranscript: (text: string) => void) {
   const [state, setState] = useState<RecordState>('idle');
-  const wsActiveRef = useRef(false);
-  const wsRecRef = useRef<any>(null);
   const mrRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const onTxRef = useRef(onTranscript);
   useEffect(() => { onTxRef.current = onTranscript; }, [onTranscript]);
 
-  // startWSRef.current is reassigned every render so onend always calls the latest version
-  const startWSRef = useRef<() => void>(null!);
-  startWSRef.current = () => {
-    if (!wsActiveRef.current) return;
-    const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
-    if (!SR) return;
-    const r = new SR();
-    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
-    r.onresult = (e: any) => {
-      for (let i = (e.resultIndex ?? 0); i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const t = String(e.results[i][0].transcript).trim();
-          console.log('[Mic] transcript:', t);
-          if (t) onTxRef.current(t);
-        }
-      }
-    };
-    r.onerror = (e: any) => {
-      console.log('[Mic] error:', e.error);
-      if ((e.error as string) === 'not-allowed') {
-        wsActiveRef.current = false; setState('idle');
-        alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
-      }
-    };
-    r.onend = () => {
-      console.log('[Mic] session ended, active:', wsActiveRef.current);
-      wsRecRef.current = null;
-      if (wsActiveRef.current) setTimeout(() => startWSRef.current(), 200);
-    };
-    wsRecRef.current = r;
-    try {
-      r.start();
-      console.log('[Mic] session started');
-    } catch (err: any) {
-      console.error('[Mic] start() failed:', err?.message);
-      wsRecRef.current = null;
-    }
-  };
-
-  const stopMediaRecorder = useCallback(async () => {
+  const stopAndTranscribe = useCallback(async () => {
     const mr = mrRef.current;
     if (!mr || mr.state === 'inactive') return;
     const blob: Blob = await new Promise(resolve => {
@@ -101,46 +43,27 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     try {
       const fd = new FormData();
       fd.append('audio', blob, 'recording.webm');
-      const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
+      const res = await api.postForm<{ transcript: string | null }>('/brain/transcribe', fd);
       if (res.transcript) onTxRef.current(res.transcript);
     } catch { /* silent */ }
     finally { setState('idle'); }
   }, []);
 
   function toggle() {
-    console.log('[Mic] toggle(), state=', state);
     if (state === 'idle') {
-      const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
       navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-        stream.getTracks().forEach(t => t.stop());
-        if (SR) {
-          wsActiveRef.current = true;
-          setState('recording');
-          startWSRef.current();
-        } else {
-          navigator.mediaDevices.getUserMedia({ audio: true }).then(s => {
-            streamRef.current = s;
-            const mr = new MediaRecorder(s);
-            mrRef.current = mr; chunksRef.current = [];
-            mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-            mr.start(100); setState('recording');
-          }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
-        }
+        streamRef.current = stream;
+        const mr = new MediaRecorder(stream);
+        mrRef.current = mr; chunksRef.current = [];
+        mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+        mr.start(100); setState('recording');
       }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
     } else if (state === 'recording') {
-      if (wsActiveRef.current) {
-        wsActiveRef.current = false;
-        wsRecRef.current?.stop(); wsRecRef.current = null;
-        setState('idle');
-      } else {
-        stopMediaRecorder();
-      }
+      stopAndTranscribe();
     }
   }
 
   useEffect(() => () => {
-    wsActiveRef.current = false;
-    wsRecRef.current?.abort(); wsRecRef.current = null;
     if (mrRef.current?.state !== 'inactive') mrRef.current?.stop();
     streamRef.current?.getTracks().forEach(t => t.stop());
   }, []);

@@ -5,69 +5,54 @@ import { X, MessageSquare, PawPrint, Activity, Users, CalendarDays, Mic, MicOff,
 import Phaser from 'phaser';
 import { api } from '../lib/api';
 
-// ── Web Speech API hook for visit notes ──────────────────────────────────────
+// ── MediaRecorder + Claude transcription hook for visit notes ────────────────
 
-type MicState = 'idle' | 'recording';
+type MicState = 'idle' | 'recording' | 'transcribing';
 
 function useVisitMic(onTranscript: (t: string) => void) {
   const [state, setState] = useState<MicState>('idle');
-  const activeRef = useRef(false);
+  const mrRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
   const cbRef = useRef(onTranscript);
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
-  // Keep a stable ref to the start function so onend can call latest version
-  const recRef = useRef<any>(null);
-
-  function start() {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR || !activeRef.current) return;
-    const r = new SR();
-    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
-    r.onaudiostart = () => console.log('[Mic] AUDIO START');
-    r.onaudioend  = () => console.log('[Mic] AUDIO END');
-    r.onsoundstart = () => console.log('[Mic] sound');
-    r.onspeechstart = () => console.log('[Mic] speech start');
-    r.onspeechend = () => console.log('[Mic] speech end');
-    r.onnomatch = () => console.log('[Mic] NO MATCH');
-    r.onresult = (e: any) => {
-      console.log('[Mic] RESULT fired, len:', e.results.length);
-      const texto = (e.results[0][0].transcript as string).trim();
-      console.log('[Mic] texto:', texto);
-      if (texto) cbRef.current(texto);
-    };
-    r.onerror = (e: any) => {
-      console.log('[Mic] ERROR:', e.error, e.message);
-      if (e.error === 'not-allowed') {
-        activeRef.current = false; setState('idle');
-        alert('Permiso de micrófono denegado.');
-      }
-    };
-    r.onend = () => {
-      console.log('[Mic] END, active:', activeRef.current);
-      recRef.current = null;
-      if (activeRef.current) setTimeout(start, 200);
-    };
-    recRef.current = r;
-    console.log('[Mic] calling start()');
-    try { r.start(); } catch (e: any) { console.error('[Mic] start() threw:', e?.message); recRef.current = null; }
+  async function stopAndTranscribe() {
+    const mr = mrRef.current;
+    if (!mr || mr.state === 'inactive') return;
+    const blob: Blob = await new Promise(resolve => {
+      mr.onstop = () => resolve(new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' }));
+      mr.stop();
+    });
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null; mrRef.current = null;
+    setState('transcribing');
+    try {
+      const fd = new FormData();
+      fd.append('audio', blob, 'recording.webm');
+      const res = await api.postForm<{ transcript: string | null }>('/brain/transcribe', fd);
+      if (res.transcript) cbRef.current(res.transcript);
+    } catch { /* silent */ }
+    finally { setState('idle'); }
   }
 
   function toggle() {
-    if (state === 'recording') {
-      activeRef.current = false;
-      recRef.current?.stop(); recRef.current = null;
-      setState('idle'); return;
-    }
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
+    if (state === 'recording') { stopAndTranscribe(); return; }
+    if (state !== 'idle') return;
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      stream.getTracks().forEach(t => t.stop());
-      activeRef.current = true; setState('recording');
-      start();
+      streamRef.current = stream;
+      const mr = new MediaRecorder(stream);
+      mrRef.current = mr; chunksRef.current = [];
+      mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+      mr.start(100); setState('recording');
     }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
   }
 
-  useEffect(() => () => { activeRef.current = false; recRef.current?.abort(); recRef.current = null; }, []);
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    if (mrRef.current?.state !== 'inactive') mrRef.current?.stop();
+  }, []);
+
   return { state, toggle };
 }
 
@@ -732,20 +717,29 @@ export default function VirtualClinicPage() {
               <button
                 type="button"
                 onClick={toggleMic}
-                title={micState === 'recording' ? 'Detener dictado' : 'Dictar nota por voz'}
+                disabled={micState === 'transcribing'}
+                title={micState === 'recording' ? 'Detener y transcribir' : 'Grabar nota por voz'}
                 className={`absolute bottom-2.5 right-2 w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${
                   micState === 'recording'
                     ? 'bg-red-500 text-white animate-pulse'
+                    : micState === 'transcribing'
+                    ? 'bg-navy-200 text-navy-400 cursor-wait'
                     : 'bg-navy-200 text-navy-500 hover:bg-teal-100 hover:text-teal-600'
                 }`}
               >
-                {micState === 'recording' ? <MicOff size={13} /> : <Mic size={13} />}
+                {micState === 'transcribing' ? <Loader2 size={13} className="animate-spin" /> : micState === 'recording' ? <MicOff size={13} /> : <Mic size={13} />}
               </button>
             </div>
             {micState === 'recording' && (
               <p className="text-xs text-red-500 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                Grabando… habla con naturalidad
+                Grabando… pulsa para transcribir
+              </p>
+            )}
+            {micState === 'transcribing' && (
+              <p className="text-xs text-navy-400 flex items-center gap-1">
+                <Loader2 size={10} className="animate-spin" />
+                Transcribiendo…
               </p>
             )}
             <button
