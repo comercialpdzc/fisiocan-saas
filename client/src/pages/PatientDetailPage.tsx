@@ -146,7 +146,7 @@ function useNotesMic(onTranscript: (t: string) => void) {
       const fd = new FormData();
       fd.append('audio', blob, 'recording.webm');
       const res = await api.postForm<{ transcript: string | null; noApiKey?: boolean }>('/brain/transcribe', fd);
-      if (res.noApiKey) { alert('No hay clave de OpenAI configurada en el servidor.'); return; }
+      if (res.noApiKey) { alert('No hay clave de API configurada en el servidor.'); return; }
       if (res.transcript) cbRef.current(res.transcript);
     } catch { /* silent */ }
     finally { setMicState('idle'); }

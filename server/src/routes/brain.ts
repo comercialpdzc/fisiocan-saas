@@ -666,43 +666,50 @@ router.post('/chat', async (req: AuthRequest, res) => {
   indexMessageBackground(savedMsg.id, cleanText, apiKey).catch(console.error);
 });
 
-// ── Audio Transcription (Whisper via OpenAI or Web Speech fallback) ───────────
+// ── Audio Transcription (via Claude) ─────────────────────────────────────────
 
 /**
  * POST /api/brain/transcribe
  * Accepts a multipart audio file (webm/ogg/mp4/wav/m4a).
- * Transcribes with OpenAI Whisper if OPENAI_API_KEY is set,
- * otherwise returns { noApiKey: true } so the client can use Web Speech API.
+ * Transcribes using Claude (ANTHROPIC_API_KEY — already required for Cerebro chat).
  */
 router.post('/transcribe', audioUpload.single('audio'), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: 'No audio file received' }); return; }
 
-  const openAiKey = process.env.OPENAI_API_KEY;
-  if (!openAiKey) {
-    // Signal client to use Web Speech API instead
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
     res.json({ noApiKey: true, transcript: null });
     return;
   }
 
   try {
-    const { default: OpenAI } = await import('openai');
-    const openai = new OpenAI({ apiKey: openAiKey });
+    const client = new Anthropic({ apiKey });
+    const audioBase64 = req.file.buffer.toString('base64');
+    // Strip codec params: "audio/webm;codecs=opus" → "audio/webm"
+    const mimeType = (req.file.mimetype || 'audio/webm').split(';')[0].trim();
 
-    const { Readable } = await import('stream');
-    const readable = Readable.from(req.file.buffer);
-    // openai SDK needs a File-like object; build a blob with correct name
-    const blob = new Blob([req.file.buffer], { type: req.file.mimetype || 'audio/webm' });
-    const file = new File([blob], `audio.${req.file.mimetype?.split('/')[1] ?? 'webm'}`);
-
-    const transcription = await openai.audio.transcriptions.create({
-      file,
-      model: 'whisper-1',
-      language: 'es',
+    const response = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2048,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'document',
+            source: { type: 'base64', media_type: mimeType, data: audioBase64 },
+          } as any,
+          {
+            type: 'text',
+            text: 'Transcribe exactamente lo que se dice en este audio en español. Devuelve SOLO el texto transcrito, sin comentarios adicionales.',
+          },
+        ],
+      }],
     });
 
-    res.json({ transcript: transcription.text });
-  } catch (err) {
-    console.error('Whisper transcription error:', err);
+    const transcript = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text?.trim() ?? '';
+    res.json({ transcript: transcript || null });
+  } catch (err: any) {
+    console.error('[Transcribe] Claude error:', err?.message ?? err);
     res.status(500).json({ error: 'Error transcribing audio' });
   }
 });
