@@ -16,40 +16,52 @@ function useVisitMic(onTranscript: (t: string) => void) {
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
   // Keep a stable ref to the start function so onend can call latest version
-  const startRef = useRef<() => void>();
-  startRef.current = () => {
-    if (!activeRef.current) return;
+  const recRef = useRef<any>(null);
+
+  function start() {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { console.warn('[Mic] SpeechRecognition API not found'); return; }
+    if (!SR || !activeRef.current) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
-    console.log('[Mic] Session started');
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    console.log('[Mic] starting');
     r.onresult = (e: any) => {
-      const t = (e.results[0][0].transcript as string).trim();
-      console.log('[Mic] Result:', t);
-      if (t) cbRef.current(t);
+      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          const t = (e.results[i][0].transcript as string).trim();
+          console.log('[Mic] result:', t);
+          if (t) cbRef.current(t);
+        }
+      }
     };
     r.onerror = (e: any) => {
-      const code = e.error as string;
-      console.log('[Mic] Error:', code);
-      if (code === 'no-speech' || code === 'aborted') return;
-      activeRef.current = false; setState('idle');
-      if (code === 'not-allowed') alert('Permiso de micrófono denegado.');
-      else alert(`Error de dictado: ${code}`);
+      console.log('[Mic] error:', e.error);
+      if (e.error === 'not-allowed') {
+        activeRef.current = false; setState('idle');
+        alert('Permiso de micrófono denegado.');
+      }
     };
-    r.onend = () => { console.log('[Mic] Session ended'); startRef.current?.(); };
-    try { r.start(); } catch (e: any) { console.error('[Mic] start() threw:', e?.message); }
-  };
+    r.onend = () => {
+      console.log('[Mic] ended — active:', activeRef.current);
+      recRef.current = null;
+      if (activeRef.current) setTimeout(start, 200);
+    };
+    recRef.current = r;
+    try { r.start(); } catch (e: any) { console.error('[Mic] start failed:', e?.message); recRef.current = null; }
+  }
 
   function toggle() {
-    if (state === 'recording') { activeRef.current = false; setState('idle'); return; }
+    if (state === 'recording') {
+      activeRef.current = false;
+      recRef.current?.stop(); recRef.current = null;
+      setState('idle'); return;
+    }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
     activeRef.current = true; setState('recording');
-    startRef.current?.();
+    start();
   }
 
-  useEffect(() => () => { activeRef.current = false; }, []);
+  useEffect(() => () => { activeRef.current = false; recRef.current?.abort(); recRef.current = null; }, []);
   return { state, toggle };
 }
 
