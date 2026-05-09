@@ -51,8 +51,12 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
   function startWebSpeech() {
     const Ctor = getWebSpeechCtor()!;
     const r = new Ctor();
-    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
-    r.onresult = (e) => { const t = e.results[0][0].transcript; if (t) onTranscriptRef.current(t); };
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.onresult = (e) => {
+      const idx = e.results.length - 1;
+      const t = e.results[idx][0].transcript;
+      if (t) onTranscriptRef.current(t);
+    };
     r.onerror = () => setState('idle');
     r.onend = () => setState('idle');
     recognitionRef.current = r;

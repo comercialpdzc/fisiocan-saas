@@ -44,10 +44,11 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     const Ctor = getWebSpeechCtor()!;
     const r = new Ctor();
     r.lang = 'es-ES';
-    r.continuous = false;
+    r.continuous = true;
     r.interimResults = false;
     r.onresult = (e) => {
-      const text = e.results[0][0].transcript;
+      const idx = e.results.length - 1;
+      const text = e.results[idx][0].transcript;
       if (text) onTranscriptRef.current(text);
     };
     r.onerror = () => setState('idle');
@@ -60,7 +61,7 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
   function stopWebSpeech() {
     recognitionRef.current?.stop();
     recognitionRef.current = null;
-    // state transitions to 'idle' via onend
+    setState('idle');
   }
 
   // ── MediaRecorder + Whisper path ───────────────────────────────────────────
