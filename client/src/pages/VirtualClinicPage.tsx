@@ -11,50 +11,42 @@ type MicState = 'idle' | 'recording';
 
 function useVisitMic(onTranscript: (t: string) => void) {
   const [state, setState] = useState<MicState>('idle');
-  const recRef = useRef<any>(null);
+  const activeRef = useRef(false);
   const cbRef = useRef(onTranscript);
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
-  function toggle() {
-    if (state === 'recording') {
-      recRef.current?.stop();
-      recRef.current = null;
-      setState('idle');
-      return;
-    }
+  // Keep a stable ref to the start function so onend can call latest version
+  const startRef = useRef<() => void>();
+  startRef.current = () => {
+    if (!activeRef.current) return;
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
+    if (!SR) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
-    let lastInterim = '';
+    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
     r.onresult = (e: any) => {
-      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const t = (e.results[i][0].transcript as string).trim();
-          if (t) { cbRef.current(t); lastInterim = ''; }
-        } else {
-          lastInterim = (lastInterim + ' ' + e.results[i][0].transcript).trim();
-        }
-      }
+      const t = (e.results[0][0].transcript as string).trim();
+      if (t) cbRef.current(t);
     };
     r.onerror = (e: any) => {
-      setState('idle'); recRef.current = null;
       const code = e.error as string;
-      if (code === 'aborted' || code === 'no-speech') return;
+      if (code === 'no-speech' || code === 'aborted') return;
+      activeRef.current = false; setState('idle');
       if (code === 'not-allowed') alert('Permiso de micrófono denegado.');
       else alert(`Error de dictado: ${code}`);
     };
-    r.onend = () => {
-      if (lastInterim) { cbRef.current(lastInterim); lastInterim = ''; }
-      setState('idle'); recRef.current = null;
-    };
-    recRef.current = r;
-    try { r.start(); setState('recording'); }
-    catch (err: any) { alert(`Error al iniciar dictado: ${err?.message ?? err}`); }
+    r.onend = () => startRef.current?.(); // auto-restart while active
+    r.start();
+  };
+
+  function toggle() {
+    if (state === 'recording') { activeRef.current = false; setState('idle'); return; }
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { alert('El dictado de voz requiere Chrome o Edge.'); return; }
+    activeRef.current = true; setState('recording');
+    startRef.current?.();
   }
 
-  useEffect(() => () => { recRef.current?.abort(); }, []);
-
+  useEffect(() => () => { activeRef.current = false; }, []);
   return { state, toggle };
 }
 

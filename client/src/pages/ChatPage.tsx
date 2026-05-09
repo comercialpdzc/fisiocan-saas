@@ -41,60 +41,43 @@ function getWebSpeechCtor(): SpeechRecognitionCtor | undefined {
  */
 function useAudioRecorder(onTranscript: (text: string) => void) {
   const [state, setState] = useState<RecordState>('idle');
-  const recognitionRef = useRef<InstanceType<SpeechRecognitionCtor> | null>(null);
+  const webSpeechActiveRef = useRef(false);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const onTranscriptRef = useRef(onTranscript);
   useEffect(() => { onTranscriptRef.current = onTranscript; }, [onTranscript]);
 
-  function startWebSpeech() {
+  const startWSRef = useRef<() => void>();
+  startWSRef.current = () => {
+    if (!webSpeechActiveRef.current) return;
     const Ctor = getWebSpeechCtor()!;
     const r = new Ctor();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
-    let lastInterim = '';
+    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
     r.onresult = (e: any) => {
-      for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const t = (e.results[i][0].transcript as string).trim();
-          if (t) { onTranscriptRef.current(t); lastInterim = ''; }
-        } else {
-          lastInterim = (lastInterim + ' ' + e.results[i][0].transcript).trim();
-        }
-      }
+      const t = (e.results[0][0].transcript as string).trim();
+      if (t) onTranscriptRef.current(t);
     };
     r.onerror = (e: any) => {
-      setState('idle');
-      recognitionRef.current = null;
       const code = e.error as string;
       console.error('[SpeechRecognition] error:', code);
-      if (code === 'aborted') return;
-      if (code === 'not-allowed') {
-        alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
-      } else if (code === 'no-speech') {
-        alert('No se detectó habla. Verifica que el micrófono esté activo y habla más cerca de él.');
-      } else {
-        alert(`Error de reconocimiento de voz: ${code}`);
-      }
+      if (code === 'no-speech' || code === 'aborted') return;
+      webSpeechActiveRef.current = false; setState('idle');
+      if (code === 'not-allowed') alert('Permiso de micrófono denegado. Ve a Configuración del sitio → Micrófono y permite el acceso.');
+      else alert(`Error de reconocimiento de voz: ${code}`);
     };
-    r.onend = () => {
-      if (lastInterim) { onTranscriptRef.current(lastInterim); lastInterim = ''; }
-      setState('idle'); recognitionRef.current = null;
-    };
-    recognitionRef.current = r;
-    try {
-      r.start();
-      setState('recording');
-    } catch (err: any) {
-      setState('idle');
-      recognitionRef.current = null;
-      alert(`No se pudo iniciar el micrófono: ${err?.message ?? err}`);
-    }
+    r.onend = () => startWSRef.current?.();
+    r.start();
+  };
+
+  function startWebSpeech() {
+    webSpeechActiveRef.current = true;
+    setState('recording');
+    startWSRef.current?.();
   }
 
   function stopWebSpeech() {
-    recognitionRef.current?.stop();
-    recognitionRef.current = null;
+    webSpeechActiveRef.current = false;
     setState('idle');
   }
 
@@ -133,13 +116,13 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
       if (getWebSpeechCtor()) startWebSpeech();
       else startMediaRecorder();
     } else if (state === 'recording') {
-      if (recognitionRef.current) stopWebSpeech();
+      if (webSpeechActiveRef.current) stopWebSpeech();
       else stopMediaRecorder();
     }
   }
 
   useEffect(() => () => {
-    recognitionRef.current?.abort();
+    webSpeechActiveRef.current = false;
     if (mediaRecorder.current?.state !== 'inactive') mediaRecorder.current?.stop();
     streamRef.current?.getTracks().forEach(t => t.stop());
   }, []);
