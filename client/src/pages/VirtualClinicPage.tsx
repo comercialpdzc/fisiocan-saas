@@ -22,15 +22,16 @@ function useVisitMic(onTranscript: (t: string) => void) {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR || !activeRef.current) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
     console.log('[Mic] starting');
+    r.onsoundstart = () => console.log('[Mic] sound detected');
+    r.onspeechstart = () => console.log('[Mic] speech detected');
+    r.onspeechend = () => console.log('[Mic] speech ended');
     r.onresult = (e: any) => {
       for (let i = e.resultIndex ?? 0; i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const t = (e.results[i][0].transcript as string).trim();
-          console.log('[Mic] result:', t);
-          if (t) cbRef.current(t);
-        }
+        const t = (e.results[i][0].transcript as string).trim();
+        console.log('[Mic] result (final=' + e.results[i].isFinal + '):', t);
+        if (e.results[i].isFinal && t) cbRef.current(t);
       }
     };
     r.onerror = (e: any) => {

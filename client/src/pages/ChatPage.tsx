@@ -56,14 +56,15 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
     if (!SR) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
+    r.onsoundstart = () => console.log('[Mic] sound detected');
+    r.onspeechstart = () => console.log('[Mic] speech detected');
+    r.onspeechend = () => console.log('[Mic] speech ended');
     r.onresult = (e: any) => {
       for (let i = (e.resultIndex ?? 0); i < e.results.length; i++) {
-        if (e.results[i].isFinal) {
-          const t = String(e.results[i][0].transcript).trim();
-          console.log('[Mic] transcript:', t);
-          if (t) onTxRef.current(t);
-        }
+        const t = String(e.results[i][0].transcript).trim();
+        console.log('[Mic] result (final=' + e.results[i].isFinal + '):', t);
+        if (e.results[i].isFinal && t) onTxRef.current(t);
       }
     };
     r.onerror = (e: any) => {
