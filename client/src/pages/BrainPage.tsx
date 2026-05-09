@@ -47,7 +47,7 @@ function useAudioRecorder(onTranscript: (text: string) => void) {
     const SR = (window as any).SpeechRecognition ?? (window as any).webkitSpeechRecognition;
     if (!SR) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = false;
+    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
     r.onresult = (e: any) => {
       for (let i = (e.resultIndex ?? 0); i < e.results.length; i++) {
         if (e.results[i].isFinal) {

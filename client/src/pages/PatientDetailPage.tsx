@@ -136,7 +136,7 @@ function useNotesMic(onTranscript: (t: string) => void) {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR || !activeRef.current) return;
     const r = new SR();
-    r.lang = 'es-ES'; r.continuous = true; r.interimResults = true;
+    r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
     console.log('[Mic] starting');
     r.onsoundstart = () => console.log('[Mic] sound detected');
     r.onspeechstart = () => console.log('[Mic] speech detected');
