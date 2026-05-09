@@ -666,50 +666,47 @@ router.post('/chat', async (req: AuthRequest, res) => {
   indexMessageBackground(savedMsg.id, cleanText, apiKey).catch(console.error);
 });
 
-// ── Audio Transcription (via Claude) ─────────────────────────────────────────
+// ── Audio Transcription (via OpenAI Whisper) ──────────────────────────────────
 
 /**
  * POST /api/brain/transcribe
  * Accepts a multipart audio file (webm/ogg/mp4/wav/m4a).
- * Transcribes using Claude (ANTHROPIC_API_KEY — already required for Cerebro chat).
+ * Transcribes using OpenAI Whisper (OPENAI_API_KEY env var).
  */
 router.post('/transcribe', audioUpload.single('audio'), async (req, res) => {
   if (!req.file) { res.status(400).json({ error: 'No audio file received' }); return; }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    res.json({ noApiKey: true, transcript: null });
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey) {
+    res.json({ transcript: null, noApiKey: true });
     return;
   }
 
   try {
-    const client = new Anthropic({ apiKey });
-    const audioBase64 = req.file.buffer.toString('base64');
-    // Strip codec params: "audio/webm;codecs=opus" → "audio/webm"
     const mimeType = (req.file.mimetype || 'audio/webm').split(';')[0].trim();
 
-    const response = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2048,
-      messages: [{
-        role: 'user',
-        content: [
-          {
-            type: 'document',
-            source: { type: 'base64', media_type: mimeType, data: audioBase64 },
-          } as any,
-          {
-            type: 'text',
-            text: 'Transcribe exactamente lo que se dice en este audio en español. Devuelve SOLO el texto transcrito, sin comentarios adicionales.',
-          },
-        ],
-      }],
+    const form = new FormData();
+    form.append('file', new Blob([req.file.buffer], { type: mimeType }), 'recording.webm');
+    form.append('model', 'whisper-1');
+    form.append('language', 'es');
+
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${openaiKey}` },
+      body: form,
     });
 
-    const transcript = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text?.trim() ?? '';
-    res.json({ transcript: transcript || null });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('[Transcribe] Whisper error:', response.status, errText);
+      res.status(500).json({ error: 'Error transcribing audio' });
+      return;
+    }
+
+    const data = await response.json() as { text?: string };
+    res.json({ transcript: data.text?.trim() || null });
   } catch (err: any) {
-    console.error('[Transcribe] Claude error:', err?.message ?? err);
+    console.error('[Transcribe] error:', err?.message ?? err);
     res.status(500).json({ error: 'Error transcribing audio' });
   }
 });

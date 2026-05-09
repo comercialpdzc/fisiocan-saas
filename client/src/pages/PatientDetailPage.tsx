@@ -120,54 +120,42 @@ const PRUEBAS = [
   ['otras', 'Otras'],
 ];
 
-// ── MediaRecorder + Claude transcription (voice dictation for notes) ─────────
+// ── Voice recognition (Web Speech API, client-side) ───────────────────────────
 
-type NotesMicState = 'idle' | 'recording' | 'transcribing';
+type NotesMicState = 'idle' | 'recording';
 
 function useNotesMic(onTranscript: (t: string) => void) {
   const [micState, setMicState] = useState<NotesMicState>('idle');
-  const mrRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const streamRef = useRef<MediaStream | null>(null);
+  const recRef = useRef<any>(null);
   const cbRef = useRef(onTranscript);
   useEffect(() => { cbRef.current = onTranscript; }, [onTranscript]);
 
-  async function stopAndTranscribe() {
-    const mr = mrRef.current;
-    if (!mr || mr.state === 'inactive') return;
-    const blob: Blob = await new Promise(resolve => {
-      mr.onstop = () => resolve(new Blob(chunksRef.current, { type: mr.mimeType || 'audio/webm' }));
-      mr.stop();
-    });
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    streamRef.current = null; mrRef.current = null;
-    setMicState('transcribing');
-    try {
-      const fd = new FormData();
-      fd.append('audio', blob, 'recording.webm');
-      const res = await api.postForm<{ transcript: string | null }>('/brain/transcribe', fd);
-      if (res.transcript) cbRef.current(res.transcript);
-    } catch { /* silent */ }
-    finally { setMicState('idle'); }
-  }
-
   function toggleMic() {
-    if (micState === 'recording') { stopAndTranscribe(); return; }
-    if (micState !== 'idle') return;
-    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-      streamRef.current = stream;
-      const mr = new MediaRecorder(stream);
-      mrRef.current = mr; chunksRef.current = [];
-      mr.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
-      mr.start(100); setMicState('recording');
+    if (micState === 'recording') {
+      recRef.current?.stop();
+      setMicState('idle');
+      return;
+    }
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { alert('Reconocimiento de voz no soportado. Usa Chrome.'); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(() => {
+      const rec = new SR();
+      rec.lang = 'es-ES';
+      rec.continuous = false;
+      rec.interimResults = false;
+      rec.onresult = (e: any) => {
+        const text = e.results[0][0].transcript;
+        if (text) cbRef.current(text);
+      };
+      rec.onend = () => setMicState('idle');
+      rec.onerror = () => setMicState('idle');
+      recRef.current = rec;
+      rec.start();
+      setMicState('recording');
     }).catch(() => alert('No se pudo acceder al micrófono. Verifica los permisos.'));
   }
 
-  useEffect(() => () => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
-    if (mrRef.current?.state !== 'inactive') mrRef.current?.stop();
-  }, []);
-
+  useEffect(() => () => { recRef.current?.stop(); }, []);
   return { micState, toggleMic };
 }
 
@@ -246,24 +234,16 @@ function NotesTab({ patientName }: { patientName: string }) {
             className={`absolute bottom-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
               micState === 'recording'
                 ? 'bg-red-500 text-white animate-pulse'
-                : micState === 'transcribing'
-                ? 'bg-navy-100 text-navy-400 cursor-wait'
                 : 'bg-navy-100 text-navy-500 hover:bg-navy-200'
             }`}
           >
-            {micState === 'transcribing' ? <Loader2 size={15} className="animate-spin" /> : micState === 'recording' ? <MicOff size={15} /> : <Mic size={15} />}
+            {micState === 'recording' ? <MicOff size={15} /> : <Mic size={15} />}
           </button>
         </div>
         {micState === 'recording' && (
           <div className="flex items-center gap-2 text-xs text-red-500">
             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            Grabando… pulsa el micrófono para transcribir
-          </div>
-        )}
-        {micState === 'transcribing' && (
-          <div className="flex items-center gap-2 text-xs text-navy-400">
-            <Loader2 size={10} className="animate-spin" />
-            Transcribiendo…
+            Escuchando…
           </div>
         )}
         <button
