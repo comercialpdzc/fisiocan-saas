@@ -134,22 +134,25 @@ function useNotesMic(onTranscript: (t: string) => void) {
   startRef.current = () => {
     if (!activeRef.current) return;
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) return;
+    if (!SR) { console.warn('[Mic] SpeechRecognition API not found'); return; }
     const r = new SR();
     r.lang = 'es-ES'; r.continuous = false; r.interimResults = false;
+    console.log('[Mic] Session started');
     r.onresult = (e: any) => {
       const t = (e.results[0][0].transcript as string).trim();
+      console.log('[Mic] Result:', t);
       if (t) cbRef.current(t);
     };
     r.onerror = (e: any) => {
       const code = e.error as string;
+      console.log('[Mic] Error:', code);
       if (code === 'no-speech' || code === 'aborted') return;
       activeRef.current = false; setMicState('idle');
       if (code === 'not-allowed') alert('Permiso de micrófono denegado.');
       else alert(`Error de dictado: ${code}`);
     };
-    r.onend = () => startRef.current?.();
-    r.start();
+    r.onend = () => { console.log('[Mic] Session ended'); startRef.current?.(); };
+    try { r.start(); } catch (e: any) { console.error('[Mic] start() threw:', e?.message); }
   };
 
   function toggleMic() {
