@@ -207,6 +207,33 @@ router.post('/followup', requirePortalAuth, async (req: PortalRequest, res) => {
   res.status(201).json(media);
 });
 
+// ── Pautas domiciliarias ───────────────────────────────────────────────────
+router.get('/pautas', requirePortalAuth, async (req: PortalRequest, res) => {
+  const patients = await prisma.patient.findMany({ where: { tutorId: req.tutorId }, select: { id: true, name: true } });
+  const ids = patients.map(p => p.id);
+  const pautas = await prisma.patientPauta.findMany({
+    where: { patientId: { in: ids }, showInPortal: true },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true, title: true, weekRange: true, notes: true, createdAt: true,
+      patient: { select: { id: true, name: true } },
+      media: { orderBy: { createdAt: 'asc' }, select: { id: true, url: true, caption: true } },
+    },
+  });
+  res.json(pautas);
+});
+
+router.get('/pautas/:id/html', requirePortalAuth, async (req: PortalRequest, res) => {
+  const pauta = await prisma.patientPauta.findUnique({
+    where: { id: Number(req.params.id) },
+    include: { patient: { select: { tutorId: true } } },
+  });
+  if (!pauta || pauta.patient.tutorId !== req.tutorId) { res.status(403).json({ error: 'No autorizado' }); return; }
+  if (!pauta.htmlContent) { res.status(404).send('Sin contenido HTML'); return; }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(pauta.htmlContent);
+});
+
 router.delete('/followup/:id', requirePortalAuth, async (req: PortalRequest, res) => {
   const id = Number(req.params.id);
   const media = await prisma.followUpMedia.findFirst({

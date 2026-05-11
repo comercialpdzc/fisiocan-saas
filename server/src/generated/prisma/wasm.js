@@ -258,7 +258,12 @@ exports.Prisma.PatientEvaluationScalarFieldEnum = {
   distribucionPeso: 'distribucionPeso',
   estadoMuscularGeneral: 'estadoMuscularGeneral',
   condicionCorporal: 'condicionCorporal',
+  masaMuscularWsava: 'masaMuscularWsava',
   estadoPiel: 'estadoPiel',
+  alineacionExtremidades: 'alineacionExtremidades',
+  columnaVertebral: 'columnaVertebral',
+  cabezaCuello: 'cabezaCuello',
+  comportamientoReposo: 'comportamientoReposo',
   observacionesEstaticas: 'observacionesEstaticas',
   tipoMarcha: 'tipoMarcha',
   cojeraSiNo: 'cojeraSiNo',
@@ -268,6 +273,11 @@ exports.Prisma.PatientEvaluationScalarFieldEnum = {
   troteGalope: 'troteGalope',
   subidaBajada: 'subidaBajada',
   proprioceptivePlacing: 'proprioceptivePlacing',
+  marchaAlPaso: 'marchaAlPaso',
+  marchaAlTrote: 'marchaAlTrote',
+  analisisMiembros: 'analisisMiembros',
+  girosSentarse: 'girosSentarse',
+  compensacionesDin: 'compensacionesDin',
   observacionesDinamicas: 'observacionesDinamicas',
   palpacionROM: 'palpacionROM',
   dolorReposo: 'dolorReposo',
@@ -284,6 +294,7 @@ exports.Prisma.PatientEvaluationScalarFieldEnum = {
   frecuenciaSemana: 'frecuenciaSemana',
   duracionSesionMin: 'duracionSesionMin',
   reevaluacionPrevista: 'reevaluacionPrevista',
+  fechaEvaluacion: 'fechaEvaluacion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -385,6 +396,26 @@ exports.Prisma.PatientMediaScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PatientPautaScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  title: 'title',
+  weekRange: 'weekRange',
+  notes: 'notes',
+  htmlContent: 'htmlContent',
+  showInPortal: 'showInPortal',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PautaMediaScalarFieldEnum = {
+  id: 'id',
+  pautaId: 'pautaId',
+  url: 'url',
+  caption: 'caption',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.MessageScalarFieldEnum = {
   id: 'id',
   body: 'body',
@@ -471,6 +502,8 @@ exports.Prisma.ModelName = {
   GmailContact: 'GmailContact',
   FollowUpMedia: 'FollowUpMedia',
   PatientMedia: 'PatientMedia',
+  PatientPauta: 'PatientPauta',
+  PautaMedia: 'PautaMedia',
   Message: 'Message',
   BrainNote: 'BrainNote',
   BrainSynapse: 'BrainSynapse',

@@ -89,6 +89,16 @@ export type FollowUpMedia = $Result.DefaultSelection<Prisma.$FollowUpMediaPayloa
  */
 export type PatientMedia = $Result.DefaultSelection<Prisma.$PatientMediaPayload>
 /**
+ * Model PatientPauta
+ * 
+ */
+export type PatientPauta = $Result.DefaultSelection<Prisma.$PatientPautaPayload>
+/**
+ * Model PautaMedia
+ * 
+ */
+export type PautaMedia = $Result.DefaultSelection<Prisma.$PautaMediaPayload>
+/**
  * Model Message
  * 
  */
@@ -391,6 +401,26 @@ export class PrismaClient<
     * ```
     */
   get patientMedia(): Prisma.PatientMediaDelegate<ExtArgs>;
+
+  /**
+   * `prisma.patientPauta`: Exposes CRUD operations for the **PatientPauta** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PatientPautas
+    * const patientPautas = await prisma.patientPauta.findMany()
+    * ```
+    */
+  get patientPauta(): Prisma.PatientPautaDelegate<ExtArgs>;
+
+  /**
+   * `prisma.pautaMedia`: Exposes CRUD operations for the **PautaMedia** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PautaMedias
+    * const pautaMedias = await prisma.pautaMedia.findMany()
+    * ```
+    */
+  get pautaMedia(): Prisma.PautaMediaDelegate<ExtArgs>;
 
   /**
    * `prisma.message`: Exposes CRUD operations for the **Message** model.
@@ -907,6 +937,8 @@ export namespace Prisma {
     GmailContact: 'GmailContact',
     FollowUpMedia: 'FollowUpMedia',
     PatientMedia: 'PatientMedia',
+    PatientPauta: 'PatientPauta',
+    PautaMedia: 'PautaMedia',
     Message: 'Message',
     BrainNote: 'BrainNote',
     BrainSynapse: 'BrainSynapse',
@@ -928,7 +960,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "tutor" | "patient" | "intakeData" | "appointment" | "appointmentPatient" | "rehabRoutine" | "patientRoutine" | "plan" | "patientEvaluation" | "sessionFollowup" | "mediaFile" | "gmailContact" | "followUpMedia" | "patientMedia" | "message" | "brainNote" | "brainSynapse" | "brainIndexedMessage" | "brainConversation" | "brainMessage"
+      modelProps: "user" | "tutor" | "patient" | "intakeData" | "appointment" | "appointmentPatient" | "rehabRoutine" | "patientRoutine" | "plan" | "patientEvaluation" | "sessionFollowup" | "mediaFile" | "gmailContact" | "followUpMedia" | "patientMedia" | "patientPauta" | "pautaMedia" | "message" | "brainNote" | "brainSynapse" | "brainIndexedMessage" | "brainConversation" | "brainMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1982,6 +2014,146 @@ export namespace Prisma {
           }
         }
       }
+      PatientPauta: {
+        payload: Prisma.$PatientPautaPayload<ExtArgs>
+        fields: Prisma.PatientPautaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PatientPautaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PatientPautaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>
+          }
+          findFirst: {
+            args: Prisma.PatientPautaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PatientPautaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>
+          }
+          findMany: {
+            args: Prisma.PatientPautaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>[]
+          }
+          create: {
+            args: Prisma.PatientPautaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>
+          }
+          createMany: {
+            args: Prisma.PatientPautaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PatientPautaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>[]
+          }
+          delete: {
+            args: Prisma.PatientPautaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>
+          }
+          update: {
+            args: Prisma.PatientPautaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>
+          }
+          deleteMany: {
+            args: Prisma.PatientPautaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PatientPautaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PatientPautaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PatientPautaPayload>
+          }
+          aggregate: {
+            args: Prisma.PatientPautaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePatientPauta>
+          }
+          groupBy: {
+            args: Prisma.PatientPautaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PatientPautaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PatientPautaCountArgs<ExtArgs>
+            result: $Utils.Optional<PatientPautaCountAggregateOutputType> | number
+          }
+        }
+      }
+      PautaMedia: {
+        payload: Prisma.$PautaMediaPayload<ExtArgs>
+        fields: Prisma.PautaMediaFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PautaMediaFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PautaMediaFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>
+          }
+          findFirst: {
+            args: Prisma.PautaMediaFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PautaMediaFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>
+          }
+          findMany: {
+            args: Prisma.PautaMediaFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>[]
+          }
+          create: {
+            args: Prisma.PautaMediaCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>
+          }
+          createMany: {
+            args: Prisma.PautaMediaCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PautaMediaCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>[]
+          }
+          delete: {
+            args: Prisma.PautaMediaDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>
+          }
+          update: {
+            args: Prisma.PautaMediaUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>
+          }
+          deleteMany: {
+            args: Prisma.PautaMediaDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PautaMediaUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PautaMediaUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PautaMediaPayload>
+          }
+          aggregate: {
+            args: Prisma.PautaMediaAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePautaMedia>
+          }
+          groupBy: {
+            args: Prisma.PautaMediaGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PautaMediaGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PautaMediaCountArgs<ExtArgs>
+            result: $Utils.Optional<PautaMediaCountAggregateOutputType> | number
+          }
+        }
+      }
       Message: {
         payload: Prisma.$MessagePayload<ExtArgs>
         fields: Prisma.MessageFieldRefs
@@ -2678,6 +2850,7 @@ export namespace Prisma {
     patientMedia: number
     sessionFollowups: number
     mediaFiles: number
+    pautas: number
   }
 
   export type PatientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2689,6 +2862,7 @@ export namespace Prisma {
     patientMedia?: boolean | PatientCountOutputTypeCountPatientMediaArgs
     sessionFollowups?: boolean | PatientCountOutputTypeCountSessionFollowupsArgs
     mediaFiles?: boolean | PatientCountOutputTypeCountMediaFilesArgs
+    pautas?: boolean | PatientCountOutputTypeCountPautasArgs
   }
 
   // Custom InputTypes
@@ -2756,6 +2930,13 @@ export namespace Prisma {
    */
   export type PatientCountOutputTypeCountMediaFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MediaFileWhereInput
+  }
+
+  /**
+   * PatientCountOutputType without action
+   */
+  export type PatientCountOutputTypeCountPautasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PatientPautaWhereInput
   }
 
 
@@ -2858,6 +3039,37 @@ export namespace Prisma {
    */
   export type SessionFollowupCountOutputTypeCountMediaFilesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MediaFileWhereInput
+  }
+
+
+  /**
+   * Count Type PatientPautaCountOutputType
+   */
+
+  export type PatientPautaCountOutputType = {
+    media: number
+  }
+
+  export type PatientPautaCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    media?: boolean | PatientPautaCountOutputTypeCountMediaArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PatientPautaCountOutputType without action
+   */
+  export type PatientPautaCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPautaCountOutputType
+     */
+    select?: PatientPautaCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PatientPautaCountOutputType without action
+   */
+  export type PatientPautaCountOutputTypeCountMediaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PautaMediaWhereInput
   }
 
 
@@ -5385,6 +5597,7 @@ export namespace Prisma {
     evaluation?: boolean | Patient$evaluationArgs<ExtArgs>
     sessionFollowups?: boolean | Patient$sessionFollowupsArgs<ExtArgs>
     mediaFiles?: boolean | Patient$mediaFilesArgs<ExtArgs>
+    pautas?: boolean | Patient$pautasArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["patient"]>
 
@@ -5437,6 +5650,7 @@ export namespace Prisma {
     evaluation?: boolean | Patient$evaluationArgs<ExtArgs>
     sessionFollowups?: boolean | Patient$sessionFollowupsArgs<ExtArgs>
     mediaFiles?: boolean | Patient$mediaFilesArgs<ExtArgs>
+    pautas?: boolean | Patient$pautasArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PatientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5457,6 +5671,7 @@ export namespace Prisma {
       evaluation: Prisma.$PatientEvaluationPayload<ExtArgs> | null
       sessionFollowups: Prisma.$SessionFollowupPayload<ExtArgs>[]
       mediaFiles: Prisma.$MediaFilePayload<ExtArgs>[]
+      pautas: Prisma.$PatientPautaPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
@@ -5849,6 +6064,7 @@ export namespace Prisma {
     evaluation<T extends Patient$evaluationArgs<ExtArgs> = {}>(args?: Subset<T, Patient$evaluationArgs<ExtArgs>>): Prisma__PatientEvaluationClient<$Result.GetResult<Prisma.$PatientEvaluationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     sessionFollowups<T extends Patient$sessionFollowupsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$sessionFollowupsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionFollowupPayload<ExtArgs>, T, "findMany"> | Null>
     mediaFiles<T extends Patient$mediaFilesArgs<ExtArgs> = {}>(args?: Subset<T, Patient$mediaFilesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MediaFilePayload<ExtArgs>, T, "findMany"> | Null>
+    pautas<T extends Patient$pautasArgs<ExtArgs> = {}>(args?: Subset<T, Patient$pautasArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6398,6 +6614,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MediaFileScalarFieldEnum | MediaFileScalarFieldEnum[]
+  }
+
+  /**
+   * Patient.pautas
+   */
+  export type Patient$pautasArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    where?: PatientPautaWhereInput
+    orderBy?: PatientPautaOrderByWithRelationInput | PatientPautaOrderByWithRelationInput[]
+    cursor?: PatientPautaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PatientPautaScalarFieldEnum | PatientPautaScalarFieldEnum[]
   }
 
   /**
@@ -12808,7 +13044,12 @@ export namespace Prisma {
     distribucionPeso: string | null
     estadoMuscularGeneral: string | null
     condicionCorporal: number | null
+    masaMuscularWsava: string | null
     estadoPiel: string | null
+    alineacionExtremidades: string | null
+    columnaVertebral: string | null
+    cabezaCuello: string | null
+    comportamientoReposo: string | null
     observacionesEstaticas: string | null
     tipoMarcha: string | null
     cojeraSiNo: string | null
@@ -12818,6 +13059,11 @@ export namespace Prisma {
     troteGalope: string | null
     subidaBajada: string | null
     proprioceptivePlacing: string | null
+    marchaAlPaso: string | null
+    marchaAlTrote: string | null
+    analisisMiembros: string | null
+    girosSentarse: string | null
+    compensacionesDin: string | null
     observacionesDinamicas: string | null
     palpacionROM: string | null
     dolorReposo: number | null
@@ -12834,6 +13080,7 @@ export namespace Prisma {
     frecuenciaSemana: number | null
     duracionSesionMin: number | null
     reevaluacionPrevista: Date | null
+    fechaEvaluacion: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12852,7 +13099,12 @@ export namespace Prisma {
     distribucionPeso: string | null
     estadoMuscularGeneral: string | null
     condicionCorporal: number | null
+    masaMuscularWsava: string | null
     estadoPiel: string | null
+    alineacionExtremidades: string | null
+    columnaVertebral: string | null
+    cabezaCuello: string | null
+    comportamientoReposo: string | null
     observacionesEstaticas: string | null
     tipoMarcha: string | null
     cojeraSiNo: string | null
@@ -12862,6 +13114,11 @@ export namespace Prisma {
     troteGalope: string | null
     subidaBajada: string | null
     proprioceptivePlacing: string | null
+    marchaAlPaso: string | null
+    marchaAlTrote: string | null
+    analisisMiembros: string | null
+    girosSentarse: string | null
+    compensacionesDin: string | null
     observacionesDinamicas: string | null
     palpacionROM: string | null
     dolorReposo: number | null
@@ -12878,6 +13135,7 @@ export namespace Prisma {
     frecuenciaSemana: number | null
     duracionSesionMin: number | null
     reevaluacionPrevista: Date | null
+    fechaEvaluacion: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -12896,7 +13154,12 @@ export namespace Prisma {
     distribucionPeso: number
     estadoMuscularGeneral: number
     condicionCorporal: number
+    masaMuscularWsava: number
     estadoPiel: number
+    alineacionExtremidades: number
+    columnaVertebral: number
+    cabezaCuello: number
+    comportamientoReposo: number
     observacionesEstaticas: number
     tipoMarcha: number
     cojeraSiNo: number
@@ -12906,6 +13169,11 @@ export namespace Prisma {
     troteGalope: number
     subidaBajada: number
     proprioceptivePlacing: number
+    marchaAlPaso: number
+    marchaAlTrote: number
+    analisisMiembros: number
+    girosSentarse: number
+    compensacionesDin: number
     observacionesDinamicas: number
     palpacionROM: number
     dolorReposo: number
@@ -12922,6 +13190,7 @@ export namespace Prisma {
     frecuenciaSemana: number
     duracionSesionMin: number
     reevaluacionPrevista: number
+    fechaEvaluacion: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12966,7 +13235,12 @@ export namespace Prisma {
     distribucionPeso?: true
     estadoMuscularGeneral?: true
     condicionCorporal?: true
+    masaMuscularWsava?: true
     estadoPiel?: true
+    alineacionExtremidades?: true
+    columnaVertebral?: true
+    cabezaCuello?: true
+    comportamientoReposo?: true
     observacionesEstaticas?: true
     tipoMarcha?: true
     cojeraSiNo?: true
@@ -12976,6 +13250,11 @@ export namespace Prisma {
     troteGalope?: true
     subidaBajada?: true
     proprioceptivePlacing?: true
+    marchaAlPaso?: true
+    marchaAlTrote?: true
+    analisisMiembros?: true
+    girosSentarse?: true
+    compensacionesDin?: true
     observacionesDinamicas?: true
     palpacionROM?: true
     dolorReposo?: true
@@ -12992,6 +13271,7 @@ export namespace Prisma {
     frecuenciaSemana?: true
     duracionSesionMin?: true
     reevaluacionPrevista?: true
+    fechaEvaluacion?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13010,7 +13290,12 @@ export namespace Prisma {
     distribucionPeso?: true
     estadoMuscularGeneral?: true
     condicionCorporal?: true
+    masaMuscularWsava?: true
     estadoPiel?: true
+    alineacionExtremidades?: true
+    columnaVertebral?: true
+    cabezaCuello?: true
+    comportamientoReposo?: true
     observacionesEstaticas?: true
     tipoMarcha?: true
     cojeraSiNo?: true
@@ -13020,6 +13305,11 @@ export namespace Prisma {
     troteGalope?: true
     subidaBajada?: true
     proprioceptivePlacing?: true
+    marchaAlPaso?: true
+    marchaAlTrote?: true
+    analisisMiembros?: true
+    girosSentarse?: true
+    compensacionesDin?: true
     observacionesDinamicas?: true
     palpacionROM?: true
     dolorReposo?: true
@@ -13036,6 +13326,7 @@ export namespace Prisma {
     frecuenciaSemana?: true
     duracionSesionMin?: true
     reevaluacionPrevista?: true
+    fechaEvaluacion?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13054,7 +13345,12 @@ export namespace Prisma {
     distribucionPeso?: true
     estadoMuscularGeneral?: true
     condicionCorporal?: true
+    masaMuscularWsava?: true
     estadoPiel?: true
+    alineacionExtremidades?: true
+    columnaVertebral?: true
+    cabezaCuello?: true
+    comportamientoReposo?: true
     observacionesEstaticas?: true
     tipoMarcha?: true
     cojeraSiNo?: true
@@ -13064,6 +13360,11 @@ export namespace Prisma {
     troteGalope?: true
     subidaBajada?: true
     proprioceptivePlacing?: true
+    marchaAlPaso?: true
+    marchaAlTrote?: true
+    analisisMiembros?: true
+    girosSentarse?: true
+    compensacionesDin?: true
     observacionesDinamicas?: true
     palpacionROM?: true
     dolorReposo?: true
@@ -13080,6 +13381,7 @@ export namespace Prisma {
     frecuenciaSemana?: true
     duracionSesionMin?: true
     reevaluacionPrevista?: true
+    fechaEvaluacion?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -13185,7 +13487,12 @@ export namespace Prisma {
     distribucionPeso: string | null
     estadoMuscularGeneral: string | null
     condicionCorporal: number | null
+    masaMuscularWsava: string | null
     estadoPiel: string | null
+    alineacionExtremidades: string | null
+    columnaVertebral: string | null
+    cabezaCuello: string | null
+    comportamientoReposo: string | null
     observacionesEstaticas: string | null
     tipoMarcha: string | null
     cojeraSiNo: string | null
@@ -13195,6 +13502,11 @@ export namespace Prisma {
     troteGalope: string | null
     subidaBajada: string | null
     proprioceptivePlacing: string | null
+    marchaAlPaso: string | null
+    marchaAlTrote: string | null
+    analisisMiembros: string | null
+    girosSentarse: string | null
+    compensacionesDin: string | null
     observacionesDinamicas: string | null
     palpacionROM: string | null
     dolorReposo: number | null
@@ -13211,6 +13523,7 @@ export namespace Prisma {
     frecuenciaSemana: number | null
     duracionSesionMin: number | null
     reevaluacionPrevista: Date | null
+    fechaEvaluacion: Date | null
     createdAt: Date
     updatedAt: Date
     _count: PatientEvaluationCountAggregateOutputType | null
@@ -13248,7 +13561,12 @@ export namespace Prisma {
     distribucionPeso?: boolean
     estadoMuscularGeneral?: boolean
     condicionCorporal?: boolean
+    masaMuscularWsava?: boolean
     estadoPiel?: boolean
+    alineacionExtremidades?: boolean
+    columnaVertebral?: boolean
+    cabezaCuello?: boolean
+    comportamientoReposo?: boolean
     observacionesEstaticas?: boolean
     tipoMarcha?: boolean
     cojeraSiNo?: boolean
@@ -13258,6 +13576,11 @@ export namespace Prisma {
     troteGalope?: boolean
     subidaBajada?: boolean
     proprioceptivePlacing?: boolean
+    marchaAlPaso?: boolean
+    marchaAlTrote?: boolean
+    analisisMiembros?: boolean
+    girosSentarse?: boolean
+    compensacionesDin?: boolean
     observacionesDinamicas?: boolean
     palpacionROM?: boolean
     dolorReposo?: boolean
@@ -13274,6 +13597,7 @@ export namespace Prisma {
     frecuenciaSemana?: boolean
     duracionSesionMin?: boolean
     reevaluacionPrevista?: boolean
+    fechaEvaluacion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -13293,7 +13617,12 @@ export namespace Prisma {
     distribucionPeso?: boolean
     estadoMuscularGeneral?: boolean
     condicionCorporal?: boolean
+    masaMuscularWsava?: boolean
     estadoPiel?: boolean
+    alineacionExtremidades?: boolean
+    columnaVertebral?: boolean
+    cabezaCuello?: boolean
+    comportamientoReposo?: boolean
     observacionesEstaticas?: boolean
     tipoMarcha?: boolean
     cojeraSiNo?: boolean
@@ -13303,6 +13632,11 @@ export namespace Prisma {
     troteGalope?: boolean
     subidaBajada?: boolean
     proprioceptivePlacing?: boolean
+    marchaAlPaso?: boolean
+    marchaAlTrote?: boolean
+    analisisMiembros?: boolean
+    girosSentarse?: boolean
+    compensacionesDin?: boolean
     observacionesDinamicas?: boolean
     palpacionROM?: boolean
     dolorReposo?: boolean
@@ -13319,6 +13653,7 @@ export namespace Prisma {
     frecuenciaSemana?: boolean
     duracionSesionMin?: boolean
     reevaluacionPrevista?: boolean
+    fechaEvaluacion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -13338,7 +13673,12 @@ export namespace Prisma {
     distribucionPeso?: boolean
     estadoMuscularGeneral?: boolean
     condicionCorporal?: boolean
+    masaMuscularWsava?: boolean
     estadoPiel?: boolean
+    alineacionExtremidades?: boolean
+    columnaVertebral?: boolean
+    cabezaCuello?: boolean
+    comportamientoReposo?: boolean
     observacionesEstaticas?: boolean
     tipoMarcha?: boolean
     cojeraSiNo?: boolean
@@ -13348,6 +13688,11 @@ export namespace Prisma {
     troteGalope?: boolean
     subidaBajada?: boolean
     proprioceptivePlacing?: boolean
+    marchaAlPaso?: boolean
+    marchaAlTrote?: boolean
+    analisisMiembros?: boolean
+    girosSentarse?: boolean
+    compensacionesDin?: boolean
     observacionesDinamicas?: boolean
     palpacionROM?: boolean
     dolorReposo?: boolean
@@ -13364,6 +13709,7 @@ export namespace Prisma {
     frecuenciaSemana?: boolean
     duracionSesionMin?: boolean
     reevaluacionPrevista?: boolean
+    fechaEvaluacion?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -13394,7 +13740,12 @@ export namespace Prisma {
       distribucionPeso: string | null
       estadoMuscularGeneral: string | null
       condicionCorporal: number | null
+      masaMuscularWsava: string | null
       estadoPiel: string | null
+      alineacionExtremidades: string | null
+      columnaVertebral: string | null
+      cabezaCuello: string | null
+      comportamientoReposo: string | null
       observacionesEstaticas: string | null
       tipoMarcha: string | null
       cojeraSiNo: string | null
@@ -13404,6 +13755,11 @@ export namespace Prisma {
       troteGalope: string | null
       subidaBajada: string | null
       proprioceptivePlacing: string | null
+      marchaAlPaso: string | null
+      marchaAlTrote: string | null
+      analisisMiembros: string | null
+      girosSentarse: string | null
+      compensacionesDin: string | null
       observacionesDinamicas: string | null
       palpacionROM: string | null
       dolorReposo: number | null
@@ -13420,6 +13776,7 @@ export namespace Prisma {
       frecuenciaSemana: number | null
       duracionSesionMin: number | null
       reevaluacionPrevista: Date | null
+      fechaEvaluacion: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["patientEvaluation"]>
@@ -13829,7 +14186,12 @@ export namespace Prisma {
     readonly distribucionPeso: FieldRef<"PatientEvaluation", 'String'>
     readonly estadoMuscularGeneral: FieldRef<"PatientEvaluation", 'String'>
     readonly condicionCorporal: FieldRef<"PatientEvaluation", 'Int'>
+    readonly masaMuscularWsava: FieldRef<"PatientEvaluation", 'String'>
     readonly estadoPiel: FieldRef<"PatientEvaluation", 'String'>
+    readonly alineacionExtremidades: FieldRef<"PatientEvaluation", 'String'>
+    readonly columnaVertebral: FieldRef<"PatientEvaluation", 'String'>
+    readonly cabezaCuello: FieldRef<"PatientEvaluation", 'String'>
+    readonly comportamientoReposo: FieldRef<"PatientEvaluation", 'String'>
     readonly observacionesEstaticas: FieldRef<"PatientEvaluation", 'String'>
     readonly tipoMarcha: FieldRef<"PatientEvaluation", 'String'>
     readonly cojeraSiNo: FieldRef<"PatientEvaluation", 'String'>
@@ -13839,6 +14201,11 @@ export namespace Prisma {
     readonly troteGalope: FieldRef<"PatientEvaluation", 'String'>
     readonly subidaBajada: FieldRef<"PatientEvaluation", 'String'>
     readonly proprioceptivePlacing: FieldRef<"PatientEvaluation", 'String'>
+    readonly marchaAlPaso: FieldRef<"PatientEvaluation", 'String'>
+    readonly marchaAlTrote: FieldRef<"PatientEvaluation", 'String'>
+    readonly analisisMiembros: FieldRef<"PatientEvaluation", 'String'>
+    readonly girosSentarse: FieldRef<"PatientEvaluation", 'String'>
+    readonly compensacionesDin: FieldRef<"PatientEvaluation", 'String'>
     readonly observacionesDinamicas: FieldRef<"PatientEvaluation", 'String'>
     readonly palpacionROM: FieldRef<"PatientEvaluation", 'String'>
     readonly dolorReposo: FieldRef<"PatientEvaluation", 'Int'>
@@ -13855,6 +14222,7 @@ export namespace Prisma {
     readonly frecuenciaSemana: FieldRef<"PatientEvaluation", 'Int'>
     readonly duracionSesionMin: FieldRef<"PatientEvaluation", 'Int'>
     readonly reevaluacionPrevista: FieldRef<"PatientEvaluation", 'DateTime'>
+    readonly fechaEvaluacion: FieldRef<"PatientEvaluation", 'DateTime'>
     readonly createdAt: FieldRef<"PatientEvaluation", 'DateTime'>
     readonly updatedAt: FieldRef<"PatientEvaluation", 'DateTime'>
   }
@@ -19836,6 +20204,2022 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PatientMediaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PatientPauta
+   */
+
+  export type AggregatePatientPauta = {
+    _count: PatientPautaCountAggregateOutputType | null
+    _avg: PatientPautaAvgAggregateOutputType | null
+    _sum: PatientPautaSumAggregateOutputType | null
+    _min: PatientPautaMinAggregateOutputType | null
+    _max: PatientPautaMaxAggregateOutputType | null
+  }
+
+  export type PatientPautaAvgAggregateOutputType = {
+    id: number | null
+    patientId: number | null
+  }
+
+  export type PatientPautaSumAggregateOutputType = {
+    id: number | null
+    patientId: number | null
+  }
+
+  export type PatientPautaMinAggregateOutputType = {
+    id: number | null
+    patientId: number | null
+    title: string | null
+    weekRange: string | null
+    notes: string | null
+    htmlContent: string | null
+    showInPortal: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PatientPautaMaxAggregateOutputType = {
+    id: number | null
+    patientId: number | null
+    title: string | null
+    weekRange: string | null
+    notes: string | null
+    htmlContent: string | null
+    showInPortal: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PatientPautaCountAggregateOutputType = {
+    id: number
+    patientId: number
+    title: number
+    weekRange: number
+    notes: number
+    htmlContent: number
+    showInPortal: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PatientPautaAvgAggregateInputType = {
+    id?: true
+    patientId?: true
+  }
+
+  export type PatientPautaSumAggregateInputType = {
+    id?: true
+    patientId?: true
+  }
+
+  export type PatientPautaMinAggregateInputType = {
+    id?: true
+    patientId?: true
+    title?: true
+    weekRange?: true
+    notes?: true
+    htmlContent?: true
+    showInPortal?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PatientPautaMaxAggregateInputType = {
+    id?: true
+    patientId?: true
+    title?: true
+    weekRange?: true
+    notes?: true
+    htmlContent?: true
+    showInPortal?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PatientPautaCountAggregateInputType = {
+    id?: true
+    patientId?: true
+    title?: true
+    weekRange?: true
+    notes?: true
+    htmlContent?: true
+    showInPortal?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PatientPautaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PatientPauta to aggregate.
+     */
+    where?: PatientPautaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PatientPautas to fetch.
+     */
+    orderBy?: PatientPautaOrderByWithRelationInput | PatientPautaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PatientPautaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PatientPautas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PatientPautas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PatientPautas
+    **/
+    _count?: true | PatientPautaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PatientPautaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PatientPautaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PatientPautaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PatientPautaMaxAggregateInputType
+  }
+
+  export type GetPatientPautaAggregateType<T extends PatientPautaAggregateArgs> = {
+        [P in keyof T & keyof AggregatePatientPauta]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePatientPauta[P]>
+      : GetScalarType<T[P], AggregatePatientPauta[P]>
+  }
+
+
+
+
+  export type PatientPautaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PatientPautaWhereInput
+    orderBy?: PatientPautaOrderByWithAggregationInput | PatientPautaOrderByWithAggregationInput[]
+    by: PatientPautaScalarFieldEnum[] | PatientPautaScalarFieldEnum
+    having?: PatientPautaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PatientPautaCountAggregateInputType | true
+    _avg?: PatientPautaAvgAggregateInputType
+    _sum?: PatientPautaSumAggregateInputType
+    _min?: PatientPautaMinAggregateInputType
+    _max?: PatientPautaMaxAggregateInputType
+  }
+
+  export type PatientPautaGroupByOutputType = {
+    id: number
+    patientId: number
+    title: string
+    weekRange: string
+    notes: string | null
+    htmlContent: string | null
+    showInPortal: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: PatientPautaCountAggregateOutputType | null
+    _avg: PatientPautaAvgAggregateOutputType | null
+    _sum: PatientPautaSumAggregateOutputType | null
+    _min: PatientPautaMinAggregateOutputType | null
+    _max: PatientPautaMaxAggregateOutputType | null
+  }
+
+  type GetPatientPautaGroupByPayload<T extends PatientPautaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PatientPautaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PatientPautaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PatientPautaGroupByOutputType[P]>
+            : GetScalarType<T[P], PatientPautaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PatientPautaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    weekRange?: boolean
+    notes?: boolean
+    htmlContent?: boolean
+    showInPortal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+    media?: boolean | PatientPauta$mediaArgs<ExtArgs>
+    _count?: boolean | PatientPautaCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["patientPauta"]>
+
+  export type PatientPautaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    weekRange?: boolean
+    notes?: boolean
+    htmlContent?: boolean
+    showInPortal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["patientPauta"]>
+
+  export type PatientPautaSelectScalar = {
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    weekRange?: boolean
+    notes?: boolean
+    htmlContent?: boolean
+    showInPortal?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PatientPautaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+    media?: boolean | PatientPauta$mediaArgs<ExtArgs>
+    _count?: boolean | PatientPautaCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PatientPautaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }
+
+  export type $PatientPautaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PatientPauta"
+    objects: {
+      patient: Prisma.$PatientPayload<ExtArgs>
+      media: Prisma.$PautaMediaPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      patientId: number
+      title: string
+      weekRange: string
+      notes: string | null
+      htmlContent: string | null
+      showInPortal: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["patientPauta"]>
+    composites: {}
+  }
+
+  type PatientPautaGetPayload<S extends boolean | null | undefined | PatientPautaDefaultArgs> = $Result.GetResult<Prisma.$PatientPautaPayload, S>
+
+  type PatientPautaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PatientPautaFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PatientPautaCountAggregateInputType | true
+    }
+
+  export interface PatientPautaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PatientPauta'], meta: { name: 'PatientPauta' } }
+    /**
+     * Find zero or one PatientPauta that matches the filter.
+     * @param {PatientPautaFindUniqueArgs} args - Arguments to find a PatientPauta
+     * @example
+     * // Get one PatientPauta
+     * const patientPauta = await prisma.patientPauta.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PatientPautaFindUniqueArgs>(args: SelectSubset<T, PatientPautaFindUniqueArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PatientPauta that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PatientPautaFindUniqueOrThrowArgs} args - Arguments to find a PatientPauta
+     * @example
+     * // Get one PatientPauta
+     * const patientPauta = await prisma.patientPauta.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PatientPautaFindUniqueOrThrowArgs>(args: SelectSubset<T, PatientPautaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PatientPauta that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaFindFirstArgs} args - Arguments to find a PatientPauta
+     * @example
+     * // Get one PatientPauta
+     * const patientPauta = await prisma.patientPauta.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PatientPautaFindFirstArgs>(args?: SelectSubset<T, PatientPautaFindFirstArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PatientPauta that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaFindFirstOrThrowArgs} args - Arguments to find a PatientPauta
+     * @example
+     * // Get one PatientPauta
+     * const patientPauta = await prisma.patientPauta.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PatientPautaFindFirstOrThrowArgs>(args?: SelectSubset<T, PatientPautaFindFirstOrThrowArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PatientPautas that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PatientPautas
+     * const patientPautas = await prisma.patientPauta.findMany()
+     * 
+     * // Get first 10 PatientPautas
+     * const patientPautas = await prisma.patientPauta.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const patientPautaWithIdOnly = await prisma.patientPauta.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PatientPautaFindManyArgs>(args?: SelectSubset<T, PatientPautaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PatientPauta.
+     * @param {PatientPautaCreateArgs} args - Arguments to create a PatientPauta.
+     * @example
+     * // Create one PatientPauta
+     * const PatientPauta = await prisma.patientPauta.create({
+     *   data: {
+     *     // ... data to create a PatientPauta
+     *   }
+     * })
+     * 
+     */
+    create<T extends PatientPautaCreateArgs>(args: SelectSubset<T, PatientPautaCreateArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PatientPautas.
+     * @param {PatientPautaCreateManyArgs} args - Arguments to create many PatientPautas.
+     * @example
+     * // Create many PatientPautas
+     * const patientPauta = await prisma.patientPauta.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PatientPautaCreateManyArgs>(args?: SelectSubset<T, PatientPautaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PatientPautas and returns the data saved in the database.
+     * @param {PatientPautaCreateManyAndReturnArgs} args - Arguments to create many PatientPautas.
+     * @example
+     * // Create many PatientPautas
+     * const patientPauta = await prisma.patientPauta.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PatientPautas and only return the `id`
+     * const patientPautaWithIdOnly = await prisma.patientPauta.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PatientPautaCreateManyAndReturnArgs>(args?: SelectSubset<T, PatientPautaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PatientPauta.
+     * @param {PatientPautaDeleteArgs} args - Arguments to delete one PatientPauta.
+     * @example
+     * // Delete one PatientPauta
+     * const PatientPauta = await prisma.patientPauta.delete({
+     *   where: {
+     *     // ... filter to delete one PatientPauta
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PatientPautaDeleteArgs>(args: SelectSubset<T, PatientPautaDeleteArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PatientPauta.
+     * @param {PatientPautaUpdateArgs} args - Arguments to update one PatientPauta.
+     * @example
+     * // Update one PatientPauta
+     * const patientPauta = await prisma.patientPauta.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PatientPautaUpdateArgs>(args: SelectSubset<T, PatientPautaUpdateArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PatientPautas.
+     * @param {PatientPautaDeleteManyArgs} args - Arguments to filter PatientPautas to delete.
+     * @example
+     * // Delete a few PatientPautas
+     * const { count } = await prisma.patientPauta.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PatientPautaDeleteManyArgs>(args?: SelectSubset<T, PatientPautaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PatientPautas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PatientPautas
+     * const patientPauta = await prisma.patientPauta.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PatientPautaUpdateManyArgs>(args: SelectSubset<T, PatientPautaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PatientPauta.
+     * @param {PatientPautaUpsertArgs} args - Arguments to update or create a PatientPauta.
+     * @example
+     * // Update or create a PatientPauta
+     * const patientPauta = await prisma.patientPauta.upsert({
+     *   create: {
+     *     // ... data to create a PatientPauta
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PatientPauta we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PatientPautaUpsertArgs>(args: SelectSubset<T, PatientPautaUpsertArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PatientPautas.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaCountArgs} args - Arguments to filter PatientPautas to count.
+     * @example
+     * // Count the number of PatientPautas
+     * const count = await prisma.patientPauta.count({
+     *   where: {
+     *     // ... the filter for the PatientPautas we want to count
+     *   }
+     * })
+    **/
+    count<T extends PatientPautaCountArgs>(
+      args?: Subset<T, PatientPautaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PatientPautaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PatientPauta.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PatientPautaAggregateArgs>(args: Subset<T, PatientPautaAggregateArgs>): Prisma.PrismaPromise<GetPatientPautaAggregateType<T>>
+
+    /**
+     * Group by PatientPauta.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PatientPautaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PatientPautaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PatientPautaGroupByArgs['orderBy'] }
+        : { orderBy?: PatientPautaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PatientPautaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPatientPautaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PatientPauta model
+   */
+  readonly fields: PatientPautaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PatientPauta.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PatientPautaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    media<T extends PatientPauta$mediaArgs<ExtArgs> = {}>(args?: Subset<T, PatientPauta$mediaArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PatientPauta model
+   */ 
+  interface PatientPautaFieldRefs {
+    readonly id: FieldRef<"PatientPauta", 'Int'>
+    readonly patientId: FieldRef<"PatientPauta", 'Int'>
+    readonly title: FieldRef<"PatientPauta", 'String'>
+    readonly weekRange: FieldRef<"PatientPauta", 'String'>
+    readonly notes: FieldRef<"PatientPauta", 'String'>
+    readonly htmlContent: FieldRef<"PatientPauta", 'String'>
+    readonly showInPortal: FieldRef<"PatientPauta", 'Boolean'>
+    readonly createdAt: FieldRef<"PatientPauta", 'DateTime'>
+    readonly updatedAt: FieldRef<"PatientPauta", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PatientPauta findUnique
+   */
+  export type PatientPautaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * Filter, which PatientPauta to fetch.
+     */
+    where: PatientPautaWhereUniqueInput
+  }
+
+  /**
+   * PatientPauta findUniqueOrThrow
+   */
+  export type PatientPautaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * Filter, which PatientPauta to fetch.
+     */
+    where: PatientPautaWhereUniqueInput
+  }
+
+  /**
+   * PatientPauta findFirst
+   */
+  export type PatientPautaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * Filter, which PatientPauta to fetch.
+     */
+    where?: PatientPautaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PatientPautas to fetch.
+     */
+    orderBy?: PatientPautaOrderByWithRelationInput | PatientPautaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PatientPautas.
+     */
+    cursor?: PatientPautaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PatientPautas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PatientPautas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PatientPautas.
+     */
+    distinct?: PatientPautaScalarFieldEnum | PatientPautaScalarFieldEnum[]
+  }
+
+  /**
+   * PatientPauta findFirstOrThrow
+   */
+  export type PatientPautaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * Filter, which PatientPauta to fetch.
+     */
+    where?: PatientPautaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PatientPautas to fetch.
+     */
+    orderBy?: PatientPautaOrderByWithRelationInput | PatientPautaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PatientPautas.
+     */
+    cursor?: PatientPautaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PatientPautas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PatientPautas.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PatientPautas.
+     */
+    distinct?: PatientPautaScalarFieldEnum | PatientPautaScalarFieldEnum[]
+  }
+
+  /**
+   * PatientPauta findMany
+   */
+  export type PatientPautaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * Filter, which PatientPautas to fetch.
+     */
+    where?: PatientPautaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PatientPautas to fetch.
+     */
+    orderBy?: PatientPautaOrderByWithRelationInput | PatientPautaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PatientPautas.
+     */
+    cursor?: PatientPautaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PatientPautas from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PatientPautas.
+     */
+    skip?: number
+    distinct?: PatientPautaScalarFieldEnum | PatientPautaScalarFieldEnum[]
+  }
+
+  /**
+   * PatientPauta create
+   */
+  export type PatientPautaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PatientPauta.
+     */
+    data: XOR<PatientPautaCreateInput, PatientPautaUncheckedCreateInput>
+  }
+
+  /**
+   * PatientPauta createMany
+   */
+  export type PatientPautaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PatientPautas.
+     */
+    data: PatientPautaCreateManyInput | PatientPautaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PatientPauta createManyAndReturn
+   */
+  export type PatientPautaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PatientPautas.
+     */
+    data: PatientPautaCreateManyInput | PatientPautaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PatientPauta update
+   */
+  export type PatientPautaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PatientPauta.
+     */
+    data: XOR<PatientPautaUpdateInput, PatientPautaUncheckedUpdateInput>
+    /**
+     * Choose, which PatientPauta to update.
+     */
+    where: PatientPautaWhereUniqueInput
+  }
+
+  /**
+   * PatientPauta updateMany
+   */
+  export type PatientPautaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PatientPautas.
+     */
+    data: XOR<PatientPautaUpdateManyMutationInput, PatientPautaUncheckedUpdateManyInput>
+    /**
+     * Filter which PatientPautas to update
+     */
+    where?: PatientPautaWhereInput
+  }
+
+  /**
+   * PatientPauta upsert
+   */
+  export type PatientPautaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PatientPauta to update in case it exists.
+     */
+    where: PatientPautaWhereUniqueInput
+    /**
+     * In case the PatientPauta found by the `where` argument doesn't exist, create a new PatientPauta with this data.
+     */
+    create: XOR<PatientPautaCreateInput, PatientPautaUncheckedCreateInput>
+    /**
+     * In case the PatientPauta was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PatientPautaUpdateInput, PatientPautaUncheckedUpdateInput>
+  }
+
+  /**
+   * PatientPauta delete
+   */
+  export type PatientPautaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+    /**
+     * Filter which PatientPauta to delete.
+     */
+    where: PatientPautaWhereUniqueInput
+  }
+
+  /**
+   * PatientPauta deleteMany
+   */
+  export type PatientPautaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PatientPautas to delete
+     */
+    where?: PatientPautaWhereInput
+  }
+
+  /**
+   * PatientPauta.media
+   */
+  export type PatientPauta$mediaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    where?: PautaMediaWhereInput
+    orderBy?: PautaMediaOrderByWithRelationInput | PautaMediaOrderByWithRelationInput[]
+    cursor?: PautaMediaWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PautaMediaScalarFieldEnum | PautaMediaScalarFieldEnum[]
+  }
+
+  /**
+   * PatientPauta without action
+   */
+  export type PatientPautaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PatientPauta
+     */
+    select?: PatientPautaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PatientPautaInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PautaMedia
+   */
+
+  export type AggregatePautaMedia = {
+    _count: PautaMediaCountAggregateOutputType | null
+    _avg: PautaMediaAvgAggregateOutputType | null
+    _sum: PautaMediaSumAggregateOutputType | null
+    _min: PautaMediaMinAggregateOutputType | null
+    _max: PautaMediaMaxAggregateOutputType | null
+  }
+
+  export type PautaMediaAvgAggregateOutputType = {
+    id: number | null
+    pautaId: number | null
+  }
+
+  export type PautaMediaSumAggregateOutputType = {
+    id: number | null
+    pautaId: number | null
+  }
+
+  export type PautaMediaMinAggregateOutputType = {
+    id: number | null
+    pautaId: number | null
+    url: string | null
+    caption: string | null
+    createdAt: Date | null
+  }
+
+  export type PautaMediaMaxAggregateOutputType = {
+    id: number | null
+    pautaId: number | null
+    url: string | null
+    caption: string | null
+    createdAt: Date | null
+  }
+
+  export type PautaMediaCountAggregateOutputType = {
+    id: number
+    pautaId: number
+    url: number
+    caption: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PautaMediaAvgAggregateInputType = {
+    id?: true
+    pautaId?: true
+  }
+
+  export type PautaMediaSumAggregateInputType = {
+    id?: true
+    pautaId?: true
+  }
+
+  export type PautaMediaMinAggregateInputType = {
+    id?: true
+    pautaId?: true
+    url?: true
+    caption?: true
+    createdAt?: true
+  }
+
+  export type PautaMediaMaxAggregateInputType = {
+    id?: true
+    pautaId?: true
+    url?: true
+    caption?: true
+    createdAt?: true
+  }
+
+  export type PautaMediaCountAggregateInputType = {
+    id?: true
+    pautaId?: true
+    url?: true
+    caption?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PautaMediaAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PautaMedia to aggregate.
+     */
+    where?: PautaMediaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PautaMedias to fetch.
+     */
+    orderBy?: PautaMediaOrderByWithRelationInput | PautaMediaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PautaMediaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PautaMedias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PautaMedias.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PautaMedias
+    **/
+    _count?: true | PautaMediaCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PautaMediaAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PautaMediaSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PautaMediaMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PautaMediaMaxAggregateInputType
+  }
+
+  export type GetPautaMediaAggregateType<T extends PautaMediaAggregateArgs> = {
+        [P in keyof T & keyof AggregatePautaMedia]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePautaMedia[P]>
+      : GetScalarType<T[P], AggregatePautaMedia[P]>
+  }
+
+
+
+
+  export type PautaMediaGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PautaMediaWhereInput
+    orderBy?: PautaMediaOrderByWithAggregationInput | PautaMediaOrderByWithAggregationInput[]
+    by: PautaMediaScalarFieldEnum[] | PautaMediaScalarFieldEnum
+    having?: PautaMediaScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PautaMediaCountAggregateInputType | true
+    _avg?: PautaMediaAvgAggregateInputType
+    _sum?: PautaMediaSumAggregateInputType
+    _min?: PautaMediaMinAggregateInputType
+    _max?: PautaMediaMaxAggregateInputType
+  }
+
+  export type PautaMediaGroupByOutputType = {
+    id: number
+    pautaId: number
+    url: string
+    caption: string | null
+    createdAt: Date
+    _count: PautaMediaCountAggregateOutputType | null
+    _avg: PautaMediaAvgAggregateOutputType | null
+    _sum: PautaMediaSumAggregateOutputType | null
+    _min: PautaMediaMinAggregateOutputType | null
+    _max: PautaMediaMaxAggregateOutputType | null
+  }
+
+  type GetPautaMediaGroupByPayload<T extends PautaMediaGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PautaMediaGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PautaMediaGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PautaMediaGroupByOutputType[P]>
+            : GetScalarType<T[P], PautaMediaGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PautaMediaSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    pautaId?: boolean
+    url?: boolean
+    caption?: boolean
+    createdAt?: boolean
+    pauta?: boolean | PatientPautaDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pautaMedia"]>
+
+  export type PautaMediaSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    pautaId?: boolean
+    url?: boolean
+    caption?: boolean
+    createdAt?: boolean
+    pauta?: boolean | PatientPautaDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pautaMedia"]>
+
+  export type PautaMediaSelectScalar = {
+    id?: boolean
+    pautaId?: boolean
+    url?: boolean
+    caption?: boolean
+    createdAt?: boolean
+  }
+
+  export type PautaMediaInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pauta?: boolean | PatientPautaDefaultArgs<ExtArgs>
+  }
+  export type PautaMediaIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    pauta?: boolean | PatientPautaDefaultArgs<ExtArgs>
+  }
+
+  export type $PautaMediaPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PautaMedia"
+    objects: {
+      pauta: Prisma.$PatientPautaPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      pautaId: number
+      url: string
+      caption: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["pautaMedia"]>
+    composites: {}
+  }
+
+  type PautaMediaGetPayload<S extends boolean | null | undefined | PautaMediaDefaultArgs> = $Result.GetResult<Prisma.$PautaMediaPayload, S>
+
+  type PautaMediaCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<PautaMediaFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: PautaMediaCountAggregateInputType | true
+    }
+
+  export interface PautaMediaDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PautaMedia'], meta: { name: 'PautaMedia' } }
+    /**
+     * Find zero or one PautaMedia that matches the filter.
+     * @param {PautaMediaFindUniqueArgs} args - Arguments to find a PautaMedia
+     * @example
+     * // Get one PautaMedia
+     * const pautaMedia = await prisma.pautaMedia.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PautaMediaFindUniqueArgs>(args: SelectSubset<T, PautaMediaFindUniqueArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one PautaMedia that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {PautaMediaFindUniqueOrThrowArgs} args - Arguments to find a PautaMedia
+     * @example
+     * // Get one PautaMedia
+     * const pautaMedia = await prisma.pautaMedia.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PautaMediaFindUniqueOrThrowArgs>(args: SelectSubset<T, PautaMediaFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first PautaMedia that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaFindFirstArgs} args - Arguments to find a PautaMedia
+     * @example
+     * // Get one PautaMedia
+     * const pautaMedia = await prisma.pautaMedia.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PautaMediaFindFirstArgs>(args?: SelectSubset<T, PautaMediaFindFirstArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first PautaMedia that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaFindFirstOrThrowArgs} args - Arguments to find a PautaMedia
+     * @example
+     * // Get one PautaMedia
+     * const pautaMedia = await prisma.pautaMedia.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PautaMediaFindFirstOrThrowArgs>(args?: SelectSubset<T, PautaMediaFindFirstOrThrowArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more PautaMedias that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PautaMedias
+     * const pautaMedias = await prisma.pautaMedia.findMany()
+     * 
+     * // Get first 10 PautaMedias
+     * const pautaMedias = await prisma.pautaMedia.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pautaMediaWithIdOnly = await prisma.pautaMedia.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PautaMediaFindManyArgs>(args?: SelectSubset<T, PautaMediaFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a PautaMedia.
+     * @param {PautaMediaCreateArgs} args - Arguments to create a PautaMedia.
+     * @example
+     * // Create one PautaMedia
+     * const PautaMedia = await prisma.pautaMedia.create({
+     *   data: {
+     *     // ... data to create a PautaMedia
+     *   }
+     * })
+     * 
+     */
+    create<T extends PautaMediaCreateArgs>(args: SelectSubset<T, PautaMediaCreateArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many PautaMedias.
+     * @param {PautaMediaCreateManyArgs} args - Arguments to create many PautaMedias.
+     * @example
+     * // Create many PautaMedias
+     * const pautaMedia = await prisma.pautaMedia.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PautaMediaCreateManyArgs>(args?: SelectSubset<T, PautaMediaCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PautaMedias and returns the data saved in the database.
+     * @param {PautaMediaCreateManyAndReturnArgs} args - Arguments to create many PautaMedias.
+     * @example
+     * // Create many PautaMedias
+     * const pautaMedia = await prisma.pautaMedia.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PautaMedias and only return the `id`
+     * const pautaMediaWithIdOnly = await prisma.pautaMedia.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PautaMediaCreateManyAndReturnArgs>(args?: SelectSubset<T, PautaMediaCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a PautaMedia.
+     * @param {PautaMediaDeleteArgs} args - Arguments to delete one PautaMedia.
+     * @example
+     * // Delete one PautaMedia
+     * const PautaMedia = await prisma.pautaMedia.delete({
+     *   where: {
+     *     // ... filter to delete one PautaMedia
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PautaMediaDeleteArgs>(args: SelectSubset<T, PautaMediaDeleteArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one PautaMedia.
+     * @param {PautaMediaUpdateArgs} args - Arguments to update one PautaMedia.
+     * @example
+     * // Update one PautaMedia
+     * const pautaMedia = await prisma.pautaMedia.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PautaMediaUpdateArgs>(args: SelectSubset<T, PautaMediaUpdateArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more PautaMedias.
+     * @param {PautaMediaDeleteManyArgs} args - Arguments to filter PautaMedias to delete.
+     * @example
+     * // Delete a few PautaMedias
+     * const { count } = await prisma.pautaMedia.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PautaMediaDeleteManyArgs>(args?: SelectSubset<T, PautaMediaDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PautaMedias.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PautaMedias
+     * const pautaMedia = await prisma.pautaMedia.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PautaMediaUpdateManyArgs>(args: SelectSubset<T, PautaMediaUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PautaMedia.
+     * @param {PautaMediaUpsertArgs} args - Arguments to update or create a PautaMedia.
+     * @example
+     * // Update or create a PautaMedia
+     * const pautaMedia = await prisma.pautaMedia.upsert({
+     *   create: {
+     *     // ... data to create a PautaMedia
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PautaMedia we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PautaMediaUpsertArgs>(args: SelectSubset<T, PautaMediaUpsertArgs<ExtArgs>>): Prisma__PautaMediaClient<$Result.GetResult<Prisma.$PautaMediaPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of PautaMedias.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaCountArgs} args - Arguments to filter PautaMedias to count.
+     * @example
+     * // Count the number of PautaMedias
+     * const count = await prisma.pautaMedia.count({
+     *   where: {
+     *     // ... the filter for the PautaMedias we want to count
+     *   }
+     * })
+    **/
+    count<T extends PautaMediaCountArgs>(
+      args?: Subset<T, PautaMediaCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PautaMediaCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PautaMedia.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PautaMediaAggregateArgs>(args: Subset<T, PautaMediaAggregateArgs>): Prisma.PrismaPromise<GetPautaMediaAggregateType<T>>
+
+    /**
+     * Group by PautaMedia.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PautaMediaGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PautaMediaGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PautaMediaGroupByArgs['orderBy'] }
+        : { orderBy?: PautaMediaGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PautaMediaGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPautaMediaGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PautaMedia model
+   */
+  readonly fields: PautaMediaFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PautaMedia.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PautaMediaClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    pauta<T extends PatientPautaDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientPautaDefaultArgs<ExtArgs>>): Prisma__PatientPautaClient<$Result.GetResult<Prisma.$PatientPautaPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PautaMedia model
+   */ 
+  interface PautaMediaFieldRefs {
+    readonly id: FieldRef<"PautaMedia", 'Int'>
+    readonly pautaId: FieldRef<"PautaMedia", 'Int'>
+    readonly url: FieldRef<"PautaMedia", 'String'>
+    readonly caption: FieldRef<"PautaMedia", 'String'>
+    readonly createdAt: FieldRef<"PautaMedia", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PautaMedia findUnique
+   */
+  export type PautaMediaFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * Filter, which PautaMedia to fetch.
+     */
+    where: PautaMediaWhereUniqueInput
+  }
+
+  /**
+   * PautaMedia findUniqueOrThrow
+   */
+  export type PautaMediaFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * Filter, which PautaMedia to fetch.
+     */
+    where: PautaMediaWhereUniqueInput
+  }
+
+  /**
+   * PautaMedia findFirst
+   */
+  export type PautaMediaFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * Filter, which PautaMedia to fetch.
+     */
+    where?: PautaMediaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PautaMedias to fetch.
+     */
+    orderBy?: PautaMediaOrderByWithRelationInput | PautaMediaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PautaMedias.
+     */
+    cursor?: PautaMediaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PautaMedias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PautaMedias.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PautaMedias.
+     */
+    distinct?: PautaMediaScalarFieldEnum | PautaMediaScalarFieldEnum[]
+  }
+
+  /**
+   * PautaMedia findFirstOrThrow
+   */
+  export type PautaMediaFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * Filter, which PautaMedia to fetch.
+     */
+    where?: PautaMediaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PautaMedias to fetch.
+     */
+    orderBy?: PautaMediaOrderByWithRelationInput | PautaMediaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PautaMedias.
+     */
+    cursor?: PautaMediaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PautaMedias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PautaMedias.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PautaMedias.
+     */
+    distinct?: PautaMediaScalarFieldEnum | PautaMediaScalarFieldEnum[]
+  }
+
+  /**
+   * PautaMedia findMany
+   */
+  export type PautaMediaFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * Filter, which PautaMedias to fetch.
+     */
+    where?: PautaMediaWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PautaMedias to fetch.
+     */
+    orderBy?: PautaMediaOrderByWithRelationInput | PautaMediaOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PautaMedias.
+     */
+    cursor?: PautaMediaWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PautaMedias from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PautaMedias.
+     */
+    skip?: number
+    distinct?: PautaMediaScalarFieldEnum | PautaMediaScalarFieldEnum[]
+  }
+
+  /**
+   * PautaMedia create
+   */
+  export type PautaMediaCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PautaMedia.
+     */
+    data: XOR<PautaMediaCreateInput, PautaMediaUncheckedCreateInput>
+  }
+
+  /**
+   * PautaMedia createMany
+   */
+  export type PautaMediaCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PautaMedias.
+     */
+    data: PautaMediaCreateManyInput | PautaMediaCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PautaMedia createManyAndReturn
+   */
+  export type PautaMediaCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many PautaMedias.
+     */
+    data: PautaMediaCreateManyInput | PautaMediaCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PautaMedia update
+   */
+  export type PautaMediaUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PautaMedia.
+     */
+    data: XOR<PautaMediaUpdateInput, PautaMediaUncheckedUpdateInput>
+    /**
+     * Choose, which PautaMedia to update.
+     */
+    where: PautaMediaWhereUniqueInput
+  }
+
+  /**
+   * PautaMedia updateMany
+   */
+  export type PautaMediaUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PautaMedias.
+     */
+    data: XOR<PautaMediaUpdateManyMutationInput, PautaMediaUncheckedUpdateManyInput>
+    /**
+     * Filter which PautaMedias to update
+     */
+    where?: PautaMediaWhereInput
+  }
+
+  /**
+   * PautaMedia upsert
+   */
+  export type PautaMediaUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PautaMedia to update in case it exists.
+     */
+    where: PautaMediaWhereUniqueInput
+    /**
+     * In case the PautaMedia found by the `where` argument doesn't exist, create a new PautaMedia with this data.
+     */
+    create: XOR<PautaMediaCreateInput, PautaMediaUncheckedCreateInput>
+    /**
+     * In case the PautaMedia was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PautaMediaUpdateInput, PautaMediaUncheckedUpdateInput>
+  }
+
+  /**
+   * PautaMedia delete
+   */
+  export type PautaMediaDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
+    /**
+     * Filter which PautaMedia to delete.
+     */
+    where: PautaMediaWhereUniqueInput
+  }
+
+  /**
+   * PautaMedia deleteMany
+   */
+  export type PautaMediaDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PautaMedias to delete
+     */
+    where?: PautaMediaWhereInput
+  }
+
+  /**
+   * PautaMedia without action
+   */
+  export type PautaMediaDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PautaMedia
+     */
+    select?: PautaMediaSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PautaMediaInclude<ExtArgs> | null
   }
 
 
@@ -25990,7 +28374,12 @@ export namespace Prisma {
     distribucionPeso: 'distribucionPeso',
     estadoMuscularGeneral: 'estadoMuscularGeneral',
     condicionCorporal: 'condicionCorporal',
+    masaMuscularWsava: 'masaMuscularWsava',
     estadoPiel: 'estadoPiel',
+    alineacionExtremidades: 'alineacionExtremidades',
+    columnaVertebral: 'columnaVertebral',
+    cabezaCuello: 'cabezaCuello',
+    comportamientoReposo: 'comportamientoReposo',
     observacionesEstaticas: 'observacionesEstaticas',
     tipoMarcha: 'tipoMarcha',
     cojeraSiNo: 'cojeraSiNo',
@@ -26000,6 +28389,11 @@ export namespace Prisma {
     troteGalope: 'troteGalope',
     subidaBajada: 'subidaBajada',
     proprioceptivePlacing: 'proprioceptivePlacing',
+    marchaAlPaso: 'marchaAlPaso',
+    marchaAlTrote: 'marchaAlTrote',
+    analisisMiembros: 'analisisMiembros',
+    girosSentarse: 'girosSentarse',
+    compensacionesDin: 'compensacionesDin',
     observacionesDinamicas: 'observacionesDinamicas',
     palpacionROM: 'palpacionROM',
     dolorReposo: 'dolorReposo',
@@ -26016,6 +28410,7 @@ export namespace Prisma {
     frecuenciaSemana: 'frecuenciaSemana',
     duracionSesionMin: 'duracionSesionMin',
     reevaluacionPrevista: 'reevaluacionPrevista',
+    fechaEvaluacion: 'fechaEvaluacion',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -26133,6 +28528,32 @@ export namespace Prisma {
   };
 
   export type PatientMediaScalarFieldEnum = (typeof PatientMediaScalarFieldEnum)[keyof typeof PatientMediaScalarFieldEnum]
+
+
+  export const PatientPautaScalarFieldEnum: {
+    id: 'id',
+    patientId: 'patientId',
+    title: 'title',
+    weekRange: 'weekRange',
+    notes: 'notes',
+    htmlContent: 'htmlContent',
+    showInPortal: 'showInPortal',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PatientPautaScalarFieldEnum = (typeof PatientPautaScalarFieldEnum)[keyof typeof PatientPautaScalarFieldEnum]
+
+
+  export const PautaMediaScalarFieldEnum: {
+    id: 'id',
+    pautaId: 'pautaId',
+    url: 'url',
+    caption: 'caption',
+    createdAt: 'createdAt'
+  };
+
+  export type PautaMediaScalarFieldEnum = (typeof PautaMediaScalarFieldEnum)[keyof typeof PautaMediaScalarFieldEnum]
 
 
   export const MessageScalarFieldEnum: {
@@ -26491,6 +28912,7 @@ export namespace Prisma {
     evaluation?: XOR<PatientEvaluationNullableRelationFilter, PatientEvaluationWhereInput> | null
     sessionFollowups?: SessionFollowupListRelationFilter
     mediaFiles?: MediaFileListRelationFilter
+    pautas?: PatientPautaListRelationFilter
   }
 
   export type PatientOrderByWithRelationInput = {
@@ -26520,6 +28942,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationOrderByWithRelationInput
     sessionFollowups?: SessionFollowupOrderByRelationAggregateInput
     mediaFiles?: MediaFileOrderByRelationAggregateInput
+    pautas?: PatientPautaOrderByRelationAggregateInput
   }
 
   export type PatientWhereUniqueInput = Prisma.AtLeast<{
@@ -26552,6 +28975,7 @@ export namespace Prisma {
     evaluation?: XOR<PatientEvaluationNullableRelationFilter, PatientEvaluationWhereInput> | null
     sessionFollowups?: SessionFollowupListRelationFilter
     mediaFiles?: MediaFileListRelationFilter
+    pautas?: PatientPautaListRelationFilter
   }, "id">
 
   export type PatientOrderByWithAggregationInput = {
@@ -27147,7 +29571,12 @@ export namespace Prisma {
     distribucionPeso?: StringNullableFilter<"PatientEvaluation"> | string | null
     estadoMuscularGeneral?: StringNullableFilter<"PatientEvaluation"> | string | null
     condicionCorporal?: IntNullableFilter<"PatientEvaluation"> | number | null
+    masaMuscularWsava?: StringNullableFilter<"PatientEvaluation"> | string | null
     estadoPiel?: StringNullableFilter<"PatientEvaluation"> | string | null
+    alineacionExtremidades?: StringNullableFilter<"PatientEvaluation"> | string | null
+    columnaVertebral?: StringNullableFilter<"PatientEvaluation"> | string | null
+    cabezaCuello?: StringNullableFilter<"PatientEvaluation"> | string | null
+    comportamientoReposo?: StringNullableFilter<"PatientEvaluation"> | string | null
     observacionesEstaticas?: StringNullableFilter<"PatientEvaluation"> | string | null
     tipoMarcha?: StringNullableFilter<"PatientEvaluation"> | string | null
     cojeraSiNo?: StringNullableFilter<"PatientEvaluation"> | string | null
@@ -27157,6 +29586,11 @@ export namespace Prisma {
     troteGalope?: StringNullableFilter<"PatientEvaluation"> | string | null
     subidaBajada?: StringNullableFilter<"PatientEvaluation"> | string | null
     proprioceptivePlacing?: StringNullableFilter<"PatientEvaluation"> | string | null
+    marchaAlPaso?: StringNullableFilter<"PatientEvaluation"> | string | null
+    marchaAlTrote?: StringNullableFilter<"PatientEvaluation"> | string | null
+    analisisMiembros?: StringNullableFilter<"PatientEvaluation"> | string | null
+    girosSentarse?: StringNullableFilter<"PatientEvaluation"> | string | null
+    compensacionesDin?: StringNullableFilter<"PatientEvaluation"> | string | null
     observacionesDinamicas?: StringNullableFilter<"PatientEvaluation"> | string | null
     palpacionROM?: StringNullableFilter<"PatientEvaluation"> | string | null
     dolorReposo?: IntNullableFilter<"PatientEvaluation"> | number | null
@@ -27173,6 +29607,7 @@ export namespace Prisma {
     frecuenciaSemana?: IntNullableFilter<"PatientEvaluation"> | number | null
     duracionSesionMin?: IntNullableFilter<"PatientEvaluation"> | number | null
     reevaluacionPrevista?: DateTimeNullableFilter<"PatientEvaluation"> | Date | string | null
+    fechaEvaluacion?: DateTimeNullableFilter<"PatientEvaluation"> | Date | string | null
     createdAt?: DateTimeFilter<"PatientEvaluation"> | Date | string
     updatedAt?: DateTimeFilter<"PatientEvaluation"> | Date | string
     patient?: XOR<PatientRelationFilter, PatientWhereInput>
@@ -27192,7 +29627,12 @@ export namespace Prisma {
     distribucionPeso?: SortOrderInput | SortOrder
     estadoMuscularGeneral?: SortOrderInput | SortOrder
     condicionCorporal?: SortOrderInput | SortOrder
+    masaMuscularWsava?: SortOrderInput | SortOrder
     estadoPiel?: SortOrderInput | SortOrder
+    alineacionExtremidades?: SortOrderInput | SortOrder
+    columnaVertebral?: SortOrderInput | SortOrder
+    cabezaCuello?: SortOrderInput | SortOrder
+    comportamientoReposo?: SortOrderInput | SortOrder
     observacionesEstaticas?: SortOrderInput | SortOrder
     tipoMarcha?: SortOrderInput | SortOrder
     cojeraSiNo?: SortOrderInput | SortOrder
@@ -27202,6 +29642,11 @@ export namespace Prisma {
     troteGalope?: SortOrderInput | SortOrder
     subidaBajada?: SortOrderInput | SortOrder
     proprioceptivePlacing?: SortOrderInput | SortOrder
+    marchaAlPaso?: SortOrderInput | SortOrder
+    marchaAlTrote?: SortOrderInput | SortOrder
+    analisisMiembros?: SortOrderInput | SortOrder
+    girosSentarse?: SortOrderInput | SortOrder
+    compensacionesDin?: SortOrderInput | SortOrder
     observacionesDinamicas?: SortOrderInput | SortOrder
     palpacionROM?: SortOrderInput | SortOrder
     dolorReposo?: SortOrderInput | SortOrder
@@ -27218,6 +29663,7 @@ export namespace Prisma {
     frecuenciaSemana?: SortOrderInput | SortOrder
     duracionSesionMin?: SortOrderInput | SortOrder
     reevaluacionPrevista?: SortOrderInput | SortOrder
+    fechaEvaluacion?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     patient?: PatientOrderByWithRelationInput
@@ -27240,7 +29686,12 @@ export namespace Prisma {
     distribucionPeso?: StringNullableFilter<"PatientEvaluation"> | string | null
     estadoMuscularGeneral?: StringNullableFilter<"PatientEvaluation"> | string | null
     condicionCorporal?: IntNullableFilter<"PatientEvaluation"> | number | null
+    masaMuscularWsava?: StringNullableFilter<"PatientEvaluation"> | string | null
     estadoPiel?: StringNullableFilter<"PatientEvaluation"> | string | null
+    alineacionExtremidades?: StringNullableFilter<"PatientEvaluation"> | string | null
+    columnaVertebral?: StringNullableFilter<"PatientEvaluation"> | string | null
+    cabezaCuello?: StringNullableFilter<"PatientEvaluation"> | string | null
+    comportamientoReposo?: StringNullableFilter<"PatientEvaluation"> | string | null
     observacionesEstaticas?: StringNullableFilter<"PatientEvaluation"> | string | null
     tipoMarcha?: StringNullableFilter<"PatientEvaluation"> | string | null
     cojeraSiNo?: StringNullableFilter<"PatientEvaluation"> | string | null
@@ -27250,6 +29701,11 @@ export namespace Prisma {
     troteGalope?: StringNullableFilter<"PatientEvaluation"> | string | null
     subidaBajada?: StringNullableFilter<"PatientEvaluation"> | string | null
     proprioceptivePlacing?: StringNullableFilter<"PatientEvaluation"> | string | null
+    marchaAlPaso?: StringNullableFilter<"PatientEvaluation"> | string | null
+    marchaAlTrote?: StringNullableFilter<"PatientEvaluation"> | string | null
+    analisisMiembros?: StringNullableFilter<"PatientEvaluation"> | string | null
+    girosSentarse?: StringNullableFilter<"PatientEvaluation"> | string | null
+    compensacionesDin?: StringNullableFilter<"PatientEvaluation"> | string | null
     observacionesDinamicas?: StringNullableFilter<"PatientEvaluation"> | string | null
     palpacionROM?: StringNullableFilter<"PatientEvaluation"> | string | null
     dolorReposo?: IntNullableFilter<"PatientEvaluation"> | number | null
@@ -27266,6 +29722,7 @@ export namespace Prisma {
     frecuenciaSemana?: IntNullableFilter<"PatientEvaluation"> | number | null
     duracionSesionMin?: IntNullableFilter<"PatientEvaluation"> | number | null
     reevaluacionPrevista?: DateTimeNullableFilter<"PatientEvaluation"> | Date | string | null
+    fechaEvaluacion?: DateTimeNullableFilter<"PatientEvaluation"> | Date | string | null
     createdAt?: DateTimeFilter<"PatientEvaluation"> | Date | string
     updatedAt?: DateTimeFilter<"PatientEvaluation"> | Date | string
     patient?: XOR<PatientRelationFilter, PatientWhereInput>
@@ -27285,7 +29742,12 @@ export namespace Prisma {
     distribucionPeso?: SortOrderInput | SortOrder
     estadoMuscularGeneral?: SortOrderInput | SortOrder
     condicionCorporal?: SortOrderInput | SortOrder
+    masaMuscularWsava?: SortOrderInput | SortOrder
     estadoPiel?: SortOrderInput | SortOrder
+    alineacionExtremidades?: SortOrderInput | SortOrder
+    columnaVertebral?: SortOrderInput | SortOrder
+    cabezaCuello?: SortOrderInput | SortOrder
+    comportamientoReposo?: SortOrderInput | SortOrder
     observacionesEstaticas?: SortOrderInput | SortOrder
     tipoMarcha?: SortOrderInput | SortOrder
     cojeraSiNo?: SortOrderInput | SortOrder
@@ -27295,6 +29757,11 @@ export namespace Prisma {
     troteGalope?: SortOrderInput | SortOrder
     subidaBajada?: SortOrderInput | SortOrder
     proprioceptivePlacing?: SortOrderInput | SortOrder
+    marchaAlPaso?: SortOrderInput | SortOrder
+    marchaAlTrote?: SortOrderInput | SortOrder
+    analisisMiembros?: SortOrderInput | SortOrder
+    girosSentarse?: SortOrderInput | SortOrder
+    compensacionesDin?: SortOrderInput | SortOrder
     observacionesDinamicas?: SortOrderInput | SortOrder
     palpacionROM?: SortOrderInput | SortOrder
     dolorReposo?: SortOrderInput | SortOrder
@@ -27311,6 +29778,7 @@ export namespace Prisma {
     frecuenciaSemana?: SortOrderInput | SortOrder
     duracionSesionMin?: SortOrderInput | SortOrder
     reevaluacionPrevista?: SortOrderInput | SortOrder
+    fechaEvaluacion?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PatientEvaluationCountOrderByAggregateInput
@@ -27337,7 +29805,12 @@ export namespace Prisma {
     distribucionPeso?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     estadoMuscularGeneral?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     condicionCorporal?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
+    masaMuscularWsava?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     estadoPiel?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    alineacionExtremidades?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    columnaVertebral?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    cabezaCuello?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    comportamientoReposo?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     observacionesEstaticas?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     tipoMarcha?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     cojeraSiNo?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
@@ -27347,6 +29820,11 @@ export namespace Prisma {
     troteGalope?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     subidaBajada?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     proprioceptivePlacing?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    marchaAlPaso?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    marchaAlTrote?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    analisisMiembros?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    girosSentarse?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
+    compensacionesDin?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     observacionesDinamicas?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     palpacionROM?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     dolorReposo?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
@@ -27363,6 +29841,7 @@ export namespace Prisma {
     frecuenciaSemana?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
     duracionSesionMin?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
     reevaluacionPrevista?: DateTimeNullableWithAggregatesFilter<"PatientEvaluation"> | Date | string | null
+    fechaEvaluacion?: DateTimeNullableWithAggregatesFilter<"PatientEvaluation"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"PatientEvaluation"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PatientEvaluation"> | Date | string
   }
@@ -27949,6 +30428,143 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"PatientMedia"> | Date | string
   }
 
+  export type PatientPautaWhereInput = {
+    AND?: PatientPautaWhereInput | PatientPautaWhereInput[]
+    OR?: PatientPautaWhereInput[]
+    NOT?: PatientPautaWhereInput | PatientPautaWhereInput[]
+    id?: IntFilter<"PatientPauta"> | number
+    patientId?: IntFilter<"PatientPauta"> | number
+    title?: StringFilter<"PatientPauta"> | string
+    weekRange?: StringFilter<"PatientPauta"> | string
+    notes?: StringNullableFilter<"PatientPauta"> | string | null
+    htmlContent?: StringNullableFilter<"PatientPauta"> | string | null
+    showInPortal?: BoolFilter<"PatientPauta"> | boolean
+    createdAt?: DateTimeFilter<"PatientPauta"> | Date | string
+    updatedAt?: DateTimeFilter<"PatientPauta"> | Date | string
+    patient?: XOR<PatientRelationFilter, PatientWhereInput>
+    media?: PautaMediaListRelationFilter
+  }
+
+  export type PatientPautaOrderByWithRelationInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    weekRange?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    htmlContent?: SortOrderInput | SortOrder
+    showInPortal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    patient?: PatientOrderByWithRelationInput
+    media?: PautaMediaOrderByRelationAggregateInput
+  }
+
+  export type PatientPautaWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: PatientPautaWhereInput | PatientPautaWhereInput[]
+    OR?: PatientPautaWhereInput[]
+    NOT?: PatientPautaWhereInput | PatientPautaWhereInput[]
+    patientId?: IntFilter<"PatientPauta"> | number
+    title?: StringFilter<"PatientPauta"> | string
+    weekRange?: StringFilter<"PatientPauta"> | string
+    notes?: StringNullableFilter<"PatientPauta"> | string | null
+    htmlContent?: StringNullableFilter<"PatientPauta"> | string | null
+    showInPortal?: BoolFilter<"PatientPauta"> | boolean
+    createdAt?: DateTimeFilter<"PatientPauta"> | Date | string
+    updatedAt?: DateTimeFilter<"PatientPauta"> | Date | string
+    patient?: XOR<PatientRelationFilter, PatientWhereInput>
+    media?: PautaMediaListRelationFilter
+  }, "id">
+
+  export type PatientPautaOrderByWithAggregationInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    weekRange?: SortOrder
+    notes?: SortOrderInput | SortOrder
+    htmlContent?: SortOrderInput | SortOrder
+    showInPortal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PatientPautaCountOrderByAggregateInput
+    _avg?: PatientPautaAvgOrderByAggregateInput
+    _max?: PatientPautaMaxOrderByAggregateInput
+    _min?: PatientPautaMinOrderByAggregateInput
+    _sum?: PatientPautaSumOrderByAggregateInput
+  }
+
+  export type PatientPautaScalarWhereWithAggregatesInput = {
+    AND?: PatientPautaScalarWhereWithAggregatesInput | PatientPautaScalarWhereWithAggregatesInput[]
+    OR?: PatientPautaScalarWhereWithAggregatesInput[]
+    NOT?: PatientPautaScalarWhereWithAggregatesInput | PatientPautaScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PatientPauta"> | number
+    patientId?: IntWithAggregatesFilter<"PatientPauta"> | number
+    title?: StringWithAggregatesFilter<"PatientPauta"> | string
+    weekRange?: StringWithAggregatesFilter<"PatientPauta"> | string
+    notes?: StringNullableWithAggregatesFilter<"PatientPauta"> | string | null
+    htmlContent?: StringNullableWithAggregatesFilter<"PatientPauta"> | string | null
+    showInPortal?: BoolWithAggregatesFilter<"PatientPauta"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"PatientPauta"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PatientPauta"> | Date | string
+  }
+
+  export type PautaMediaWhereInput = {
+    AND?: PautaMediaWhereInput | PautaMediaWhereInput[]
+    OR?: PautaMediaWhereInput[]
+    NOT?: PautaMediaWhereInput | PautaMediaWhereInput[]
+    id?: IntFilter<"PautaMedia"> | number
+    pautaId?: IntFilter<"PautaMedia"> | number
+    url?: StringFilter<"PautaMedia"> | string
+    caption?: StringNullableFilter<"PautaMedia"> | string | null
+    createdAt?: DateTimeFilter<"PautaMedia"> | Date | string
+    pauta?: XOR<PatientPautaRelationFilter, PatientPautaWhereInput>
+  }
+
+  export type PautaMediaOrderByWithRelationInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
+    url?: SortOrder
+    caption?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    pauta?: PatientPautaOrderByWithRelationInput
+  }
+
+  export type PautaMediaWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: PautaMediaWhereInput | PautaMediaWhereInput[]
+    OR?: PautaMediaWhereInput[]
+    NOT?: PautaMediaWhereInput | PautaMediaWhereInput[]
+    pautaId?: IntFilter<"PautaMedia"> | number
+    url?: StringFilter<"PautaMedia"> | string
+    caption?: StringNullableFilter<"PautaMedia"> | string | null
+    createdAt?: DateTimeFilter<"PautaMedia"> | Date | string
+    pauta?: XOR<PatientPautaRelationFilter, PatientPautaWhereInput>
+  }, "id">
+
+  export type PautaMediaOrderByWithAggregationInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
+    url?: SortOrder
+    caption?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: PautaMediaCountOrderByAggregateInput
+    _avg?: PautaMediaAvgOrderByAggregateInput
+    _max?: PautaMediaMaxOrderByAggregateInput
+    _min?: PautaMediaMinOrderByAggregateInput
+    _sum?: PautaMediaSumOrderByAggregateInput
+  }
+
+  export type PautaMediaScalarWhereWithAggregatesInput = {
+    AND?: PautaMediaScalarWhereWithAggregatesInput | PautaMediaScalarWhereWithAggregatesInput[]
+    OR?: PautaMediaScalarWhereWithAggregatesInput[]
+    NOT?: PautaMediaScalarWhereWithAggregatesInput | PautaMediaScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"PautaMedia"> | number
+    pautaId?: IntWithAggregatesFilter<"PautaMedia"> | number
+    url?: StringWithAggregatesFilter<"PautaMedia"> | string
+    caption?: StringNullableWithAggregatesFilter<"PautaMedia"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PautaMedia"> | Date | string
+  }
+
   export type MessageWhereInput = {
     AND?: MessageWhereInput | MessageWhereInput[]
     OR?: MessageWhereInput[]
@@ -28529,6 +31145,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateInput = {
@@ -28557,6 +31174,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUpdateInput = {
@@ -28584,6 +31202,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateInput = {
@@ -28612,6 +31231,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateManyInput = {
@@ -29237,7 +31857,12 @@ export namespace Prisma {
     distribucionPeso?: string | null
     estadoMuscularGeneral?: string | null
     condicionCorporal?: number | null
+    masaMuscularWsava?: string | null
     estadoPiel?: string | null
+    alineacionExtremidades?: string | null
+    columnaVertebral?: string | null
+    cabezaCuello?: string | null
+    comportamientoReposo?: string | null
     observacionesEstaticas?: string | null
     tipoMarcha?: string | null
     cojeraSiNo?: string | null
@@ -29247,6 +31872,11 @@ export namespace Prisma {
     troteGalope?: string | null
     subidaBajada?: string | null
     proprioceptivePlacing?: string | null
+    marchaAlPaso?: string | null
+    marchaAlTrote?: string | null
+    analisisMiembros?: string | null
+    girosSentarse?: string | null
+    compensacionesDin?: string | null
     observacionesDinamicas?: string | null
     palpacionROM?: string | null
     dolorReposo?: number | null
@@ -29263,6 +31893,7 @@ export namespace Prisma {
     frecuenciaSemana?: number | null
     duracionSesionMin?: number | null
     reevaluacionPrevista?: Date | string | null
+    fechaEvaluacion?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutEvaluationInput
@@ -29282,7 +31913,12 @@ export namespace Prisma {
     distribucionPeso?: string | null
     estadoMuscularGeneral?: string | null
     condicionCorporal?: number | null
+    masaMuscularWsava?: string | null
     estadoPiel?: string | null
+    alineacionExtremidades?: string | null
+    columnaVertebral?: string | null
+    cabezaCuello?: string | null
+    comportamientoReposo?: string | null
     observacionesEstaticas?: string | null
     tipoMarcha?: string | null
     cojeraSiNo?: string | null
@@ -29292,6 +31928,11 @@ export namespace Prisma {
     troteGalope?: string | null
     subidaBajada?: string | null
     proprioceptivePlacing?: string | null
+    marchaAlPaso?: string | null
+    marchaAlTrote?: string | null
+    analisisMiembros?: string | null
+    girosSentarse?: string | null
+    compensacionesDin?: string | null
     observacionesDinamicas?: string | null
     palpacionROM?: string | null
     dolorReposo?: number | null
@@ -29308,6 +31949,7 @@ export namespace Prisma {
     frecuenciaSemana?: number | null
     duracionSesionMin?: number | null
     reevaluacionPrevista?: Date | string | null
+    fechaEvaluacion?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29324,7 +31966,12 @@ export namespace Prisma {
     distribucionPeso?: NullableStringFieldUpdateOperationsInput | string | null
     estadoMuscularGeneral?: NullableStringFieldUpdateOperationsInput | string | null
     condicionCorporal?: NullableIntFieldUpdateOperationsInput | number | null
+    masaMuscularWsava?: NullableStringFieldUpdateOperationsInput | string | null
     estadoPiel?: NullableStringFieldUpdateOperationsInput | string | null
+    alineacionExtremidades?: NullableStringFieldUpdateOperationsInput | string | null
+    columnaVertebral?: NullableStringFieldUpdateOperationsInput | string | null
+    cabezaCuello?: NullableStringFieldUpdateOperationsInput | string | null
+    comportamientoReposo?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesEstaticas?: NullableStringFieldUpdateOperationsInput | string | null
     tipoMarcha?: NullableStringFieldUpdateOperationsInput | string | null
     cojeraSiNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29334,6 +31981,11 @@ export namespace Prisma {
     troteGalope?: NullableStringFieldUpdateOperationsInput | string | null
     subidaBajada?: NullableStringFieldUpdateOperationsInput | string | null
     proprioceptivePlacing?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlPaso?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlTrote?: NullableStringFieldUpdateOperationsInput | string | null
+    analisisMiembros?: NullableStringFieldUpdateOperationsInput | string | null
+    girosSentarse?: NullableStringFieldUpdateOperationsInput | string | null
+    compensacionesDin?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesDinamicas?: NullableStringFieldUpdateOperationsInput | string | null
     palpacionROM?: NullableStringFieldUpdateOperationsInput | string | null
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
@@ -29350,6 +32002,7 @@ export namespace Prisma {
     frecuenciaSemana?: NullableIntFieldUpdateOperationsInput | number | null
     duracionSesionMin?: NullableIntFieldUpdateOperationsInput | number | null
     reevaluacionPrevista?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fechaEvaluacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutEvaluationNestedInput
@@ -29369,7 +32022,12 @@ export namespace Prisma {
     distribucionPeso?: NullableStringFieldUpdateOperationsInput | string | null
     estadoMuscularGeneral?: NullableStringFieldUpdateOperationsInput | string | null
     condicionCorporal?: NullableIntFieldUpdateOperationsInput | number | null
+    masaMuscularWsava?: NullableStringFieldUpdateOperationsInput | string | null
     estadoPiel?: NullableStringFieldUpdateOperationsInput | string | null
+    alineacionExtremidades?: NullableStringFieldUpdateOperationsInput | string | null
+    columnaVertebral?: NullableStringFieldUpdateOperationsInput | string | null
+    cabezaCuello?: NullableStringFieldUpdateOperationsInput | string | null
+    comportamientoReposo?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesEstaticas?: NullableStringFieldUpdateOperationsInput | string | null
     tipoMarcha?: NullableStringFieldUpdateOperationsInput | string | null
     cojeraSiNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29379,6 +32037,11 @@ export namespace Prisma {
     troteGalope?: NullableStringFieldUpdateOperationsInput | string | null
     subidaBajada?: NullableStringFieldUpdateOperationsInput | string | null
     proprioceptivePlacing?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlPaso?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlTrote?: NullableStringFieldUpdateOperationsInput | string | null
+    analisisMiembros?: NullableStringFieldUpdateOperationsInput | string | null
+    girosSentarse?: NullableStringFieldUpdateOperationsInput | string | null
+    compensacionesDin?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesDinamicas?: NullableStringFieldUpdateOperationsInput | string | null
     palpacionROM?: NullableStringFieldUpdateOperationsInput | string | null
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
@@ -29395,6 +32058,7 @@ export namespace Prisma {
     frecuenciaSemana?: NullableIntFieldUpdateOperationsInput | number | null
     duracionSesionMin?: NullableIntFieldUpdateOperationsInput | number | null
     reevaluacionPrevista?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fechaEvaluacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29413,7 +32077,12 @@ export namespace Prisma {
     distribucionPeso?: string | null
     estadoMuscularGeneral?: string | null
     condicionCorporal?: number | null
+    masaMuscularWsava?: string | null
     estadoPiel?: string | null
+    alineacionExtremidades?: string | null
+    columnaVertebral?: string | null
+    cabezaCuello?: string | null
+    comportamientoReposo?: string | null
     observacionesEstaticas?: string | null
     tipoMarcha?: string | null
     cojeraSiNo?: string | null
@@ -29423,6 +32092,11 @@ export namespace Prisma {
     troteGalope?: string | null
     subidaBajada?: string | null
     proprioceptivePlacing?: string | null
+    marchaAlPaso?: string | null
+    marchaAlTrote?: string | null
+    analisisMiembros?: string | null
+    girosSentarse?: string | null
+    compensacionesDin?: string | null
     observacionesDinamicas?: string | null
     palpacionROM?: string | null
     dolorReposo?: number | null
@@ -29439,6 +32113,7 @@ export namespace Prisma {
     frecuenciaSemana?: number | null
     duracionSesionMin?: number | null
     reevaluacionPrevista?: Date | string | null
+    fechaEvaluacion?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29455,7 +32130,12 @@ export namespace Prisma {
     distribucionPeso?: NullableStringFieldUpdateOperationsInput | string | null
     estadoMuscularGeneral?: NullableStringFieldUpdateOperationsInput | string | null
     condicionCorporal?: NullableIntFieldUpdateOperationsInput | number | null
+    masaMuscularWsava?: NullableStringFieldUpdateOperationsInput | string | null
     estadoPiel?: NullableStringFieldUpdateOperationsInput | string | null
+    alineacionExtremidades?: NullableStringFieldUpdateOperationsInput | string | null
+    columnaVertebral?: NullableStringFieldUpdateOperationsInput | string | null
+    cabezaCuello?: NullableStringFieldUpdateOperationsInput | string | null
+    comportamientoReposo?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesEstaticas?: NullableStringFieldUpdateOperationsInput | string | null
     tipoMarcha?: NullableStringFieldUpdateOperationsInput | string | null
     cojeraSiNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29465,6 +32145,11 @@ export namespace Prisma {
     troteGalope?: NullableStringFieldUpdateOperationsInput | string | null
     subidaBajada?: NullableStringFieldUpdateOperationsInput | string | null
     proprioceptivePlacing?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlPaso?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlTrote?: NullableStringFieldUpdateOperationsInput | string | null
+    analisisMiembros?: NullableStringFieldUpdateOperationsInput | string | null
+    girosSentarse?: NullableStringFieldUpdateOperationsInput | string | null
+    compensacionesDin?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesDinamicas?: NullableStringFieldUpdateOperationsInput | string | null
     palpacionROM?: NullableStringFieldUpdateOperationsInput | string | null
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
@@ -29481,6 +32166,7 @@ export namespace Prisma {
     frecuenciaSemana?: NullableIntFieldUpdateOperationsInput | number | null
     duracionSesionMin?: NullableIntFieldUpdateOperationsInput | number | null
     reevaluacionPrevista?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fechaEvaluacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29499,7 +32185,12 @@ export namespace Prisma {
     distribucionPeso?: NullableStringFieldUpdateOperationsInput | string | null
     estadoMuscularGeneral?: NullableStringFieldUpdateOperationsInput | string | null
     condicionCorporal?: NullableIntFieldUpdateOperationsInput | number | null
+    masaMuscularWsava?: NullableStringFieldUpdateOperationsInput | string | null
     estadoPiel?: NullableStringFieldUpdateOperationsInput | string | null
+    alineacionExtremidades?: NullableStringFieldUpdateOperationsInput | string | null
+    columnaVertebral?: NullableStringFieldUpdateOperationsInput | string | null
+    cabezaCuello?: NullableStringFieldUpdateOperationsInput | string | null
+    comportamientoReposo?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesEstaticas?: NullableStringFieldUpdateOperationsInput | string | null
     tipoMarcha?: NullableStringFieldUpdateOperationsInput | string | null
     cojeraSiNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -29509,6 +32200,11 @@ export namespace Prisma {
     troteGalope?: NullableStringFieldUpdateOperationsInput | string | null
     subidaBajada?: NullableStringFieldUpdateOperationsInput | string | null
     proprioceptivePlacing?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlPaso?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlTrote?: NullableStringFieldUpdateOperationsInput | string | null
+    analisisMiembros?: NullableStringFieldUpdateOperationsInput | string | null
+    girosSentarse?: NullableStringFieldUpdateOperationsInput | string | null
+    compensacionesDin?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesDinamicas?: NullableStringFieldUpdateOperationsInput | string | null
     palpacionROM?: NullableStringFieldUpdateOperationsInput | string | null
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
@@ -29525,6 +32221,7 @@ export namespace Prisma {
     frecuenciaSemana?: NullableIntFieldUpdateOperationsInput | number | null
     duracionSesionMin?: NullableIntFieldUpdateOperationsInput | number | null
     reevaluacionPrevista?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fechaEvaluacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30186,6 +32883,142 @@ export namespace Prisma {
     mediaType?: StringFieldUpdateOperationsInput | string
     caption?: NullableStringFieldUpdateOperationsInput | string | null
     takenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PatientPautaCreateInput = {
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    patient: PatientCreateNestedOneWithoutPautasInput
+    media?: PautaMediaCreateNestedManyWithoutPautaInput
+  }
+
+  export type PatientPautaUncheckedCreateInput = {
+    id?: number
+    patientId: number
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    media?: PautaMediaUncheckedCreateNestedManyWithoutPautaInput
+  }
+
+  export type PatientPautaUpdateInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    patient?: PatientUpdateOneRequiredWithoutPautasNestedInput
+    media?: PautaMediaUpdateManyWithoutPautaNestedInput
+  }
+
+  export type PatientPautaUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    patientId?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    media?: PautaMediaUncheckedUpdateManyWithoutPautaNestedInput
+  }
+
+  export type PatientPautaCreateManyInput = {
+    id?: number
+    patientId: number
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PatientPautaUpdateManyMutationInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PatientPautaUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    patientId?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PautaMediaCreateInput = {
+    url: string
+    caption?: string | null
+    createdAt?: Date | string
+    pauta: PatientPautaCreateNestedOneWithoutMediaInput
+  }
+
+  export type PautaMediaUncheckedCreateInput = {
+    id?: number
+    pautaId: number
+    url: string
+    caption?: string | null
+    createdAt?: Date | string
+  }
+
+  export type PautaMediaUpdateInput = {
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    pauta?: PatientPautaUpdateOneRequiredWithoutMediaNestedInput
+  }
+
+  export type PautaMediaUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    pautaId?: IntFieldUpdateOperationsInput | number
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PautaMediaCreateManyInput = {
+    id?: number
+    pautaId: number
+    url: string
+    caption?: string | null
+    createdAt?: Date | string
+  }
+
+  export type PautaMediaUpdateManyMutationInput = {
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PautaMediaUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    pautaId?: IntFieldUpdateOperationsInput | number
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -30865,6 +33698,12 @@ export namespace Prisma {
     isNot?: PatientEvaluationWhereInput | null
   }
 
+  export type PatientPautaListRelationFilter = {
+    every?: PatientPautaWhereInput
+    some?: PatientPautaWhereInput
+    none?: PatientPautaWhereInput
+  }
+
   export type AppointmentPatientOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -30878,6 +33717,10 @@ export namespace Prisma {
   }
 
   export type PatientMediaOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PatientPautaOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31351,7 +34194,12 @@ export namespace Prisma {
     distribucionPeso?: SortOrder
     estadoMuscularGeneral?: SortOrder
     condicionCorporal?: SortOrder
+    masaMuscularWsava?: SortOrder
     estadoPiel?: SortOrder
+    alineacionExtremidades?: SortOrder
+    columnaVertebral?: SortOrder
+    cabezaCuello?: SortOrder
+    comportamientoReposo?: SortOrder
     observacionesEstaticas?: SortOrder
     tipoMarcha?: SortOrder
     cojeraSiNo?: SortOrder
@@ -31361,6 +34209,11 @@ export namespace Prisma {
     troteGalope?: SortOrder
     subidaBajada?: SortOrder
     proprioceptivePlacing?: SortOrder
+    marchaAlPaso?: SortOrder
+    marchaAlTrote?: SortOrder
+    analisisMiembros?: SortOrder
+    girosSentarse?: SortOrder
+    compensacionesDin?: SortOrder
     observacionesDinamicas?: SortOrder
     palpacionROM?: SortOrder
     dolorReposo?: SortOrder
@@ -31377,6 +34230,7 @@ export namespace Prisma {
     frecuenciaSemana?: SortOrder
     duracionSesionMin?: SortOrder
     reevaluacionPrevista?: SortOrder
+    fechaEvaluacion?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31407,7 +34261,12 @@ export namespace Prisma {
     distribucionPeso?: SortOrder
     estadoMuscularGeneral?: SortOrder
     condicionCorporal?: SortOrder
+    masaMuscularWsava?: SortOrder
     estadoPiel?: SortOrder
+    alineacionExtremidades?: SortOrder
+    columnaVertebral?: SortOrder
+    cabezaCuello?: SortOrder
+    comportamientoReposo?: SortOrder
     observacionesEstaticas?: SortOrder
     tipoMarcha?: SortOrder
     cojeraSiNo?: SortOrder
@@ -31417,6 +34276,11 @@ export namespace Prisma {
     troteGalope?: SortOrder
     subidaBajada?: SortOrder
     proprioceptivePlacing?: SortOrder
+    marchaAlPaso?: SortOrder
+    marchaAlTrote?: SortOrder
+    analisisMiembros?: SortOrder
+    girosSentarse?: SortOrder
+    compensacionesDin?: SortOrder
     observacionesDinamicas?: SortOrder
     palpacionROM?: SortOrder
     dolorReposo?: SortOrder
@@ -31433,6 +34297,7 @@ export namespace Prisma {
     frecuenciaSemana?: SortOrder
     duracionSesionMin?: SortOrder
     reevaluacionPrevista?: SortOrder
+    fechaEvaluacion?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31451,7 +34316,12 @@ export namespace Prisma {
     distribucionPeso?: SortOrder
     estadoMuscularGeneral?: SortOrder
     condicionCorporal?: SortOrder
+    masaMuscularWsava?: SortOrder
     estadoPiel?: SortOrder
+    alineacionExtremidades?: SortOrder
+    columnaVertebral?: SortOrder
+    cabezaCuello?: SortOrder
+    comportamientoReposo?: SortOrder
     observacionesEstaticas?: SortOrder
     tipoMarcha?: SortOrder
     cojeraSiNo?: SortOrder
@@ -31461,6 +34331,11 @@ export namespace Prisma {
     troteGalope?: SortOrder
     subidaBajada?: SortOrder
     proprioceptivePlacing?: SortOrder
+    marchaAlPaso?: SortOrder
+    marchaAlTrote?: SortOrder
+    analisisMiembros?: SortOrder
+    girosSentarse?: SortOrder
+    compensacionesDin?: SortOrder
     observacionesDinamicas?: SortOrder
     palpacionROM?: SortOrder
     dolorReposo?: SortOrder
@@ -31477,6 +34352,7 @@ export namespace Prisma {
     frecuenciaSemana?: SortOrder
     duracionSesionMin?: SortOrder
     reevaluacionPrevista?: SortOrder
+    fechaEvaluacion?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31894,6 +34770,101 @@ export namespace Prisma {
   export type PatientMediaSumOrderByAggregateInput = {
     id?: SortOrder
     patientId?: SortOrder
+  }
+
+  export type PautaMediaListRelationFilter = {
+    every?: PautaMediaWhereInput
+    some?: PautaMediaWhereInput
+    none?: PautaMediaWhereInput
+  }
+
+  export type PautaMediaOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PatientPautaCountOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    weekRange?: SortOrder
+    notes?: SortOrder
+    htmlContent?: SortOrder
+    showInPortal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PatientPautaAvgOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+  }
+
+  export type PatientPautaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    weekRange?: SortOrder
+    notes?: SortOrder
+    htmlContent?: SortOrder
+    showInPortal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PatientPautaMinOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    weekRange?: SortOrder
+    notes?: SortOrder
+    htmlContent?: SortOrder
+    showInPortal?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PatientPautaSumOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+  }
+
+  export type PatientPautaRelationFilter = {
+    is?: PatientPautaWhereInput
+    isNot?: PatientPautaWhereInput
+  }
+
+  export type PautaMediaCountOrderByAggregateInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
+    url?: SortOrder
+    caption?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PautaMediaAvgOrderByAggregateInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
+  }
+
+  export type PautaMediaMaxOrderByAggregateInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
+    url?: SortOrder
+    caption?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PautaMediaMinOrderByAggregateInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
+    url?: SortOrder
+    caption?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PautaMediaSumOrderByAggregateInput = {
+    id?: SortOrder
+    pautaId?: SortOrder
   }
 
   export type UserNullableRelationFilter = {
@@ -32610,6 +35581,13 @@ export namespace Prisma {
     connect?: MediaFileWhereUniqueInput | MediaFileWhereUniqueInput[]
   }
 
+  export type PatientPautaCreateNestedManyWithoutPatientInput = {
+    create?: XOR<PatientPautaCreateWithoutPatientInput, PatientPautaUncheckedCreateWithoutPatientInput> | PatientPautaCreateWithoutPatientInput[] | PatientPautaUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: PatientPautaCreateOrConnectWithoutPatientInput | PatientPautaCreateOrConnectWithoutPatientInput[]
+    createMany?: PatientPautaCreateManyPatientInputEnvelope
+    connect?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+  }
+
   export type IntakeDataUncheckedCreateNestedOneWithoutPatientInput = {
     create?: XOR<IntakeDataCreateWithoutPatientInput, IntakeDataUncheckedCreateWithoutPatientInput>
     connectOrCreate?: IntakeDataCreateOrConnectWithoutPatientInput
@@ -32676,6 +35654,13 @@ export namespace Prisma {
     connectOrCreate?: MediaFileCreateOrConnectWithoutPatientInput | MediaFileCreateOrConnectWithoutPatientInput[]
     createMany?: MediaFileCreateManyPatientInputEnvelope
     connect?: MediaFileWhereUniqueInput | MediaFileWhereUniqueInput[]
+  }
+
+  export type PatientPautaUncheckedCreateNestedManyWithoutPatientInput = {
+    create?: XOR<PatientPautaCreateWithoutPatientInput, PatientPautaUncheckedCreateWithoutPatientInput> | PatientPautaCreateWithoutPatientInput[] | PatientPautaUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: PatientPautaCreateOrConnectWithoutPatientInput | PatientPautaCreateOrConnectWithoutPatientInput[]
+    createMany?: PatientPautaCreateManyPatientInputEnvelope
+    connect?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
   }
 
   export type BoolFieldUpdateOperationsInput = {
@@ -32822,6 +35807,20 @@ export namespace Prisma {
     deleteMany?: MediaFileScalarWhereInput | MediaFileScalarWhereInput[]
   }
 
+  export type PatientPautaUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<PatientPautaCreateWithoutPatientInput, PatientPautaUncheckedCreateWithoutPatientInput> | PatientPautaCreateWithoutPatientInput[] | PatientPautaUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: PatientPautaCreateOrConnectWithoutPatientInput | PatientPautaCreateOrConnectWithoutPatientInput[]
+    upsert?: PatientPautaUpsertWithWhereUniqueWithoutPatientInput | PatientPautaUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: PatientPautaCreateManyPatientInputEnvelope
+    set?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    disconnect?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    delete?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    connect?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    update?: PatientPautaUpdateWithWhereUniqueWithoutPatientInput | PatientPautaUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: PatientPautaUpdateManyWithWhereWithoutPatientInput | PatientPautaUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: PatientPautaScalarWhereInput | PatientPautaScalarWhereInput[]
+  }
+
   export type IntakeDataUncheckedUpdateOneWithoutPatientNestedInput = {
     create?: XOR<IntakeDataCreateWithoutPatientInput, IntakeDataUncheckedCreateWithoutPatientInput>
     connectOrCreate?: IntakeDataCreateOrConnectWithoutPatientInput
@@ -32952,6 +35951,20 @@ export namespace Prisma {
     update?: MediaFileUpdateWithWhereUniqueWithoutPatientInput | MediaFileUpdateWithWhereUniqueWithoutPatientInput[]
     updateMany?: MediaFileUpdateManyWithWhereWithoutPatientInput | MediaFileUpdateManyWithWhereWithoutPatientInput[]
     deleteMany?: MediaFileScalarWhereInput | MediaFileScalarWhereInput[]
+  }
+
+  export type PatientPautaUncheckedUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<PatientPautaCreateWithoutPatientInput, PatientPautaUncheckedCreateWithoutPatientInput> | PatientPautaCreateWithoutPatientInput[] | PatientPautaUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: PatientPautaCreateOrConnectWithoutPatientInput | PatientPautaCreateOrConnectWithoutPatientInput[]
+    upsert?: PatientPautaUpsertWithWhereUniqueWithoutPatientInput | PatientPautaUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: PatientPautaCreateManyPatientInputEnvelope
+    set?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    disconnect?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    delete?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    connect?: PatientPautaWhereUniqueInput | PatientPautaWhereUniqueInput[]
+    update?: PatientPautaUpdateWithWhereUniqueWithoutPatientInput | PatientPautaUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: PatientPautaUpdateManyWithWhereWithoutPatientInput | PatientPautaUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: PatientPautaScalarWhereInput | PatientPautaScalarWhereInput[]
   }
 
   export type PatientCreateNestedOneWithoutIntakeDataInput = {
@@ -33392,6 +36405,76 @@ export namespace Prisma {
     upsert?: PatientUpsertWithoutPatientMediaInput
     connect?: PatientWhereUniqueInput
     update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutPatientMediaInput, PatientUpdateWithoutPatientMediaInput>, PatientUncheckedUpdateWithoutPatientMediaInput>
+  }
+
+  export type PatientCreateNestedOneWithoutPautasInput = {
+    create?: XOR<PatientCreateWithoutPautasInput, PatientUncheckedCreateWithoutPautasInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutPautasInput
+    connect?: PatientWhereUniqueInput
+  }
+
+  export type PautaMediaCreateNestedManyWithoutPautaInput = {
+    create?: XOR<PautaMediaCreateWithoutPautaInput, PautaMediaUncheckedCreateWithoutPautaInput> | PautaMediaCreateWithoutPautaInput[] | PautaMediaUncheckedCreateWithoutPautaInput[]
+    connectOrCreate?: PautaMediaCreateOrConnectWithoutPautaInput | PautaMediaCreateOrConnectWithoutPautaInput[]
+    createMany?: PautaMediaCreateManyPautaInputEnvelope
+    connect?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+  }
+
+  export type PautaMediaUncheckedCreateNestedManyWithoutPautaInput = {
+    create?: XOR<PautaMediaCreateWithoutPautaInput, PautaMediaUncheckedCreateWithoutPautaInput> | PautaMediaCreateWithoutPautaInput[] | PautaMediaUncheckedCreateWithoutPautaInput[]
+    connectOrCreate?: PautaMediaCreateOrConnectWithoutPautaInput | PautaMediaCreateOrConnectWithoutPautaInput[]
+    createMany?: PautaMediaCreateManyPautaInputEnvelope
+    connect?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+  }
+
+  export type PatientUpdateOneRequiredWithoutPautasNestedInput = {
+    create?: XOR<PatientCreateWithoutPautasInput, PatientUncheckedCreateWithoutPautasInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutPautasInput
+    upsert?: PatientUpsertWithoutPautasInput
+    connect?: PatientWhereUniqueInput
+    update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutPautasInput, PatientUpdateWithoutPautasInput>, PatientUncheckedUpdateWithoutPautasInput>
+  }
+
+  export type PautaMediaUpdateManyWithoutPautaNestedInput = {
+    create?: XOR<PautaMediaCreateWithoutPautaInput, PautaMediaUncheckedCreateWithoutPautaInput> | PautaMediaCreateWithoutPautaInput[] | PautaMediaUncheckedCreateWithoutPautaInput[]
+    connectOrCreate?: PautaMediaCreateOrConnectWithoutPautaInput | PautaMediaCreateOrConnectWithoutPautaInput[]
+    upsert?: PautaMediaUpsertWithWhereUniqueWithoutPautaInput | PautaMediaUpsertWithWhereUniqueWithoutPautaInput[]
+    createMany?: PautaMediaCreateManyPautaInputEnvelope
+    set?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    disconnect?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    delete?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    connect?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    update?: PautaMediaUpdateWithWhereUniqueWithoutPautaInput | PautaMediaUpdateWithWhereUniqueWithoutPautaInput[]
+    updateMany?: PautaMediaUpdateManyWithWhereWithoutPautaInput | PautaMediaUpdateManyWithWhereWithoutPautaInput[]
+    deleteMany?: PautaMediaScalarWhereInput | PautaMediaScalarWhereInput[]
+  }
+
+  export type PautaMediaUncheckedUpdateManyWithoutPautaNestedInput = {
+    create?: XOR<PautaMediaCreateWithoutPautaInput, PautaMediaUncheckedCreateWithoutPautaInput> | PautaMediaCreateWithoutPautaInput[] | PautaMediaUncheckedCreateWithoutPautaInput[]
+    connectOrCreate?: PautaMediaCreateOrConnectWithoutPautaInput | PautaMediaCreateOrConnectWithoutPautaInput[]
+    upsert?: PautaMediaUpsertWithWhereUniqueWithoutPautaInput | PautaMediaUpsertWithWhereUniqueWithoutPautaInput[]
+    createMany?: PautaMediaCreateManyPautaInputEnvelope
+    set?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    disconnect?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    delete?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    connect?: PautaMediaWhereUniqueInput | PautaMediaWhereUniqueInput[]
+    update?: PautaMediaUpdateWithWhereUniqueWithoutPautaInput | PautaMediaUpdateWithWhereUniqueWithoutPautaInput[]
+    updateMany?: PautaMediaUpdateManyWithWhereWithoutPautaInput | PautaMediaUpdateManyWithWhereWithoutPautaInput[]
+    deleteMany?: PautaMediaScalarWhereInput | PautaMediaScalarWhereInput[]
+  }
+
+  export type PatientPautaCreateNestedOneWithoutMediaInput = {
+    create?: XOR<PatientPautaCreateWithoutMediaInput, PatientPautaUncheckedCreateWithoutMediaInput>
+    connectOrCreate?: PatientPautaCreateOrConnectWithoutMediaInput
+    connect?: PatientPautaWhereUniqueInput
+  }
+
+  export type PatientPautaUpdateOneRequiredWithoutMediaNestedInput = {
+    create?: XOR<PatientPautaCreateWithoutMediaInput, PatientPautaUncheckedCreateWithoutMediaInput>
+    connectOrCreate?: PatientPautaCreateOrConnectWithoutMediaInput
+    upsert?: PatientPautaUpsertWithoutMediaInput
+    connect?: PatientPautaWhereUniqueInput
+    update?: XOR<XOR<PatientPautaUpdateToOneWithWhereWithoutMediaInput, PatientPautaUpdateWithoutMediaInput>, PatientPautaUncheckedUpdateWithoutMediaInput>
   }
 
   export type UserCreateNestedOneWithoutMessagesInput = {
@@ -34234,6 +37317,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutTutorInput = {
@@ -34261,6 +37345,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutTutorInput = {
@@ -34697,7 +37782,12 @@ export namespace Prisma {
     distribucionPeso?: string | null
     estadoMuscularGeneral?: string | null
     condicionCorporal?: number | null
+    masaMuscularWsava?: string | null
     estadoPiel?: string | null
+    alineacionExtremidades?: string | null
+    columnaVertebral?: string | null
+    cabezaCuello?: string | null
+    comportamientoReposo?: string | null
     observacionesEstaticas?: string | null
     tipoMarcha?: string | null
     cojeraSiNo?: string | null
@@ -34707,6 +37797,11 @@ export namespace Prisma {
     troteGalope?: string | null
     subidaBajada?: string | null
     proprioceptivePlacing?: string | null
+    marchaAlPaso?: string | null
+    marchaAlTrote?: string | null
+    analisisMiembros?: string | null
+    girosSentarse?: string | null
+    compensacionesDin?: string | null
     observacionesDinamicas?: string | null
     palpacionROM?: string | null
     dolorReposo?: number | null
@@ -34723,6 +37818,7 @@ export namespace Prisma {
     frecuenciaSemana?: number | null
     duracionSesionMin?: number | null
     reevaluacionPrevista?: Date | string | null
+    fechaEvaluacion?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34740,7 +37836,12 @@ export namespace Prisma {
     distribucionPeso?: string | null
     estadoMuscularGeneral?: string | null
     condicionCorporal?: number | null
+    masaMuscularWsava?: string | null
     estadoPiel?: string | null
+    alineacionExtremidades?: string | null
+    columnaVertebral?: string | null
+    cabezaCuello?: string | null
+    comportamientoReposo?: string | null
     observacionesEstaticas?: string | null
     tipoMarcha?: string | null
     cojeraSiNo?: string | null
@@ -34750,6 +37851,11 @@ export namespace Prisma {
     troteGalope?: string | null
     subidaBajada?: string | null
     proprioceptivePlacing?: string | null
+    marchaAlPaso?: string | null
+    marchaAlTrote?: string | null
+    analisisMiembros?: string | null
+    girosSentarse?: string | null
+    compensacionesDin?: string | null
     observacionesDinamicas?: string | null
     palpacionROM?: string | null
     dolorReposo?: number | null
@@ -34766,6 +37872,7 @@ export namespace Prisma {
     frecuenciaSemana?: number | null
     duracionSesionMin?: number | null
     reevaluacionPrevista?: Date | string | null
+    fechaEvaluacion?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34920,6 +38027,39 @@ export namespace Prisma {
 
   export type MediaFileCreateManyPatientInputEnvelope = {
     data: MediaFileCreateManyPatientInput | MediaFileCreateManyPatientInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PatientPautaCreateWithoutPatientInput = {
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    media?: PautaMediaCreateNestedManyWithoutPautaInput
+  }
+
+  export type PatientPautaUncheckedCreateWithoutPatientInput = {
+    id?: number
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    media?: PautaMediaUncheckedCreateNestedManyWithoutPautaInput
+  }
+
+  export type PatientPautaCreateOrConnectWithoutPatientInput = {
+    where: PatientPautaWhereUniqueInput
+    create: XOR<PatientPautaCreateWithoutPatientInput, PatientPautaUncheckedCreateWithoutPatientInput>
+  }
+
+  export type PatientPautaCreateManyPatientInputEnvelope = {
+    data: PatientPautaCreateManyPatientInput | PatientPautaCreateManyPatientInput[]
     skipDuplicates?: boolean
   }
 
@@ -35194,7 +38334,12 @@ export namespace Prisma {
     distribucionPeso?: NullableStringFieldUpdateOperationsInput | string | null
     estadoMuscularGeneral?: NullableStringFieldUpdateOperationsInput | string | null
     condicionCorporal?: NullableIntFieldUpdateOperationsInput | number | null
+    masaMuscularWsava?: NullableStringFieldUpdateOperationsInput | string | null
     estadoPiel?: NullableStringFieldUpdateOperationsInput | string | null
+    alineacionExtremidades?: NullableStringFieldUpdateOperationsInput | string | null
+    columnaVertebral?: NullableStringFieldUpdateOperationsInput | string | null
+    cabezaCuello?: NullableStringFieldUpdateOperationsInput | string | null
+    comportamientoReposo?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesEstaticas?: NullableStringFieldUpdateOperationsInput | string | null
     tipoMarcha?: NullableStringFieldUpdateOperationsInput | string | null
     cojeraSiNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35204,6 +38349,11 @@ export namespace Prisma {
     troteGalope?: NullableStringFieldUpdateOperationsInput | string | null
     subidaBajada?: NullableStringFieldUpdateOperationsInput | string | null
     proprioceptivePlacing?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlPaso?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlTrote?: NullableStringFieldUpdateOperationsInput | string | null
+    analisisMiembros?: NullableStringFieldUpdateOperationsInput | string | null
+    girosSentarse?: NullableStringFieldUpdateOperationsInput | string | null
+    compensacionesDin?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesDinamicas?: NullableStringFieldUpdateOperationsInput | string | null
     palpacionROM?: NullableStringFieldUpdateOperationsInput | string | null
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
@@ -35220,6 +38370,7 @@ export namespace Prisma {
     frecuenciaSemana?: NullableIntFieldUpdateOperationsInput | number | null
     duracionSesionMin?: NullableIntFieldUpdateOperationsInput | number | null
     reevaluacionPrevista?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fechaEvaluacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35237,7 +38388,12 @@ export namespace Prisma {
     distribucionPeso?: NullableStringFieldUpdateOperationsInput | string | null
     estadoMuscularGeneral?: NullableStringFieldUpdateOperationsInput | string | null
     condicionCorporal?: NullableIntFieldUpdateOperationsInput | number | null
+    masaMuscularWsava?: NullableStringFieldUpdateOperationsInput | string | null
     estadoPiel?: NullableStringFieldUpdateOperationsInput | string | null
+    alineacionExtremidades?: NullableStringFieldUpdateOperationsInput | string | null
+    columnaVertebral?: NullableStringFieldUpdateOperationsInput | string | null
+    cabezaCuello?: NullableStringFieldUpdateOperationsInput | string | null
+    comportamientoReposo?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesEstaticas?: NullableStringFieldUpdateOperationsInput | string | null
     tipoMarcha?: NullableStringFieldUpdateOperationsInput | string | null
     cojeraSiNo?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35247,6 +38403,11 @@ export namespace Prisma {
     troteGalope?: NullableStringFieldUpdateOperationsInput | string | null
     subidaBajada?: NullableStringFieldUpdateOperationsInput | string | null
     proprioceptivePlacing?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlPaso?: NullableStringFieldUpdateOperationsInput | string | null
+    marchaAlTrote?: NullableStringFieldUpdateOperationsInput | string | null
+    analisisMiembros?: NullableStringFieldUpdateOperationsInput | string | null
+    girosSentarse?: NullableStringFieldUpdateOperationsInput | string | null
+    compensacionesDin?: NullableStringFieldUpdateOperationsInput | string | null
     observacionesDinamicas?: NullableStringFieldUpdateOperationsInput | string | null
     palpacionROM?: NullableStringFieldUpdateOperationsInput | string | null
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
@@ -35263,6 +38424,7 @@ export namespace Prisma {
     frecuenciaSemana?: NullableIntFieldUpdateOperationsInput | number | null
     duracionSesionMin?: NullableIntFieldUpdateOperationsInput | number | null
     reevaluacionPrevista?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    fechaEvaluacion?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -35299,6 +38461,37 @@ export namespace Prisma {
     data: XOR<MediaFileUpdateManyMutationInput, MediaFileUncheckedUpdateManyWithoutPatientInput>
   }
 
+  export type PatientPautaUpsertWithWhereUniqueWithoutPatientInput = {
+    where: PatientPautaWhereUniqueInput
+    update: XOR<PatientPautaUpdateWithoutPatientInput, PatientPautaUncheckedUpdateWithoutPatientInput>
+    create: XOR<PatientPautaCreateWithoutPatientInput, PatientPautaUncheckedCreateWithoutPatientInput>
+  }
+
+  export type PatientPautaUpdateWithWhereUniqueWithoutPatientInput = {
+    where: PatientPautaWhereUniqueInput
+    data: XOR<PatientPautaUpdateWithoutPatientInput, PatientPautaUncheckedUpdateWithoutPatientInput>
+  }
+
+  export type PatientPautaUpdateManyWithWhereWithoutPatientInput = {
+    where: PatientPautaScalarWhereInput
+    data: XOR<PatientPautaUpdateManyMutationInput, PatientPautaUncheckedUpdateManyWithoutPatientInput>
+  }
+
+  export type PatientPautaScalarWhereInput = {
+    AND?: PatientPautaScalarWhereInput | PatientPautaScalarWhereInput[]
+    OR?: PatientPautaScalarWhereInput[]
+    NOT?: PatientPautaScalarWhereInput | PatientPautaScalarWhereInput[]
+    id?: IntFilter<"PatientPauta"> | number
+    patientId?: IntFilter<"PatientPauta"> | number
+    title?: StringFilter<"PatientPauta"> | string
+    weekRange?: StringFilter<"PatientPauta"> | string
+    notes?: StringNullableFilter<"PatientPauta"> | string | null
+    htmlContent?: StringNullableFilter<"PatientPauta"> | string | null
+    showInPortal?: BoolFilter<"PatientPauta"> | boolean
+    createdAt?: DateTimeFilter<"PatientPauta"> | Date | string
+    updatedAt?: DateTimeFilter<"PatientPauta"> | Date | string
+  }
+
   export type PatientCreateWithoutIntakeDataInput = {
     name: string
     species: string
@@ -35323,6 +38516,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutIntakeDataInput = {
@@ -35350,6 +38544,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutIntakeDataInput = {
@@ -35392,6 +38587,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutIntakeDataInput = {
@@ -35419,6 +38615,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateWithoutAppointmentsInput = {
@@ -35445,6 +38642,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutAppointmentsInput = {
@@ -35472,6 +38670,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutAppointmentsInput = {
@@ -35674,6 +38873,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutAppointmentsInput = {
@@ -35701,6 +38901,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type UserUpsertWithoutAppointmentsInput = {
@@ -35827,6 +39028,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutAppointmentPatientsInput = {
@@ -35854,6 +39056,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutAppointmentPatientsInput = {
@@ -35934,6 +39137,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutAppointmentPatientsInput = {
@@ -35961,6 +39165,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientRoutineCreateWithoutRoutineInput = {
@@ -36026,6 +39231,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutRehabRoutinesInput = {
@@ -36053,6 +39259,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutRehabRoutinesInput = {
@@ -36123,6 +39330,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutRehabRoutinesInput = {
@@ -36150,6 +39358,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type RehabRoutineUpsertWithoutPatientRoutinesInput = {
@@ -36210,6 +39419,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutPlansInput = {
@@ -36237,6 +39447,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutPlansInput = {
@@ -36309,6 +39520,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutPlansInput = {
@@ -36336,6 +39548,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type UserUpsertWithoutPlansInput = {
@@ -36398,6 +39611,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaCreateNestedManyWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutEvaluationInput = {
@@ -36425,6 +39639,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUncheckedCreateNestedManyWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutEvaluationInput = {
@@ -36467,6 +39682,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUpdateManyWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutEvaluationInput = {
@@ -36494,6 +39710,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUncheckedUpdateManyWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateWithoutSessionFollowupsInput = {
@@ -36520,6 +39737,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaCreateNestedManyWithoutPatientInput
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutSessionFollowupsInput = {
@@ -36547,6 +39765,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUncheckedCreateNestedManyWithoutPatientInput
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutSessionFollowupsInput = {
@@ -36690,6 +39909,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUpdateManyWithoutPatientNestedInput
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutSessionFollowupsInput = {
@@ -36717,6 +39937,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUncheckedUpdateManyWithoutPatientNestedInput
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type AppointmentUpsertWithoutSessionFollowupsInput = {
@@ -36833,6 +40054,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaCreateNestedManyWithoutPatientInput
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutMediaFilesInput = {
@@ -36860,6 +40082,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUncheckedCreateNestedManyWithoutPatientInput
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutMediaFilesInput = {
@@ -37038,6 +40261,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUpdateManyWithoutPatientNestedInput
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutMediaFilesInput = {
@@ -37065,6 +40289,7 @@ export namespace Prisma {
     patientMedia?: PatientMediaUncheckedUpdateManyWithoutPatientNestedInput
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type SessionFollowupUpsertWithoutMediaFilesInput = {
@@ -37239,6 +40464,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutFollowUpMediaInput = {
@@ -37266,6 +40492,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutFollowUpMediaInput = {
@@ -37308,6 +40535,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutFollowUpMediaInput = {
@@ -37335,6 +40563,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateWithoutPatientMediaInput = {
@@ -37361,6 +40590,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutPatientMediaInput = {
@@ -37388,6 +40618,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
     sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
     mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+    pautas?: PatientPautaUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutPatientMediaInput = {
@@ -37430,6 +40661,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutPatientMediaInput = {
@@ -37457,6 +40689,245 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
+  }
+
+  export type PatientCreateWithoutPautasInput = {
+    name: string
+    species: string
+    breed?: string | null
+    birthDate?: string | null
+    weight?: string | null
+    sex?: string | null
+    neutered?: string | null
+    photoUrl?: string | null
+    diseases?: string | null
+    allergies?: string | null
+    active?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tutor: TutorCreateNestedOneWithoutPatientsInput
+    intakeData?: IntakeDataCreateNestedOneWithoutPatientInput
+    appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    appointmentPatients?: AppointmentPatientCreateNestedManyWithoutPatientInput
+    rehabRoutines?: PatientRoutineCreateNestedManyWithoutPatientInput
+    plans?: PlanCreateNestedManyWithoutPatientInput
+    followUpMedia?: FollowUpMediaCreateNestedManyWithoutPatientInput
+    patientMedia?: PatientMediaCreateNestedManyWithoutPatientInput
+    evaluation?: PatientEvaluationCreateNestedOneWithoutPatientInput
+    sessionFollowups?: SessionFollowupCreateNestedManyWithoutPatientInput
+    mediaFiles?: MediaFileCreateNestedManyWithoutPatientInput
+  }
+
+  export type PatientUncheckedCreateWithoutPautasInput = {
+    id?: number
+    name: string
+    species: string
+    breed?: string | null
+    birthDate?: string | null
+    weight?: string | null
+    sex?: string | null
+    neutered?: string | null
+    photoUrl?: string | null
+    diseases?: string | null
+    allergies?: string | null
+    active?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    tutorId: number
+    intakeData?: IntakeDataUncheckedCreateNestedOneWithoutPatientInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    appointmentPatients?: AppointmentPatientUncheckedCreateNestedManyWithoutPatientInput
+    rehabRoutines?: PatientRoutineUncheckedCreateNestedManyWithoutPatientInput
+    plans?: PlanUncheckedCreateNestedManyWithoutPatientInput
+    followUpMedia?: FollowUpMediaUncheckedCreateNestedManyWithoutPatientInput
+    patientMedia?: PatientMediaUncheckedCreateNestedManyWithoutPatientInput
+    evaluation?: PatientEvaluationUncheckedCreateNestedOneWithoutPatientInput
+    sessionFollowups?: SessionFollowupUncheckedCreateNestedManyWithoutPatientInput
+    mediaFiles?: MediaFileUncheckedCreateNestedManyWithoutPatientInput
+  }
+
+  export type PatientCreateOrConnectWithoutPautasInput = {
+    where: PatientWhereUniqueInput
+    create: XOR<PatientCreateWithoutPautasInput, PatientUncheckedCreateWithoutPautasInput>
+  }
+
+  export type PautaMediaCreateWithoutPautaInput = {
+    url: string
+    caption?: string | null
+    createdAt?: Date | string
+  }
+
+  export type PautaMediaUncheckedCreateWithoutPautaInput = {
+    id?: number
+    url: string
+    caption?: string | null
+    createdAt?: Date | string
+  }
+
+  export type PautaMediaCreateOrConnectWithoutPautaInput = {
+    where: PautaMediaWhereUniqueInput
+    create: XOR<PautaMediaCreateWithoutPautaInput, PautaMediaUncheckedCreateWithoutPautaInput>
+  }
+
+  export type PautaMediaCreateManyPautaInputEnvelope = {
+    data: PautaMediaCreateManyPautaInput | PautaMediaCreateManyPautaInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PatientUpsertWithoutPautasInput = {
+    update: XOR<PatientUpdateWithoutPautasInput, PatientUncheckedUpdateWithoutPautasInput>
+    create: XOR<PatientCreateWithoutPautasInput, PatientUncheckedCreateWithoutPautasInput>
+    where?: PatientWhereInput
+  }
+
+  export type PatientUpdateToOneWithWhereWithoutPautasInput = {
+    where?: PatientWhereInput
+    data: XOR<PatientUpdateWithoutPautasInput, PatientUncheckedUpdateWithoutPautasInput>
+  }
+
+  export type PatientUpdateWithoutPautasInput = {
+    name?: StringFieldUpdateOperationsInput | string
+    species?: StringFieldUpdateOperationsInput | string
+    breed?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableStringFieldUpdateOperationsInput | string | null
+    weight?: NullableStringFieldUpdateOperationsInput | string | null
+    sex?: NullableStringFieldUpdateOperationsInput | string | null
+    neutered?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    diseases?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tutor?: TutorUpdateOneRequiredWithoutPatientsNestedInput
+    intakeData?: IntakeDataUpdateOneWithoutPatientNestedInput
+    appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    appointmentPatients?: AppointmentPatientUpdateManyWithoutPatientNestedInput
+    rehabRoutines?: PatientRoutineUpdateManyWithoutPatientNestedInput
+    plans?: PlanUpdateManyWithoutPatientNestedInput
+    followUpMedia?: FollowUpMediaUpdateManyWithoutPatientNestedInput
+    patientMedia?: PatientMediaUpdateManyWithoutPatientNestedInput
+    evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
+    sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
+    mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+  }
+
+  export type PatientUncheckedUpdateWithoutPautasInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    name?: StringFieldUpdateOperationsInput | string
+    species?: StringFieldUpdateOperationsInput | string
+    breed?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableStringFieldUpdateOperationsInput | string | null
+    weight?: NullableStringFieldUpdateOperationsInput | string | null
+    sex?: NullableStringFieldUpdateOperationsInput | string | null
+    neutered?: NullableStringFieldUpdateOperationsInput | string | null
+    photoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    diseases?: NullableStringFieldUpdateOperationsInput | string | null
+    allergies?: NullableStringFieldUpdateOperationsInput | string | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    tutorId?: IntFieldUpdateOperationsInput | number
+    intakeData?: IntakeDataUncheckedUpdateOneWithoutPatientNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    appointmentPatients?: AppointmentPatientUncheckedUpdateManyWithoutPatientNestedInput
+    rehabRoutines?: PatientRoutineUncheckedUpdateManyWithoutPatientNestedInput
+    plans?: PlanUncheckedUpdateManyWithoutPatientNestedInput
+    followUpMedia?: FollowUpMediaUncheckedUpdateManyWithoutPatientNestedInput
+    patientMedia?: PatientMediaUncheckedUpdateManyWithoutPatientNestedInput
+    evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
+    sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
+    mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+  }
+
+  export type PautaMediaUpsertWithWhereUniqueWithoutPautaInput = {
+    where: PautaMediaWhereUniqueInput
+    update: XOR<PautaMediaUpdateWithoutPautaInput, PautaMediaUncheckedUpdateWithoutPautaInput>
+    create: XOR<PautaMediaCreateWithoutPautaInput, PautaMediaUncheckedCreateWithoutPautaInput>
+  }
+
+  export type PautaMediaUpdateWithWhereUniqueWithoutPautaInput = {
+    where: PautaMediaWhereUniqueInput
+    data: XOR<PautaMediaUpdateWithoutPautaInput, PautaMediaUncheckedUpdateWithoutPautaInput>
+  }
+
+  export type PautaMediaUpdateManyWithWhereWithoutPautaInput = {
+    where: PautaMediaScalarWhereInput
+    data: XOR<PautaMediaUpdateManyMutationInput, PautaMediaUncheckedUpdateManyWithoutPautaInput>
+  }
+
+  export type PautaMediaScalarWhereInput = {
+    AND?: PautaMediaScalarWhereInput | PautaMediaScalarWhereInput[]
+    OR?: PautaMediaScalarWhereInput[]
+    NOT?: PautaMediaScalarWhereInput | PautaMediaScalarWhereInput[]
+    id?: IntFilter<"PautaMedia"> | number
+    pautaId?: IntFilter<"PautaMedia"> | number
+    url?: StringFilter<"PautaMedia"> | string
+    caption?: StringNullableFilter<"PautaMedia"> | string | null
+    createdAt?: DateTimeFilter<"PautaMedia"> | Date | string
+  }
+
+  export type PatientPautaCreateWithoutMediaInput = {
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    patient: PatientCreateNestedOneWithoutPautasInput
+  }
+
+  export type PatientPautaUncheckedCreateWithoutMediaInput = {
+    id?: number
+    patientId: number
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PatientPautaCreateOrConnectWithoutMediaInput = {
+    where: PatientPautaWhereUniqueInput
+    create: XOR<PatientPautaCreateWithoutMediaInput, PatientPautaUncheckedCreateWithoutMediaInput>
+  }
+
+  export type PatientPautaUpsertWithoutMediaInput = {
+    update: XOR<PatientPautaUpdateWithoutMediaInput, PatientPautaUncheckedUpdateWithoutMediaInput>
+    create: XOR<PatientPautaCreateWithoutMediaInput, PatientPautaUncheckedCreateWithoutMediaInput>
+    where?: PatientPautaWhereInput
+  }
+
+  export type PatientPautaUpdateToOneWithWhereWithoutMediaInput = {
+    where?: PatientPautaWhereInput
+    data: XOR<PatientPautaUpdateWithoutMediaInput, PatientPautaUncheckedUpdateWithoutMediaInput>
+  }
+
+  export type PatientPautaUpdateWithoutMediaInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    patient?: PatientUpdateOneRequiredWithoutPautasNestedInput
+  }
+
+  export type PatientPautaUncheckedUpdateWithoutMediaInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    patientId?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserCreateWithoutMessagesInput = {
@@ -38321,6 +41792,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutTutorInput = {
@@ -38348,6 +41820,7 @@ export namespace Prisma {
     evaluation?: PatientEvaluationUncheckedUpdateOneWithoutPatientNestedInput
     sessionFollowups?: SessionFollowupUncheckedUpdateManyWithoutPatientNestedInput
     mediaFiles?: MediaFileUncheckedUpdateManyWithoutPatientNestedInput
+    pautas?: PatientPautaUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateManyWithoutTutorInput = {
@@ -38552,6 +42025,17 @@ export namespace Prisma {
     originType?: string
     description?: string | null
     createdAt?: Date | string
+  }
+
+  export type PatientPautaCreateManyPatientInput = {
+    id?: number
+    title: string
+    weekRange: string
+    notes?: string | null
+    htmlContent?: string | null
+    showInPortal?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type AppointmentUpdateWithoutPatientInput = {
@@ -38903,6 +42387,40 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PatientPautaUpdateWithoutPatientInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    media?: PautaMediaUpdateManyWithoutPautaNestedInput
+  }
+
+  export type PatientPautaUncheckedUpdateWithoutPatientInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    media?: PautaMediaUncheckedUpdateManyWithoutPautaNestedInput
+  }
+
+  export type PatientPautaUncheckedUpdateManyWithoutPatientInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    weekRange?: StringFieldUpdateOperationsInput | string
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    showInPortal?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type AppointmentPatientCreateManyAppointmentInput = {
     id?: number
     patientId: number
@@ -39209,6 +42727,33 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PautaMediaCreateManyPautaInput = {
+    id?: number
+    url: string
+    caption?: string | null
+    createdAt?: Date | string
+  }
+
+  export type PautaMediaUpdateWithoutPautaInput = {
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PautaMediaUncheckedUpdateWithoutPautaInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PautaMediaUncheckedUpdateManyWithoutPautaInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    url?: StringFieldUpdateOperationsInput | string
+    caption?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type BrainSynapseCreateManyNodeAInput = {
     id?: number
     nodeIdB: number
@@ -39336,6 +42881,10 @@ export namespace Prisma {
      */
     export type SessionFollowupCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = SessionFollowupCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use PatientPautaCountOutputTypeDefaultArgs instead
+     */
+    export type PatientPautaCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PatientPautaCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use BrainNoteCountOutputTypeDefaultArgs instead
      */
     export type BrainNoteCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = BrainNoteCountOutputTypeDefaultArgs<ExtArgs>
@@ -39403,6 +42952,14 @@ export namespace Prisma {
      * @deprecated Use PatientMediaDefaultArgs instead
      */
     export type PatientMediaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PatientMediaDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PatientPautaDefaultArgs instead
+     */
+    export type PatientPautaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PatientPautaDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use PautaMediaDefaultArgs instead
+     */
+    export type PautaMediaArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = PautaMediaDefaultArgs<ExtArgs>
     /**
      * @deprecated Use MessageDefaultArgs instead
      */

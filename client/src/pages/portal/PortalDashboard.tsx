@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { PawPrint, CalendarDays, Dumbbell, FileText, MessageSquare } from 'lucide-react';
+import { PawPrint, CalendarDays, Dumbbell, FileText, MessageSquare, BookOpen } from 'lucide-react';
 import { portalApi } from '../../lib/api';
 import { getPortalUser } from '../../lib/portalAuth';
 import { format } from 'date-fns';
@@ -37,8 +37,8 @@ export default function PortalDashboard() {
         {[
           { to: '/portal/appointments', icon: CalendarDays, label: 'Próximas citas', color: 'navy' },
           { to: '/portal/routines',     icon: Dumbbell,     label: 'Mis ejercicios', color: 'teal' },
-          { to: '/portal/plans',        icon: FileText,     label: 'Mis planes',    color: 'navy' },
-          { to: '/portal/chat',         icon: MessageSquare,label: 'Mensajes',      color: 'teal' },
+          { to: '/portal/pautas',       icon: BookOpen,     label: 'Pautas en casa', color: 'teal' },
+          { to: '/portal/chat',         icon: MessageSquare,label: 'Mensajes',       color: 'navy' },
         ].map(({ to, icon: Icon, label, color }) => (
           <Link key={to} to={to} className="card flex flex-col items-center gap-3 text-center hover:shadow-md transition-shadow">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color === 'teal' ? 'bg-teal-100' : 'bg-navy-100'}`}>

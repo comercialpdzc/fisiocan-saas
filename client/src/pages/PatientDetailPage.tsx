@@ -5,10 +5,12 @@ import {
   ArrowLeft, PawPrint, Phone, Mail, Dumbbell, CalendarDays, FileText,
   Plus, X, Camera, Image, Video, Trash2, Upload, Pencil, ClipboardList,
   Stethoscope, ChevronDown, ChevronUp, Loader2, NotebookPen, Mic, MicOff, Save,
+  BookOpen, Printer, ExternalLink,
 } from 'lucide-react';
 import { api } from '../lib/api';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import PautaBuilderModal from '../components/PautaBuilderModal';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -62,10 +64,11 @@ interface MediaFile { url: string; fileType: string; description: string; }
 const STATUS_LABEL: Record<string, string> = { SCHEDULED: 'Programada', COMPLETED: 'Completada', CANCELLED: 'Cancelada', NO_SHOW: 'No asistió' };
 const STATUS_CLASS: Record<string, string> = { SCHEDULED: 'badge-blue', COMPLETED: 'badge-green', CANCELLED: 'badge-red', NO_SHOW: 'badge-yellow' };
 
-type TabKey = 'intake' | 'evaluation' | 'sessions' | 'appointments' | 'routines' | 'media' | 'followup' | 'notes';
+type TabKey = 'intake' | 'evaluation' | 'sessions' | 'appointments' | 'routines' | 'media' | 'followup' | 'notes' | 'pautas';
 const TABS: { key: TabKey; label: string; Icon: React.ElementType }[] = [
   { key: 'intake',       label: 'Ficha',       Icon: FileText },
   { key: 'evaluation',   label: 'Evaluación',  Icon: Stethoscope },
+  { key: 'pautas',       label: 'Pautas',      Icon: BookOpen },
   { key: 'sessions',     label: 'Sesiones',    Icon: ClipboardList },
   { key: 'appointments', label: 'Citas',        Icon: CalendarDays },
   { key: 'routines',     label: 'Rutinas',     Icon: Dumbbell },
@@ -319,14 +322,275 @@ function NotesTab({ patientName }: { patientName: string }) {
   );
 }
 
+// ── PautasTab ─────────────────────────────────────────────────────────────
+
+interface PautaMediaItem { id: number; url: string; caption?: string; createdAt: string; }
+interface Pauta {
+  id: number; title: string; weekRange: string; notes?: string;
+  createdAt: string; showInPortal: boolean; htmlContent?: string; media: PautaMediaItem[];
+}
+
+function PautasTab({ patient }: { patient: Patient }) {
+  const qc = useQueryClient();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [creating, setCreating] = useState(false);
+  const [building, setBuilding] = useState(false);
+  const [form, setForm] = useState({ title: '', weekRange: '', notes: '' });
+  const [saving, setSaving] = useState(false);
+  const [uploadingFor, setUploadingFor] = useState<number | null>(null);
+
+  const { data: pautas = [], isLoading } = useQuery<Pauta[]>({
+    queryKey: ['pautas', patient.id],
+    queryFn: () => api.get(`/pautas?patientId=${patient.id}`),
+    retry: false,
+  });
+
+  async function openHtml(id: number) {
+    const token = localStorage.getItem('token');
+    const BASE = (import.meta.env.VITE_API_URL ?? '') + '/api';
+    const res = await fetch(`${BASE}/pautas/${id}/html`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    let html = await res.text();
+    // Fix blank first page on print: reset any padding-top from fixed nav
+    html = html.replace('</head>', '<style>@page{margin:10mm}#pb,nav{display:none!important}body,main{padding-top:0!important;margin-top:0!important}</style></head>');
+    const blob = new Blob([html], { type: 'text/html' });
+    window.open(URL.createObjectURL(blob), '_blank');
+  }
+
+  async function togglePortal(p: Pauta) {
+    await api.patch(`/pautas/${p.id}/portal`, {});
+    qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+  }
+
+  async function createPauta(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title.trim() || !form.weekRange.trim()) return;
+    setSaving(true);
+    try {
+      await api.post('/pautas', { patientId: patient.id, ...form });
+      qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+      setCreating(false);
+      setForm({ title: '', weekRange: '', notes: '' });
+    } catch { alert('Error al crear la pauta'); }
+    finally { setSaving(false); }
+  }
+
+  async function uploadImage(pautaId: number, file: File) {
+    setUploadingFor(pautaId);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('patientName', patient.name);
+      fd.append('context', 'general');
+      const { url } = await api.postForm<{ url: string }>('/upload', fd);
+      await api.post(`/pautas/${pautaId}/media`, { url });
+      qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+    } catch { alert('Error al subir la imagen'); }
+    finally { setUploadingFor(null); }
+  }
+
+  async function deleteMedia(pautaId: number, mediaId: number) {
+    if (!confirm('¿Eliminar esta imagen?')) return;
+    await api.delete(`/pautas/${pautaId}/media/${mediaId}`);
+    qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+  }
+
+  async function deletePauta(id: number) {
+    if (!confirm('¿Eliminar esta pauta y todas sus imágenes?')) return;
+    await api.delete(`/pautas/${id}`);
+    qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="card flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-semibold text-navy-700">Pautas domiciliarias</h3>
+          <p className="text-xs text-navy-400 mt-0.5">
+            Guías e imágenes visibles para el tutor de {patient.name}
+          </p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <button className="btn-ghost gap-2" onClick={() => setCreating(true)}>
+            <Plus size={15} />
+            Simple
+          </button>
+          <button className="btn-primary gap-2" onClick={() => setBuilding(true)}>
+            <Plus size={15} />
+            Constructor
+          </button>
+        </div>
+      </div>
+
+      {/* Builder modal */}
+      {building && (
+        <PautaBuilderModal
+          patientName={patient.name}
+          photoUrl={patient.photoUrl}
+          onClose={() => setBuilding(false)}
+          onSave={async (html, title, weekRange, notes) => {
+            await api.post('/pautas', { patientId: patient.id, title, weekRange, notes, htmlContent: html });
+            qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+            setBuilding(false);
+          }}
+        />
+      )}
+
+      {/* Create modal */}
+      {creating && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setCreating(false)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-base font-bold text-navy-700 mb-4">Nueva pauta domiciliaria</h2>
+            <form onSubmit={createPauta} className="space-y-3">
+              <div>
+                <label className="label">Título</label>
+                <input className="input" placeholder="Ej: Pautas Semanas 1-2" value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="label">Período</label>
+                <input className="input" placeholder="Ej: Semanas 1–2" value={form.weekRange}
+                  onChange={e => setForm(f => ({ ...f, weekRange: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="label">Notas (opcional)</label>
+                <textarea className="input resize-none" rows={3}
+                  placeholder="Indicaciones adicionales para el tutor…"
+                  value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button type="button" onClick={() => setCreating(false)} className="btn-ghost flex-1 justify-center">Cancelar</button>
+                <button type="submit" disabled={saving} className="btn-primary flex-1 justify-center">
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* List */}
+      {isLoading ? (
+        <div className="card flex items-center justify-center py-8">
+          <Loader2 size={20} className="animate-spin text-navy-300" />
+        </div>
+      ) : pautas.length === 0 ? (
+        <div className="card flex flex-col items-center py-10 gap-3 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center">
+            <BookOpen size={26} className="text-teal-500" />
+          </div>
+          <p className="text-sm font-medium text-navy-700">Sin pautas creadas</p>
+          <p className="text-xs text-navy-400 max-w-xs">
+            El tutor verá aquí las guías e imágenes de rehabilitación en casa.
+          </p>
+          <button className="btn-primary mt-1 gap-2" onClick={() => setBuilding(true)}>
+            <Plus size={14} />Crear primera pauta
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {pautas.map(p => (
+            <div key={p.id} className="card space-y-3">
+              {/* Pauta header */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-navy-700">{p.title}</p>
+                  <p className="text-xs text-navy-400">
+                    {p.weekRange} · {format(new Date(p.createdAt), "d MMM yyyy", { locale: es })}
+                  </p>
+                  {p.notes && <p className="text-xs text-navy-500 mt-1 leading-relaxed">{p.notes}</p>}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Portal toggle */}
+                  <button
+                    onClick={() => togglePortal(p)}
+                    title={p.showInPortal ? 'Visible en portal del tutor — clic para ocultar' : 'Oculto en portal — clic para mostrar'}
+                    className="flex items-center gap-1.5 focus:outline-none"
+                  >
+                    <span className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ${p.showInPortal ? 'bg-teal-500' : 'bg-navy-200'}`}>
+                      <span className={`pointer-events-none inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${p.showInPortal ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </span>
+                    <span className={`text-[10px] font-medium ${p.showInPortal ? 'text-teal-600' : 'text-navy-400'}`}>
+                      {p.showInPortal ? 'Portal' : 'Oculto'}
+                    </span>
+                  </button>
+                  {p.htmlContent && (
+                    <button onClick={() => openHtml(p.id)} title="Ver pauta" className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors">
+                      <ExternalLink size={14} />
+                    </button>
+                  )}
+                  <button onClick={() => deletePauta(p.id)} className="p-1.5 text-navy-300 hover:text-red-400 transition-colors">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Images grid */}
+              {p.media.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {p.media.map(m => (
+                    <div key={m.id} className="relative group aspect-square rounded-xl overflow-hidden bg-navy-50">
+                      <img src={m.url} alt={m.caption ?? ''} className="w-full h-full object-cover" />
+                      {m.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1.5 py-0.5 truncate">
+                          {m.caption}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => deleteMedia(p.id, m.id)}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X size={11} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload button */}
+              <div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadImage(p.id, f);
+                    e.target.value = '';
+                  }}
+                />
+                <button
+                  className="btn-ghost gap-2 text-xs w-full justify-center"
+                  disabled={uploadingFor === p.id}
+                  onClick={() => { setUploadingFor(p.id); fileRef.current?.click(); }}
+                >
+                  {uploadingFor === p.id
+                    ? <><Loader2 size={13} className="animate-spin" />Subiendo…</>
+                    : <><Upload size={13} />Añadir imagen</>}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Utility components ────────────────────────────────────────────────────
 
-function Row({ label, value }: { label: string; value?: string | number | null }) {
-  if (value == null || value === '') return null;
+function Row({ label, value, always }: { label: string; value?: string | number | null; always?: boolean }) {
+  if (!always && (value == null || value === '')) return null;
+  const empty = value == null || value === '';
   return (
     <div className="text-sm border-b border-navy-50 pb-3 last:border-0 last:pb-0 sm:grid sm:grid-cols-3 sm:gap-2">
       <span className="font-medium text-navy-500 block mb-0.5 sm:mb-0">{label}</span>
-      <span className="sm:col-span-2 text-navy-700 whitespace-pre-wrap">{String(value)}</span>
+      <span className={`sm:col-span-2 whitespace-pre-wrap ${empty ? 'text-navy-300 italic' : 'text-navy-700'}`}>
+        {empty ? '—' : String(value)}
+      </span>
     </div>
   );
 }
@@ -348,6 +612,45 @@ function Slider({ label, value, onChange }: { label: string; value: number; onCh
 function parseJson<T>(val: string | undefined, def: T): T {
   if (!val) return def;
   try { return { ...def as object, ...JSON.parse(val) } as T; } catch { return def; }
+}
+
+// ── AlineacionExtremidades component ────────────────────────────────────
+
+function AlineacionExtremidades({ value, onChange }: { value?: string; onChange: (v: string) => void }) {
+  const d = parseJson(value, { ma: [] as string[], mp: [] as string[], notas_ma: '', notas: '' });
+  const [notasMA, setNotasMA] = useState(d.notas_ma);
+  const upd = (patch: Partial<typeof d>) => onChange(JSON.stringify({ ...d, ...patch }));
+  return (
+    <div className="space-y-3">
+      <div className="space-y-2">
+        <p className="text-xs font-semibold text-navy-500 uppercase tracking-wide">Miembros anteriores</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {(['Normal','Valgo','Varo','Rotación interna','Rotación externa','Asimetría'] as const).map(o => (
+            <label key={o} className="flex items-center gap-2 text-sm text-navy-600 cursor-pointer">
+              <input type="checkbox" className="accent-teal-500 w-4 h-4 flex-shrink-0"
+                checked={d.ma.includes(o)}
+                onChange={() => upd({ ma: d.ma.includes(o) ? d.ma.filter(c => c !== o) : [...d.ma, o] })} />
+              {o}
+            </label>
+          ))}
+        </div>
+        <textarea
+          className="input resize-none text-xs"
+          rows={2}
+          placeholder="Observaciones libres..."
+          defaultValue={notasMA}
+          onBlur={e => onChange(JSON.stringify({ ...d, notas_ma: e.target.value }))}
+          data-gramm="false"
+          data-gramm_editor="false"
+          data-enable-grammarly="false"
+        />
+      </div>
+      <MultiCheck label="Miembros posteriores"
+        options={['Normal','Valgo','Varo','Luxación de rótula','Angulaciones','Asimetría']}
+        checks={d.mp} onChecks={v => upd({ mp: v })}
+        notes={d.notas} onNotes={v => upd({ notas: v })} />
+    </div>
+  );
 }
 
 // ── MultiCheck: checkboxes + free notes ──────────────────────────────────
@@ -372,7 +675,8 @@ function MultiCheck({ label, options, checks, onChecks, notes, onNotes }: {
         ))}
       </div>
       <textarea className="input resize-none text-xs" rows={2} value={notes}
-        onChange={e => onNotes(e.target.value)} placeholder="Observaciones libres…" />
+        onChange={e => onNotes(e.target.value)} placeholder="Observaciones libres…"
+        data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" />
     </div>
   );
 }
@@ -777,22 +1081,10 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
         {/* ALINEACIÓN DE LAS EXTREMIDADES */}
         <div className="space-y-3">
           <label className="label">Alineación de las extremidades</label>
-          {(() => {
-            const d = parseJson(form.alineacionExtremidades, { ma: [] as string[], mp: [] as string[], notas: '' });
-            const upd = (patch: Partial<typeof d>) => set('alineacionExtremidades', JSON.stringify({ ...d, ...patch }));
-            return (
-              <div className="space-y-3">
-                <MultiCheck label="Miembros anteriores"
-                  options={['Normal','Valgo','Varo','Rotación interna','Rotación externa','Asimetría']}
-                  checks={d.ma} onChecks={v => upd({ ma: v })}
-                  notes="" onNotes={() => {}} />
-                <MultiCheck label="Miembros posteriores"
-                  options={['Normal','Valgo','Varo','Luxación de rótula','Angulaciones','Asimetría']}
-                  checks={d.mp} onChecks={v => upd({ mp: v })}
-                  notes={d.notas} onNotes={v => upd({ notas: v })} />
-              </div>
-            );
-          })()}
+          <AlineacionExtremidades
+            value={form.alineacionExtremidades}
+            onChange={v => set('alineacionExtremidades', v)}
+          />
         </div>
 
         {/* MUSCULATURA */}
@@ -1700,14 +1992,14 @@ export default function PatientDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-navy-100 rounded-xl p-1 w-full overflow-x-auto">
+      <div className="flex gap-0.5 mb-6 bg-navy-100 rounded-xl p-1 w-full overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
         {TABS.map(({ key, label, Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap flex-1 justify-center ${tab === key ? 'bg-white text-navy-700 shadow-sm' : 'text-navy-500 hover:text-navy-700'}`}
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors whitespace-nowrap flex-shrink-0 ${tab === key ? 'bg-white text-navy-700 shadow-sm' : 'text-navy-500 hover:text-navy-700'}`}
           >
-            <Icon size={13} />{label}
+            <Icon size={12} />{label}
           </button>
         ))}
       </div>
@@ -1741,24 +2033,56 @@ export default function PatientDetailPage() {
           {!patient.intakeData ? (
             <div className="card"><p className="text-navy-300">Sin ficha de anamnesis registrada.</p></div>
           ) : (
-            <div className="card space-y-4">
-              <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Anamnesis del onboarding</h3>
-              <Row label="Enfermedades (formulario)" value={patient.intakeData.enfermedades} />
-              <Row label="Alergias (formulario)" value={patient.intakeData.alergias} />
-              <Row label="Motivo consulta" value={patient.intakeData.motivoConsulta} />
-              <Row label="Desde cuándo" value={patient.intakeData.desdeCuando} />
-              <Row label="Inicio síntomas" value={patient.intakeData.inicioSintomas} />
-              <Row label="Momentos peor/mejor" value={patient.intakeData.momentosPeorMejor} />
-              <Row label="Síntomas observados" value={patient.intakeData.sintomasObservados} />
-              <Row label="Lesiones previas" value={patient.intakeData.lesionesPrevias} />
-              <Row label="Cirugía previa" value={patient.intakeData.cirugiaPrevia} />
-              <Row label="Diagnóstico previo" value={patient.intakeData.diagnosticoPrevio} />
-              <Row label="Medicación" value={patient.intakeData.medicacion} />
-              <Row label="Fisioterapia previa" value={patient.intakeData.fisioterapiaPrevia} />
-              <Row label="Nivel actividad" value={patient.intakeData.nivelActividad} />
-              <Row label="Observaciones" value={patient.intakeData.observaciones} />
-              <Row label="Objetivos" value={patient.intakeData.objetivos} />
-            </div>
+            <>
+              {/* Motivo y síntomas */}
+              <div className="card space-y-3">
+                <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Motivo de consulta</h3>
+                <Row always label="Motivo consulta" value={patient.intakeData.motivoConsulta} />
+                <Row always label="Desde cuándo" value={patient.intakeData.desdeCuando} />
+                <Row always label="Inicio síntomas" value={patient.intakeData.inicioSintomas} />
+                <Row always label="Momentos peor/mejor" value={patient.intakeData.momentosPeorMejor} />
+                <Row always label="Síntomas observados" value={patient.intakeData.sintomasObservados} />
+                <Row always label="Dolor al comer" value={patient.intakeData.dolorAlComer} />
+                <Row always label="Mejora con" value={patient.intakeData.mejoriaCon} />
+              </div>
+
+              {/* Historia clínica */}
+              <div className="card space-y-3">
+                <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Historia clínica</h3>
+                <Row always label="Enfermedades diagnosticadas" value={patient.intakeData.enfermedades} />
+                <Row always label="Alergias conocidas" value={patient.intakeData.alergias} />
+                <Row always label="Lesiones previas" value={patient.intakeData.lesionesPrevias} />
+                <Row always label="Cirugía previa" value={patient.intakeData.cirugiaPrevia} />
+                <Row always label="Detalle cirugía" value={patient.intakeData.cirugiaDetalle} />
+                <Row always label="Diagnóstico previo" value={patient.intakeData.diagnosticoPrevio} />
+                <Row always label="Veterinario referente" value={patient.intakeData.veterinarioRef} />
+              </div>
+
+              {/* Tratamientos */}
+              <div className="card space-y-3">
+                <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Tratamientos</h3>
+                <Row always label="Medicación actual" value={patient.intakeData.medicacion} />
+                <Row always label="Detalle medicación" value={patient.intakeData.medicacionDetalle} />
+                <Row always label="Fisioterapia previa" value={patient.intakeData.fisioterapiaPrevia} />
+                <Row always label="Detalle fisioterapia" value={patient.intakeData.fisioterapiaDetalle} />
+              </div>
+
+              {/* Estilo de vida */}
+              <div className="card space-y-3">
+                <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Estilo de vida</h3>
+                <Row always label="Nivel de actividad" value={patient.intakeData.nivelActividad} />
+                <Row always label="Tipo de paseos" value={patient.intakeData.tipoPaseos} />
+                <Row always label="Dónde duerme" value={patient.intakeData.dondeDuerme} />
+                <Row always label="Escaleras" value={patient.intakeData.escaleras} />
+              </div>
+
+              {/* Objetivos y notas */}
+              <div className="card space-y-3">
+                <h3 className="text-xs font-semibold text-navy-400 uppercase tracking-wider">Objetivos y observaciones</h3>
+                <Row always label="Objetivos del tutor" value={patient.intakeData.objetivos} />
+                <Row always label="Observaciones" value={patient.intakeData.observaciones} />
+              </div>
+            </>
           )}
         </div>
       )}
@@ -1931,6 +2255,11 @@ export default function PatientDetailPage() {
       {/* ── Notas ── */}
       {tab === 'notes' && (
         <NotesTab patientName={patient.name} />
+      )}
+
+      {/* ── Pautas ── */}
+      {tab === 'pautas' && (
+        <PautasTab patient={patient} />
       )}
 
       {/* ── Edit modal ── */}

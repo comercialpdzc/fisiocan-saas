@@ -26,6 +26,7 @@ import PortalRoutines from './pages/portal/PortalRoutines';
 import PortalPlans from './pages/portal/PortalPlans';
 import PortalChat from './pages/portal/PortalChat';
 import PortalFollowUp from './pages/portal/PortalFollowUp';
+import PortalPautas from './pages/portal/PortalPautas';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="routines"     element={<PortalRoutines />} />
           <Route path="plans"        element={<PortalPlans />} />
           <Route path="followup"     element={<PortalFollowUp />} />
+          <Route path="pautas"       element={<PortalPautas />} />
           <Route path="chat"         element={<PortalChat />} />
         </Route>
       </Routes>

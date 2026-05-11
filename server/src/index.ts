@@ -21,6 +21,7 @@ import sessionFollowupsRouter from './routes/session-followups';
 import driveRouter from './routes/drive';
 import gmailRouter from './routes/gmail';
 import adminRouter from './routes/admin';
+import pautasRouter from './routes/pautas';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -65,6 +66,7 @@ app.use('/api/session-followups', sessionFollowupsRouter);
 app.use('/api/drive',             driveRouter);
 app.use('/api/gmail',             gmailRouter);
 app.use('/api/admin',             adminRouter);
+app.use('/api/pautas',            pautasRouter);
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'FISIOCAN SaaS' }));
 

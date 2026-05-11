@@ -68,6 +68,7 @@ model Patient {
   evaluation          PatientEvaluation?
   sessionFollowups    SessionFollowup[]
   mediaFiles          MediaFile[]
+  pautas              PatientPauta[]
 }
 
 model IntakeData {
@@ -241,7 +242,8 @@ model PatientEvaluation {
   frecuenciaSemana     Int?
   duracionSesionMin    Int?
   reevaluacionPrevista DateTime?
-  fechaEvaluacion      DateTime? // fecha real de la exploración (editable)
+
+  fechaEvaluacion DateTime? // fecha real de la exploración (editable)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -373,6 +375,30 @@ model PatientMedia {
   caption   String?
   takenAt   DateTime @default(now())
   createdAt DateTime @default(now())
+}
+
+// ── Pautas domiciliarias (guías imprimibles para el tutor) ─────────────────
+
+model PatientPauta {
+  id          Int          @id @default(autoincrement())
+  patientId   Int
+  patient     Patient      @relation(fields: [patientId], references: [id])
+  title       String
+  weekRange   String // e.g. "Semanas 1–2"
+  notes       String? // libre: indicaciones adicionales
+  htmlContent String?      @db.Text // HTML completo de la guía (opcional)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  media       PautaMedia[]
+}
+
+model PautaMedia {
+  id        Int          @id @default(autoincrement())
+  pautaId   Int
+  pauta     PatientPauta @relation(fields: [pautaId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  createdAt DateTime     @default(now())
 }
 
 model Message {
