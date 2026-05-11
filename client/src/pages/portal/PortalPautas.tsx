@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, PawPrint } from 'lucide-react';
+import { BookOpen, PawPrint, ExternalLink } from 'lucide-react';
 import { portalApi } from '../../lib/api';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -54,6 +54,20 @@ export default function PortalPautas() {
   );
 }
 
+const BASE = (import.meta.env.VITE_API_URL ?? '') + '/api';
+
+async function openPautaHtml(id: number) {
+  const token = localStorage.getItem('portal_token');
+  const res = await fetch(`${BASE}/portal/pautas/${id}/html`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) { alert('Esta pauta no tiene contenido HTML disponible.'); return; }
+  let html = await res.text();
+  html = html.replace('</head>', '<style>@page{margin:10mm}#pb,nav{display:none!important}body,main{padding-top:0!important;margin-top:0!important}</style></head>');
+  const blob = new Blob([html], { type: 'text/html' });
+  window.open(URL.createObjectURL(blob), '_blank');
+}
+
 function PautaCard({ pauta }: { pauta: PortalPauta }) {
   const [lightbox, setLightbox] = useState<string | null>(null);
 
@@ -81,6 +95,13 @@ function PautaCard({ pauta }: { pauta: PortalPauta }) {
             <p className="text-sm text-navy-500 mt-2 leading-relaxed">{pauta.notes}</p>
           )}
         </div>
+        <button
+          onClick={() => openPautaHtml(pauta.id)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500 hover:bg-teal-600 text-white text-xs font-semibold transition-colors shrink-0"
+        >
+          <ExternalLink size={13} />
+          Ver guía
+        </button>
       </div>
 
       {/* Images */}
