@@ -388,6 +388,7 @@ model PatientPauta {
   weekRange    String // e.g. "Semanas 1–2"
   notes        String? // libre: indicaciones adicionales
   htmlContent  String?      @db.Text // HTML completo de la guía (opcional)
+  builderData  String?      @db.Text // JSON del formulario del builder (para re-editar)
   showInPortal Boolean      @default(false) // visible en el portal del tutor
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt

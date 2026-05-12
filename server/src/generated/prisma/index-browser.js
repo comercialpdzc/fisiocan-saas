@@ -404,6 +404,7 @@ exports.Prisma.PatientPautaScalarFieldEnum = {
   weekRange: 'weekRange',
   notes: 'notes',
   htmlContent: 'htmlContent',
+  builderData: 'builderData',
   showInPortal: 'showInPortal',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

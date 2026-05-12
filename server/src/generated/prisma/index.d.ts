@@ -20248,6 +20248,7 @@ export namespace Prisma {
     weekRange: string | null
     notes: string | null
     htmlContent: string | null
+    builderData: string | null
     showInPortal: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -20260,6 +20261,7 @@ export namespace Prisma {
     weekRange: string | null
     notes: string | null
     htmlContent: string | null
+    builderData: string | null
     showInPortal: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -20272,6 +20274,7 @@ export namespace Prisma {
     weekRange: number
     notes: number
     htmlContent: number
+    builderData: number
     showInPortal: number
     createdAt: number
     updatedAt: number
@@ -20296,6 +20299,7 @@ export namespace Prisma {
     weekRange?: true
     notes?: true
     htmlContent?: true
+    builderData?: true
     showInPortal?: true
     createdAt?: true
     updatedAt?: true
@@ -20308,6 +20312,7 @@ export namespace Prisma {
     weekRange?: true
     notes?: true
     htmlContent?: true
+    builderData?: true
     showInPortal?: true
     createdAt?: true
     updatedAt?: true
@@ -20320,6 +20325,7 @@ export namespace Prisma {
     weekRange?: true
     notes?: true
     htmlContent?: true
+    builderData?: true
     showInPortal?: true
     createdAt?: true
     updatedAt?: true
@@ -20419,6 +20425,7 @@ export namespace Prisma {
     weekRange: string
     notes: string | null
     htmlContent: string | null
+    builderData: string | null
     showInPortal: boolean
     createdAt: Date
     updatedAt: Date
@@ -20450,6 +20457,7 @@ export namespace Prisma {
     weekRange?: boolean
     notes?: boolean
     htmlContent?: boolean
+    builderData?: boolean
     showInPortal?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -20465,6 +20473,7 @@ export namespace Prisma {
     weekRange?: boolean
     notes?: boolean
     htmlContent?: boolean
+    builderData?: boolean
     showInPortal?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -20478,6 +20487,7 @@ export namespace Prisma {
     weekRange?: boolean
     notes?: boolean
     htmlContent?: boolean
+    builderData?: boolean
     showInPortal?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -20505,6 +20515,7 @@ export namespace Prisma {
       weekRange: string
       notes: string | null
       htmlContent: string | null
+      builderData: string | null
       showInPortal: boolean
       createdAt: Date
       updatedAt: Date
@@ -20909,6 +20920,7 @@ export namespace Prisma {
     readonly weekRange: FieldRef<"PatientPauta", 'String'>
     readonly notes: FieldRef<"PatientPauta", 'String'>
     readonly htmlContent: FieldRef<"PatientPauta", 'String'>
+    readonly builderData: FieldRef<"PatientPauta", 'String'>
     readonly showInPortal: FieldRef<"PatientPauta", 'Boolean'>
     readonly createdAt: FieldRef<"PatientPauta", 'DateTime'>
     readonly updatedAt: FieldRef<"PatientPauta", 'DateTime'>
@@ -28550,6 +28562,7 @@ export namespace Prisma {
     weekRange: 'weekRange',
     notes: 'notes',
     htmlContent: 'htmlContent',
+    builderData: 'builderData',
     showInPortal: 'showInPortal',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -30456,6 +30469,7 @@ export namespace Prisma {
     weekRange?: StringFilter<"PatientPauta"> | string
     notes?: StringNullableFilter<"PatientPauta"> | string | null
     htmlContent?: StringNullableFilter<"PatientPauta"> | string | null
+    builderData?: StringNullableFilter<"PatientPauta"> | string | null
     showInPortal?: BoolFilter<"PatientPauta"> | boolean
     createdAt?: DateTimeFilter<"PatientPauta"> | Date | string
     updatedAt?: DateTimeFilter<"PatientPauta"> | Date | string
@@ -30470,6 +30484,7 @@ export namespace Prisma {
     weekRange?: SortOrder
     notes?: SortOrderInput | SortOrder
     htmlContent?: SortOrderInput | SortOrder
+    builderData?: SortOrderInput | SortOrder
     showInPortal?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30487,6 +30502,7 @@ export namespace Prisma {
     weekRange?: StringFilter<"PatientPauta"> | string
     notes?: StringNullableFilter<"PatientPauta"> | string | null
     htmlContent?: StringNullableFilter<"PatientPauta"> | string | null
+    builderData?: StringNullableFilter<"PatientPauta"> | string | null
     showInPortal?: BoolFilter<"PatientPauta"> | boolean
     createdAt?: DateTimeFilter<"PatientPauta"> | Date | string
     updatedAt?: DateTimeFilter<"PatientPauta"> | Date | string
@@ -30501,6 +30517,7 @@ export namespace Prisma {
     weekRange?: SortOrder
     notes?: SortOrderInput | SortOrder
     htmlContent?: SortOrderInput | SortOrder
+    builderData?: SortOrderInput | SortOrder
     showInPortal?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -30521,6 +30538,7 @@ export namespace Prisma {
     weekRange?: StringWithAggregatesFilter<"PatientPauta"> | string
     notes?: StringNullableWithAggregatesFilter<"PatientPauta"> | string | null
     htmlContent?: StringNullableWithAggregatesFilter<"PatientPauta"> | string | null
+    builderData?: StringNullableWithAggregatesFilter<"PatientPauta"> | string | null
     showInPortal?: BoolWithAggregatesFilter<"PatientPauta"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"PatientPauta"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PatientPauta"> | Date | string
@@ -32916,6 +32934,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32930,6 +32949,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32941,6 +32961,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32955,6 +32976,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32968,6 +32990,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32978,6 +33001,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32990,6 +33014,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34817,6 +34842,7 @@ export namespace Prisma {
     weekRange?: SortOrder
     notes?: SortOrder
     htmlContent?: SortOrder
+    builderData?: SortOrder
     showInPortal?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -34834,6 +34860,7 @@ export namespace Prisma {
     weekRange?: SortOrder
     notes?: SortOrder
     htmlContent?: SortOrder
+    builderData?: SortOrder
     showInPortal?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -34846,6 +34873,7 @@ export namespace Prisma {
     weekRange?: SortOrder
     notes?: SortOrder
     htmlContent?: SortOrder
+    builderData?: SortOrder
     showInPortal?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -38065,6 +38093,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38077,6 +38106,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38519,6 +38549,7 @@ export namespace Prisma {
     weekRange?: StringFilter<"PatientPauta"> | string
     notes?: StringNullableFilter<"PatientPauta"> | string | null
     htmlContent?: StringNullableFilter<"PatientPauta"> | string | null
+    builderData?: StringNullableFilter<"PatientPauta"> | string | null
     showInPortal?: BoolFilter<"PatientPauta"> | boolean
     createdAt?: DateTimeFilter<"PatientPauta"> | Date | string
     updatedAt?: DateTimeFilter<"PatientPauta"> | Date | string
@@ -40905,6 +40936,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40918,6 +40950,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40944,6 +40977,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40957,6 +40991,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42065,6 +42100,7 @@ export namespace Prisma {
     weekRange: string
     notes?: string | null
     htmlContent?: string | null
+    builderData?: string | null
     showInPortal?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -42424,6 +42460,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42436,6 +42473,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42448,6 +42486,7 @@ export namespace Prisma {
     weekRange?: StringFieldUpdateOperationsInput | string
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     htmlContent?: NullableStringFieldUpdateOperationsInput | string | null
+    builderData?: NullableStringFieldUpdateOperationsInput | string | null
     showInPortal?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

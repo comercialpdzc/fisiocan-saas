@@ -10,7 +10,7 @@ import {
 import { api } from '../lib/api';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import PautaBuilderModal from '../components/PautaBuilderModal';
+import PautaBuilderModal, { type PautaForm } from '../components/PautaBuilderModal';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -327,7 +327,7 @@ function NotesTab({ patientName }: { patientName: string }) {
 interface PautaMediaItem { id: number; url: string; caption?: string; createdAt: string; }
 interface Pauta {
   id: number; title: string; weekRange: string; notes?: string;
-  createdAt: string; showInPortal: boolean; htmlContent?: string; media: PautaMediaItem[];
+  createdAt: string; showInPortal: boolean; htmlContent?: string; builderData?: string; media: PautaMediaItem[];
 }
 
 function PautasTab({ patient }: { patient: Patient }) {
@@ -338,6 +338,10 @@ function PautasTab({ patient }: { patient: Patient }) {
   const [form, setForm] = useState({ title: '', weekRange: '', notes: '' });
   const [saving, setSaving] = useState(false);
   const [uploadingFor, setUploadingFor] = useState<number | null>(null);
+  const [editingBuilder, setEditingBuilder] = useState<Pauta | null>(null);
+  const [editingSimple, setEditingSimple] = useState<Pauta | null>(null);
+  const [editSimpleForm, setEditSimpleForm] = useState({ title: '', weekRange: '', notes: '' });
+  const [editSimpleSaving, setEditSimpleSaving] = useState(false);
 
   const { data: pautas = [], isLoading } = useQuery<Pauta[]>({
     queryKey: ['pautas', patient.id],
@@ -430,12 +434,77 @@ function PautasTab({ patient }: { patient: Patient }) {
           patientName={patient.name}
           photoUrl={patient.photoUrl}
           onClose={() => setBuilding(false)}
-          onSave={async (html, title, weekRange, notes) => {
-            await api.post('/pautas', { patientId: patient.id, title, weekRange, notes, htmlContent: html });
+          onSave={async (html, title, weekRange, notes, builderData) => {
+            await api.post('/pautas', { patientId: patient.id, title, weekRange, notes, htmlContent: html, builderData });
             qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
             setBuilding(false);
           }}
         />
+      )}
+
+      {/* Builder edit modal */}
+      {editingBuilder && (() => {
+        let parsedForm: PautaForm | undefined;
+        let parsedChips = '';
+        try { const d = JSON.parse(editingBuilder.builderData!); parsedForm = d.form; parsedChips = d.chips ?? ''; } catch {}
+        return (
+          <PautaBuilderModal
+            patientName={patient.name}
+            photoUrl={patient.photoUrl}
+            mode="edit"
+            initialForm={parsedForm}
+            initialChips={parsedChips}
+            onClose={() => setEditingBuilder(null)}
+            onSave={async (html, title, weekRange, notes, builderData) => {
+              await api.put(`/pautas/${editingBuilder.id}`, { title, weekRange, notes, htmlContent: html, builderData });
+              qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+              setEditingBuilder(null);
+            }}
+          />
+        );
+      })()}
+
+      {/* Simple edit modal */}
+      {editingSimple && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setEditingSimple(null)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-base font-bold text-navy-700 mb-4">Editar pauta</h2>
+            <form onSubmit={async e => {
+              e.preventDefault();
+              if (!editSimpleForm.title.trim() || !editSimpleForm.weekRange.trim()) return;
+              setEditSimpleSaving(true);
+              try {
+                await api.put(`/pautas/${editingSimple.id}`, editSimpleForm);
+                qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
+                setEditingSimple(null);
+              } catch { alert('Error al guardar'); }
+              finally { setEditSimpleSaving(false); }
+            }} className="space-y-3">
+              <div>
+                <label className="label">Título</label>
+                <input className="input" value={editSimpleForm.title}
+                  onChange={e => setEditSimpleForm(f => ({ ...f, title: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="label">Período</label>
+                <input className="input" value={editSimpleForm.weekRange}
+                  onChange={e => setEditSimpleForm(f => ({ ...f, weekRange: e.target.value }))} required />
+              </div>
+              <div>
+                <label className="label">Notas (opcional)</label>
+                <textarea className="input resize-none" rows={3}
+                  value={editSimpleForm.notes}
+                  onChange={e => setEditSimpleForm(f => ({ ...f, notes: e.target.value }))} />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button type="button" onClick={() => setEditingSimple(null)} className="btn-ghost flex-1 justify-center">Cancelar</button>
+                <button type="submit" disabled={editSimpleSaving} className="btn-primary flex-1 justify-center">
+                  {editSimpleSaving ? <Loader2 size={14} className="animate-spin" /> : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
       {/* Create modal */}
@@ -515,6 +584,20 @@ function PautasTab({ patient }: { patient: Patient }) {
                     <span className={`text-[10px] font-medium ${p.showInPortal ? 'text-teal-600' : 'text-navy-400'}`}>
                       {p.showInPortal ? 'Portal' : 'Oculto'}
                     </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (p.builderData) {
+                        setEditingBuilder(p);
+                      } else {
+                        setEditingSimple(p);
+                        setEditSimpleForm({ title: p.title, weekRange: p.weekRange, notes: p.notes ?? '' });
+                      }
+                    }}
+                    title="Editar pauta"
+                    className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors"
+                  >
+                    <Pencil size={14} />
                   </button>
                   {p.htmlContent && (
                     <button onClick={() => openHtml(p.id)} title="Ver pauta" className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors">

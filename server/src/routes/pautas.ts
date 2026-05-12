@@ -58,6 +58,7 @@ const CreateSchema = z.object({
   weekRange:    z.string().min(1),
   notes:        z.string().optional(),
   htmlContent:  z.string().optional(),
+  builderData:  z.string().optional(),
   showInPortal: z.boolean().optional(),
 });
 

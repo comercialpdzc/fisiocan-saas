@@ -248,7 +248,7 @@ function newSection(type: Section['type']): Section {
   return { id: uid(), type: 'tabla', title: 'Rutina diaria', rows: [emptyRow()] };
 }
 
-const initialForm: PautaForm = {
+const defaultForm: PautaForm = {
   weekRange: '', intro: '', sections: [], closingTag: 'Siguiente paso', closingTitle: '', closingMsg: '',
 };
 
@@ -442,16 +442,21 @@ function SectionEditor({ sec, index, onChange, onDelete, onMove }: {
 }
 
 // ── Main modal ─────────────────────────────────────────────────────────────────
+export type { PautaForm };
+
 interface Props {
   patientName: string;
   photoUrl?: string;
   onClose: () => void;
-  onSave: (html: string, title: string, weekRange: string, notes: string) => Promise<void>;
+  onSave: (html: string, title: string, weekRange: string, notes: string, builderData: string) => Promise<void>;
+  initialForm?: PautaForm;
+  initialChips?: string;
+  mode?: 'create' | 'edit';
 }
 
-export default function PautaBuilderModal({ patientName, photoUrl, onClose, onSave }: Props) {
-  const [form, setForm] = useState<PautaForm>(initialForm);
-  const [chips, setChips] = useState('');
+export default function PautaBuilderModal({ patientName, photoUrl, onClose, onSave, initialForm, initialChips, mode = 'create' }: Props) {
+  const [form, setForm] = useState<PautaForm>(initialForm ?? defaultForm);
+  const [chips, setChips] = useState(initialChips ?? '');
   const [saving, setSaving] = useState(false);
 
   const move = (i: number, dir: -1 | 1) => {
@@ -469,7 +474,8 @@ export default function PautaBuilderModal({ patientName, photoUrl, onClose, onSa
     const html = generatePautaHtml(form, patientName, photoUrl, chipList);
     const title = `Pautas en casa – ${form.weekRange}`;
     const notes = form.intro;
-    try { await onSave(html, title, form.weekRange, notes); } finally { setSaving(false); }
+    const builderData = JSON.stringify({ form, chips });
+    try { await onSave(html, title, form.weekRange, notes, builderData); } finally { setSaving(false); }
   }
 
   return (
@@ -478,7 +484,7 @@ export default function PautaBuilderModal({ patientName, photoUrl, onClose, onSa
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-navy-100 sticky top-0 bg-white rounded-t-2xl z-10">
           <div>
-            <h2 className="text-base font-bold text-navy-700">Crear pauta domiciliaria</h2>
+            <h2 className="text-base font-bold text-navy-700">{mode === 'edit' ? 'Editar pauta' : 'Crear pauta domiciliaria'}</h2>
             <p className="text-xs text-navy-400 mt-0.5">Para {patientName} · mismo diseño que la guía de Dana</p>
           </div>
           <button onClick={onClose} className="text-navy-400 hover:text-navy-700"><X size={18} /></button>
@@ -544,7 +550,7 @@ export default function PautaBuilderModal({ patientName, photoUrl, onClose, onSa
         <div className="flex gap-3 px-6 py-4 border-t border-navy-100 bg-navy-50 rounded-b-2xl">
           <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center">Cancelar</button>
           <button type="button" onClick={handleSave} disabled={saving} className="btn-primary flex-1 justify-center">
-            {saving ? 'Generando…' : 'Crear pauta'}
+            {saving ? 'Guardando…' : mode === 'edit' ? 'Guardar cambios' : 'Crear pauta'}
           </button>
         </div>
       </div>
