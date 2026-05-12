@@ -240,4 +240,17 @@ router.post('/sync-pauta-media', async (_req, res) => {
   res.json({ total: media.length, synced, skipped, failed });
 });
 
+// ── POST /api/admin/test-fetch ────────────────────────────────────────────────
+// Temporary debug endpoint: tests if Cloud Run can fetch a URL
+router.post('/test-fetch', async (req, res) => {
+  const { url } = req.body as { url?: string };
+  if (!url) { res.status(400).json({ error: 'url required' }); return; }
+  try {
+    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    res.json({ status: resp.status, ok: resp.ok, contentType: resp.headers.get('content-type'), contentLength: resp.headers.get('content-length') });
+  } catch (e: any) {
+    res.json({ error: e.message, cause: String(e.cause ?? '') });
+  }
+});
+
 export default router;
