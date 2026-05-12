@@ -225,6 +225,7 @@ model PatientEvaluation {
   dolorReposo             Int?     // 0–10
   dolorMovimiento         Int?     // 0–10
   nivelFuncional          Int?     // 0–10
+  palpacionInfoAdicional  String?
 
   // Pruebas complementarias — JSON: [{tipo, resultado, hallazgos, archivoUrl}]
   pruebasComplementarias  String?

@@ -13069,6 +13069,7 @@ export namespace Prisma {
     dolorReposo: number | null
     dolorMovimiento: number | null
     nivelFuncional: number | null
+    palpacionInfoAdicional: string | null
     pruebasComplementarias: string | null
     hipotesisDiagnostica: string | null
     pronosticoFuncional: string | null
@@ -13124,6 +13125,7 @@ export namespace Prisma {
     dolorReposo: number | null
     dolorMovimiento: number | null
     nivelFuncional: number | null
+    palpacionInfoAdicional: string | null
     pruebasComplementarias: string | null
     hipotesisDiagnostica: string | null
     pronosticoFuncional: string | null
@@ -13179,6 +13181,7 @@ export namespace Prisma {
     dolorReposo: number
     dolorMovimiento: number
     nivelFuncional: number
+    palpacionInfoAdicional: number
     pruebasComplementarias: number
     hipotesisDiagnostica: number
     pronosticoFuncional: number
@@ -13260,6 +13263,7 @@ export namespace Prisma {
     dolorReposo?: true
     dolorMovimiento?: true
     nivelFuncional?: true
+    palpacionInfoAdicional?: true
     pruebasComplementarias?: true
     hipotesisDiagnostica?: true
     pronosticoFuncional?: true
@@ -13315,6 +13319,7 @@ export namespace Prisma {
     dolorReposo?: true
     dolorMovimiento?: true
     nivelFuncional?: true
+    palpacionInfoAdicional?: true
     pruebasComplementarias?: true
     hipotesisDiagnostica?: true
     pronosticoFuncional?: true
@@ -13370,6 +13375,7 @@ export namespace Prisma {
     dolorReposo?: true
     dolorMovimiento?: true
     nivelFuncional?: true
+    palpacionInfoAdicional?: true
     pruebasComplementarias?: true
     hipotesisDiagnostica?: true
     pronosticoFuncional?: true
@@ -13512,6 +13518,7 @@ export namespace Prisma {
     dolorReposo: number | null
     dolorMovimiento: number | null
     nivelFuncional: number | null
+    palpacionInfoAdicional: string | null
     pruebasComplementarias: string | null
     hipotesisDiagnostica: string | null
     pronosticoFuncional: string | null
@@ -13586,6 +13593,7 @@ export namespace Prisma {
     dolorReposo?: boolean
     dolorMovimiento?: boolean
     nivelFuncional?: boolean
+    palpacionInfoAdicional?: boolean
     pruebasComplementarias?: boolean
     hipotesisDiagnostica?: boolean
     pronosticoFuncional?: boolean
@@ -13642,6 +13650,7 @@ export namespace Prisma {
     dolorReposo?: boolean
     dolorMovimiento?: boolean
     nivelFuncional?: boolean
+    palpacionInfoAdicional?: boolean
     pruebasComplementarias?: boolean
     hipotesisDiagnostica?: boolean
     pronosticoFuncional?: boolean
@@ -13698,6 +13707,7 @@ export namespace Prisma {
     dolorReposo?: boolean
     dolorMovimiento?: boolean
     nivelFuncional?: boolean
+    palpacionInfoAdicional?: boolean
     pruebasComplementarias?: boolean
     hipotesisDiagnostica?: boolean
     pronosticoFuncional?: boolean
@@ -13765,6 +13775,7 @@ export namespace Prisma {
       dolorReposo: number | null
       dolorMovimiento: number | null
       nivelFuncional: number | null
+      palpacionInfoAdicional: string | null
       pruebasComplementarias: string | null
       hipotesisDiagnostica: string | null
       pronosticoFuncional: string | null
@@ -14211,6 +14222,7 @@ export namespace Prisma {
     readonly dolorReposo: FieldRef<"PatientEvaluation", 'Int'>
     readonly dolorMovimiento: FieldRef<"PatientEvaluation", 'Int'>
     readonly nivelFuncional: FieldRef<"PatientEvaluation", 'Int'>
+    readonly palpacionInfoAdicional: FieldRef<"PatientEvaluation", 'String'>
     readonly pruebasComplementarias: FieldRef<"PatientEvaluation", 'String'>
     readonly hipotesisDiagnostica: FieldRef<"PatientEvaluation", 'String'>
     readonly pronosticoFuncional: FieldRef<"PatientEvaluation", 'String'>
@@ -28399,6 +28411,7 @@ export namespace Prisma {
     dolorReposo: 'dolorReposo',
     dolorMovimiento: 'dolorMovimiento',
     nivelFuncional: 'nivelFuncional',
+    palpacionInfoAdicional: 'palpacionInfoAdicional',
     pruebasComplementarias: 'pruebasComplementarias',
     hipotesisDiagnostica: 'hipotesisDiagnostica',
     pronosticoFuncional: 'pronosticoFuncional',
@@ -29596,6 +29609,7 @@ export namespace Prisma {
     dolorReposo?: IntNullableFilter<"PatientEvaluation"> | number | null
     dolorMovimiento?: IntNullableFilter<"PatientEvaluation"> | number | null
     nivelFuncional?: IntNullableFilter<"PatientEvaluation"> | number | null
+    palpacionInfoAdicional?: StringNullableFilter<"PatientEvaluation"> | string | null
     pruebasComplementarias?: StringNullableFilter<"PatientEvaluation"> | string | null
     hipotesisDiagnostica?: StringNullableFilter<"PatientEvaluation"> | string | null
     pronosticoFuncional?: StringNullableFilter<"PatientEvaluation"> | string | null
@@ -29652,6 +29666,7 @@ export namespace Prisma {
     dolorReposo?: SortOrderInput | SortOrder
     dolorMovimiento?: SortOrderInput | SortOrder
     nivelFuncional?: SortOrderInput | SortOrder
+    palpacionInfoAdicional?: SortOrderInput | SortOrder
     pruebasComplementarias?: SortOrderInput | SortOrder
     hipotesisDiagnostica?: SortOrderInput | SortOrder
     pronosticoFuncional?: SortOrderInput | SortOrder
@@ -29711,6 +29726,7 @@ export namespace Prisma {
     dolorReposo?: IntNullableFilter<"PatientEvaluation"> | number | null
     dolorMovimiento?: IntNullableFilter<"PatientEvaluation"> | number | null
     nivelFuncional?: IntNullableFilter<"PatientEvaluation"> | number | null
+    palpacionInfoAdicional?: StringNullableFilter<"PatientEvaluation"> | string | null
     pruebasComplementarias?: StringNullableFilter<"PatientEvaluation"> | string | null
     hipotesisDiagnostica?: StringNullableFilter<"PatientEvaluation"> | string | null
     pronosticoFuncional?: StringNullableFilter<"PatientEvaluation"> | string | null
@@ -29767,6 +29783,7 @@ export namespace Prisma {
     dolorReposo?: SortOrderInput | SortOrder
     dolorMovimiento?: SortOrderInput | SortOrder
     nivelFuncional?: SortOrderInput | SortOrder
+    palpacionInfoAdicional?: SortOrderInput | SortOrder
     pruebasComplementarias?: SortOrderInput | SortOrder
     hipotesisDiagnostica?: SortOrderInput | SortOrder
     pronosticoFuncional?: SortOrderInput | SortOrder
@@ -29830,6 +29847,7 @@ export namespace Prisma {
     dolorReposo?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
     dolorMovimiento?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
     nivelFuncional?: IntNullableWithAggregatesFilter<"PatientEvaluation"> | number | null
+    palpacionInfoAdicional?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     pruebasComplementarias?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     hipotesisDiagnostica?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
     pronosticoFuncional?: StringNullableWithAggregatesFilter<"PatientEvaluation"> | string | null
@@ -31882,6 +31900,7 @@ export namespace Prisma {
     dolorReposo?: number | null
     dolorMovimiento?: number | null
     nivelFuncional?: number | null
+    palpacionInfoAdicional?: string | null
     pruebasComplementarias?: string | null
     hipotesisDiagnostica?: string | null
     pronosticoFuncional?: string | null
@@ -31938,6 +31957,7 @@ export namespace Prisma {
     dolorReposo?: number | null
     dolorMovimiento?: number | null
     nivelFuncional?: number | null
+    palpacionInfoAdicional?: string | null
     pruebasComplementarias?: string | null
     hipotesisDiagnostica?: string | null
     pronosticoFuncional?: string | null
@@ -31991,6 +32011,7 @@ export namespace Prisma {
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
     dolorMovimiento?: NullableIntFieldUpdateOperationsInput | number | null
     nivelFuncional?: NullableIntFieldUpdateOperationsInput | number | null
+    palpacionInfoAdicional?: NullableStringFieldUpdateOperationsInput | string | null
     pruebasComplementarias?: NullableStringFieldUpdateOperationsInput | string | null
     hipotesisDiagnostica?: NullableStringFieldUpdateOperationsInput | string | null
     pronosticoFuncional?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32047,6 +32068,7 @@ export namespace Prisma {
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
     dolorMovimiento?: NullableIntFieldUpdateOperationsInput | number | null
     nivelFuncional?: NullableIntFieldUpdateOperationsInput | number | null
+    palpacionInfoAdicional?: NullableStringFieldUpdateOperationsInput | string | null
     pruebasComplementarias?: NullableStringFieldUpdateOperationsInput | string | null
     hipotesisDiagnostica?: NullableStringFieldUpdateOperationsInput | string | null
     pronosticoFuncional?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32102,6 +32124,7 @@ export namespace Prisma {
     dolorReposo?: number | null
     dolorMovimiento?: number | null
     nivelFuncional?: number | null
+    palpacionInfoAdicional?: string | null
     pruebasComplementarias?: string | null
     hipotesisDiagnostica?: string | null
     pronosticoFuncional?: string | null
@@ -32155,6 +32178,7 @@ export namespace Prisma {
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
     dolorMovimiento?: NullableIntFieldUpdateOperationsInput | number | null
     nivelFuncional?: NullableIntFieldUpdateOperationsInput | number | null
+    palpacionInfoAdicional?: NullableStringFieldUpdateOperationsInput | string | null
     pruebasComplementarias?: NullableStringFieldUpdateOperationsInput | string | null
     hipotesisDiagnostica?: NullableStringFieldUpdateOperationsInput | string | null
     pronosticoFuncional?: NullableStringFieldUpdateOperationsInput | string | null
@@ -32210,6 +32234,7 @@ export namespace Prisma {
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
     dolorMovimiento?: NullableIntFieldUpdateOperationsInput | number | null
     nivelFuncional?: NullableIntFieldUpdateOperationsInput | number | null
+    palpacionInfoAdicional?: NullableStringFieldUpdateOperationsInput | string | null
     pruebasComplementarias?: NullableStringFieldUpdateOperationsInput | string | null
     hipotesisDiagnostica?: NullableStringFieldUpdateOperationsInput | string | null
     pronosticoFuncional?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34219,6 +34244,7 @@ export namespace Prisma {
     dolorReposo?: SortOrder
     dolorMovimiento?: SortOrder
     nivelFuncional?: SortOrder
+    palpacionInfoAdicional?: SortOrder
     pruebasComplementarias?: SortOrder
     hipotesisDiagnostica?: SortOrder
     pronosticoFuncional?: SortOrder
@@ -34286,6 +34312,7 @@ export namespace Prisma {
     dolorReposo?: SortOrder
     dolorMovimiento?: SortOrder
     nivelFuncional?: SortOrder
+    palpacionInfoAdicional?: SortOrder
     pruebasComplementarias?: SortOrder
     hipotesisDiagnostica?: SortOrder
     pronosticoFuncional?: SortOrder
@@ -34341,6 +34368,7 @@ export namespace Prisma {
     dolorReposo?: SortOrder
     dolorMovimiento?: SortOrder
     nivelFuncional?: SortOrder
+    palpacionInfoAdicional?: SortOrder
     pruebasComplementarias?: SortOrder
     hipotesisDiagnostica?: SortOrder
     pronosticoFuncional?: SortOrder
@@ -37807,6 +37835,7 @@ export namespace Prisma {
     dolorReposo?: number | null
     dolorMovimiento?: number | null
     nivelFuncional?: number | null
+    palpacionInfoAdicional?: string | null
     pruebasComplementarias?: string | null
     hipotesisDiagnostica?: string | null
     pronosticoFuncional?: string | null
@@ -37861,6 +37890,7 @@ export namespace Prisma {
     dolorReposo?: number | null
     dolorMovimiento?: number | null
     nivelFuncional?: number | null
+    palpacionInfoAdicional?: string | null
     pruebasComplementarias?: string | null
     hipotesisDiagnostica?: string | null
     pronosticoFuncional?: string | null
@@ -38359,6 +38389,7 @@ export namespace Prisma {
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
     dolorMovimiento?: NullableIntFieldUpdateOperationsInput | number | null
     nivelFuncional?: NullableIntFieldUpdateOperationsInput | number | null
+    palpacionInfoAdicional?: NullableStringFieldUpdateOperationsInput | string | null
     pruebasComplementarias?: NullableStringFieldUpdateOperationsInput | string | null
     hipotesisDiagnostica?: NullableStringFieldUpdateOperationsInput | string | null
     pronosticoFuncional?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38413,6 +38444,7 @@ export namespace Prisma {
     dolorReposo?: NullableIntFieldUpdateOperationsInput | number | null
     dolorMovimiento?: NullableIntFieldUpdateOperationsInput | number | null
     nivelFuncional?: NullableIntFieldUpdateOperationsInput | number | null
+    palpacionInfoAdicional?: NullableStringFieldUpdateOperationsInput | string | null
     pruebasComplementarias?: NullableStringFieldUpdateOperationsInput | string | null
     hipotesisDiagnostica?: NullableStringFieldUpdateOperationsInput | string | null
     pronosticoFuncional?: NullableStringFieldUpdateOperationsInput | string | null

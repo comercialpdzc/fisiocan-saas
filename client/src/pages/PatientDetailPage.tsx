@@ -45,7 +45,7 @@ interface PatientEvaluation {
   inicioMarcha?: string; troteGalope?: string; subidaBajada?: string; proprioceptivePlacing?: string;
   marchaAlPaso?: string; marchaAlTrote?: string; analisisMiembros?: string;
   girosSentarse?: string; compensacionesDin?: string; observacionesDinamicas?: string;
-  palpacionROM?: string; dolorReposo?: number; dolorMovimiento?: number; nivelFuncional?: number;
+  palpacionROM?: string; dolorReposo?: number; dolorMovimiento?: number; nivelFuncional?: number; palpacionInfoAdicional?: string;
   pruebasComplementarias?: string;
   hipotesisDiagnostica?: string; pronosticoFuncional?: string; limitacionesTratamiento?: string;
   objetivoCortoplazo?: string; objetivoMedioplazo?: string; objetivoLargoplazo?: string;
@@ -957,6 +957,12 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
           <Row label="Dolor en reposo" value={`${form.dolorReposo ?? 0}/10`} />
           <Row label="Dolor en movimiento" value={`${form.dolorMovimiento ?? 0}/10`} />
           <Row label="Nivel funcional" value={`${form.nivelFuncional ?? 5}/10`} />
+          {form.palpacionInfoAdicional && (
+            <div className="mt-3 p-3 bg-navy-50 rounded-lg border border-navy-100">
+              <p className="text-xs font-semibold text-navy-500 uppercase tracking-wide mb-1">Información adicional</p>
+              <p className="text-sm text-navy-700 whitespace-pre-wrap">{form.palpacionInfoAdicional}</p>
+            </div>
+          )}
         </Section>
 
         <Section title="Diagnóstico Funcional Fisioterapéutico">
@@ -1433,6 +1439,13 @@ function EvaluationTab({ patientId, patientName, evaluation: initEval }: { patie
           <Slider label="Dolor en reposo" value={form.dolorReposo ?? 0} onChange={v => set('dolorReposo', v)} />
           <Slider label="Dolor en movimiento" value={form.dolorMovimiento ?? 0} onChange={v => set('dolorMovimiento', v)} />
           <Slider label="Nivel funcional" value={form.nivelFuncional ?? 5} onChange={v => set('nivelFuncional', v)} />
+        </div>
+        <div className="mt-4">
+          <label className="block text-sm font-semibold text-navy-600 mb-1">Observaciones generales</label>
+          <textarea className="input resize-none" rows={3}
+            value={form.palpacionInfoAdicional ?? ''}
+            onChange={e => set('palpacionInfoAdicional', e.target.value)}
+            placeholder="Observaciones generales sobre palpación y rango de movimiento…" />
         </div>
       </Section>
 

@@ -222,9 +222,10 @@ model PatientEvaluation {
   palpacionROM String?
 
   // Escalas globales
-  dolorReposo     Int? // 0–10
-  dolorMovimiento Int? // 0–10
-  nivelFuncional  Int? // 0–10
+  dolorReposo            Int? // 0–10
+  dolorMovimiento        Int? // 0–10
+  nivelFuncional         Int? // 0–10
+  palpacionInfoAdicional String?
 
   // Pruebas complementarias — JSON: [{tipo, resultado, hallazgos, archivoUrl}]
   pruebasComplementarias String?
@@ -380,16 +381,17 @@ model PatientMedia {
 // ── Pautas domiciliarias (guías imprimibles para el tutor) ─────────────────
 
 model PatientPauta {
-  id          Int          @id @default(autoincrement())
-  patientId   Int
-  patient     Patient      @relation(fields: [patientId], references: [id])
-  title       String
-  weekRange   String // e.g. "Semanas 1–2"
-  notes       String? // libre: indicaciones adicionales
-  htmlContent String?      @db.Text // HTML completo de la guía (opcional)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  media       PautaMedia[]
+  id           Int          @id @default(autoincrement())
+  patientId    Int
+  patient      Patient      @relation(fields: [patientId], references: [id])
+  title        String
+  weekRange    String // e.g. "Semanas 1–2"
+  notes        String? // libre: indicaciones adicionales
+  htmlContent  String?      @db.Text // HTML completo de la guía (opcional)
+  showInPortal Boolean      @default(false) // visible en el portal del tutor
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  media        PautaMedia[]
 }
 
 model PautaMedia {

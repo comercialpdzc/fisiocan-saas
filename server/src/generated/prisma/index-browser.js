@@ -283,6 +283,7 @@ exports.Prisma.PatientEvaluationScalarFieldEnum = {
   dolorReposo: 'dolorReposo',
   dolorMovimiento: 'dolorMovimiento',
   nivelFuncional: 'nivelFuncional',
+  palpacionInfoAdicional: 'palpacionInfoAdicional',
   pruebasComplementarias: 'pruebasComplementarias',
   hipotesisDiagnostica: 'hipotesisDiagnostica',
   pronosticoFuncional: 'pronosticoFuncional',
