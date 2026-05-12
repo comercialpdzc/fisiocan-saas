@@ -241,16 +241,54 @@ router.post('/sync-pauta-media', async (_req, res) => {
 });
 
 // ── POST /api/admin/test-fetch ────────────────────────────────────────────────
-// Temporary debug endpoint: tests if Cloud Run can fetch a URL
 router.post('/test-fetch', async (req, res) => {
   const { url } = req.body as { url?: string };
   if (!url) { res.status(400).json({ error: 'url required' }); return; }
   try {
-    const resp = await fetch(url, { signal: AbortSignal.timeout(15000) });
+    const resp = await fetch(url, { signal: AbortSignal.timeout(30000) });
     res.json({ status: resp.status, ok: resp.ok, contentType: resp.headers.get('content-type'), contentLength: resp.headers.get('content-length') });
   } catch (e: any) {
     res.json({ error: e.message, cause: String(e.cause ?? '') });
   }
+});
+
+// ── POST /api/admin/sync-drive-verbose ────────────────────────────────────────
+router.post('/sync-drive-verbose', async (_req, res) => {
+  const files = await prisma.mediaFile.findMany({
+    where: { driveFileId: null, localUrl: { not: null } },
+    include: { patient: true, session: true },
+  });
+
+  const results: Array<{ id: number; step: string; detail: string }> = [];
+
+  for (const file of files) {
+    const url = file.localUrl!;
+    try {
+      console.log(`[sync-verbose] Fetching [${file.id}] ${url.slice(-50)}`);
+      const resp = await fetch(url, { signal: AbortSignal.timeout(60000) });
+      if (!resp.ok) {
+        results.push({ id: file.id, step: 'fetch', detail: `HTTP ${resp.status}` });
+        continue;
+      }
+      const buffer = Buffer.from(await resp.arrayBuffer());
+      results.push({ id: file.id, step: 'fetch-ok', detail: `${buffer.length} bytes` });
+
+      const ext = url.split('.').pop()?.split('?')[0] ?? 'bin';
+      console.log(`[sync-verbose] Uploading [${file.id}] ${buffer.length} bytes to Drive`);
+      const result = await uploadToDrive(buffer, 'video/mp4', `migrated-${file.id}.${ext}`, file.patient?.name ?? null, (file.originType ?? 'general') as DriveContext, file.session?.sessionNumber ?? undefined);
+      if (result) {
+        await prisma.mediaFile.update({ where: { id: file.id }, data: { driveFileId: result.driveFileId, driveUrl: result.driveUrl, thumbnailUrl: result.thumbnailUrl } });
+        results.push({ id: file.id, step: 'done', detail: result.driveUrl.slice(0, 60) });
+      } else {
+        results.push({ id: file.id, step: 'drive-null', detail: 'uploadToDrive returned null' });
+      }
+    } catch (e: any) {
+      console.error(`[sync-verbose] Error [${file.id}]:`, e);
+      results.push({ id: file.id, step: 'error', detail: `${e.message} | cause: ${String(e.cause ?? '')}` });
+    }
+  }
+
+  res.json({ total: files.length, results });
 });
 
 export default router;
