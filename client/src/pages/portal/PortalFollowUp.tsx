@@ -53,10 +53,13 @@ export default function PortalFollowUp() {
 
   async function handleUpload() {
     if (!pendingFile || !form.patientId) return;
+    const patientName = me?.patients.find(p => p.id === Number(form.patientId))?.name ?? '';
     setUploading(true);
     try {
       const fd = new FormData();
       fd.append('file', pendingFile.file);
+      fd.append('patientName', patientName);
+      fd.append('context', 'followup');
       const res = await fetch(`${import.meta.env.VITE_API_URL ?? ''}/api/upload`, { method: 'POST', body: fd });
       const data = await res.json();
       if (!data.url) { alert(data.error ?? 'Error al subir'); return; }
