@@ -342,6 +342,25 @@ function PautasTab({ patient }: { patient: Patient }) {
   const [editingSimple, setEditingSimple] = useState<Pauta | null>(null);
   const [editSimpleForm, setEditSimpleForm] = useState({ title: '', weekRange: '', notes: '' });
   const [editSimpleSaving, setEditSimpleSaving] = useState(false);
+  const [loadingEditId, setLoadingEditId] = useState<number | null>(null);
+
+  async function openEdit(p: Pauta) {
+    if (p.htmlContent) {
+      setLoadingEditId(p.id);
+      let builderData: string | null = localStorage.getItem(`pautaBuilder_${p.id}`);
+      if (!builderData) {
+        try {
+          const detail = await api.get<{ builderData?: string }>(`/pautas/${p.id}`);
+          builderData = detail.builderData ?? null;
+        } catch { /* ignore */ }
+      }
+      setLoadingEditId(null);
+      setEditingBuilder({ ...p, builderData: builderData ?? undefined });
+    } else {
+      setEditingSimple(p);
+      setEditSimpleForm({ title: p.title, weekRange: p.weekRange, notes: p.notes ?? '' });
+    }
+  }
 
   const { data: pautas = [], isLoading } = useQuery<Pauta[]>({
     queryKey: ['pautas', patient.id],
@@ -435,7 +454,8 @@ function PautasTab({ patient }: { patient: Patient }) {
           photoUrl={patient.photoUrl}
           onClose={() => setBuilding(false)}
           onSave={async (html, title, weekRange, notes, builderData) => {
-            await api.post('/pautas', { patientId: patient.id, title, weekRange, notes, htmlContent: html, builderData });
+            const created = await api.post<{ id: number }>('/pautas', { patientId: patient.id, title, weekRange, notes, htmlContent: html, builderData });
+            if (created?.id) localStorage.setItem(`pautaBuilder_${created.id}`, builderData);
             qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
             setBuilding(false);
           }}
@@ -457,6 +477,7 @@ function PautasTab({ patient }: { patient: Patient }) {
             onClose={() => setEditingBuilder(null)}
             onSave={async (html, title, weekRange, notes, builderData) => {
               await api.put(`/pautas/${editingBuilder.id}`, { title, weekRange, notes, htmlContent: html, builderData });
+              localStorage.setItem(`pautaBuilder_${editingBuilder.id}`, builderData);
               qc.invalidateQueries({ queryKey: ['pautas', patient.id] });
               setEditingBuilder(null);
             }}
@@ -586,18 +607,14 @@ function PautasTab({ patient }: { patient: Patient }) {
                     </span>
                   </button>
                   <button
-                    onClick={() => {
-                      if (p.htmlContent) {
-                        setEditingBuilder(p);
-                      } else {
-                        setEditingSimple(p);
-                        setEditSimpleForm({ title: p.title, weekRange: p.weekRange, notes: p.notes ?? '' });
-                      }
-                    }}
+                    onClick={() => openEdit(p)}
+                    disabled={loadingEditId === p.id}
                     title="Editar pauta"
                     className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors"
                   >
-                    <Pencil size={14} />
+                    {loadingEditId === p.id
+                      ? <Loader2 size={14} className="animate-spin" />
+                      : <Pencil size={14} />}
                   </button>
                   {p.htmlContent && (
                     <button onClick={() => openHtml(p.id)} title="Ver pauta" className="p-1.5 text-navy-300 hover:text-teal-500 transition-colors">
