@@ -25,7 +25,7 @@ router.get('/', requireAuth, async (req, res) => {
     where: { patientId },
     orderBy: { createdAt: 'desc' },
     select: {
-      id: true, title: true, weekRange: true, notes: true, createdAt: true, updatedAt: true, showInPortal: true, htmlContent: true,
+      id: true, title: true, weekRange: true, notes: true, createdAt: true, updatedAt: true, showInPortal: true, htmlContent: true, builderData: true,
       media: { orderBy: { createdAt: 'asc' }, select: { id: true, url: true, caption: true, createdAt: true } },
     },
   });

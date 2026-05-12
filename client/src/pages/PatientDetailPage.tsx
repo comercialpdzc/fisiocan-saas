@@ -587,7 +587,7 @@ function PautasTab({ patient }: { patient: Patient }) {
                   </button>
                   <button
                     onClick={() => {
-                      if (p.builderData) {
+                      if (p.htmlContent) {
                         setEditingBuilder(p);
                       } else {
                         setEditingSimple(p);
