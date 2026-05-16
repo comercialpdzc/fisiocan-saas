@@ -1,8 +1,16 @@
 {
-  "buildCommand": "cd client && npm install && npm run build",
+  "installCommand": "npm install",
+  "buildCommand": "cd server && npx prisma generate && cd ../client && npm run build",
   "outputDirectory": "client/dist",
-  "installCommand": "echo skip",
+  "functions": {
+    "api/index.ts": {
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "server/src/generated/**"
+    }
+  },
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/:path*", "destination": "/api" },
+    { "source": "/:path*",     "destination": "/index.html" }
   ]
 }
